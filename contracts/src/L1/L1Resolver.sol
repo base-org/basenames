@@ -2,34 +2,13 @@
 pragma solidity 0.8.23;
 
 import {IExtendedResolver} from "lib/ens-contracts/contracts/resolvers/profiles/IExtendedResolver.sol";
-
-contract L1Resolver {
-
-}
-
-interface IExtendedResolver {
-    function resolve(bytes memory name, bytes memory data) external view returns(bytes memory);
-}
-
-interface ISupportsInterface {
-    function supportsInterface(bytes4 interfaceID) external pure returns(bool);
-}
-
-interface IResolverService {
-    function resolve(bytes calldata name, bytes calldata data) external view returns(bytes memory result, uint64 expires, bytes memory sig);
-}
-
-abstract contract SupportsInterface is ISupportsInterface {
-    function supportsInterface(bytes4 interfaceID) virtual override public pure returns(bool) {
-        return interfaceID == type(ISupportsInterface).interfaceId;
-    }
-}
+import {ERC165} from "lib/openzeppelin-contracts/contracts/utils/introspection/ERC165.sol";
 
 /**
  * Implements an ENS resolver that directs all queries to a CCIP read gateway.
  * Callers must implement EIP 3668 and ENSIP 10.
  */
-contract OffchainResolver is IExtendedResolver, SupportsInterface {
+contract L1Resolver is IExtendedResolver, ERC165 {
     string public url;
     mapping(address=>bool) public signers;
 
@@ -62,7 +41,7 @@ contract OffchainResolver is IExtendedResolver, SupportsInterface {
             address(this),
             urls,
             callData,
-            OffchainResolver.resolveWithProof.selector,
+            L1Resolver.resolveWithProof.selector,
             callData
         );
     }
