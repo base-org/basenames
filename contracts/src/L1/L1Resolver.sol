@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.23;
 
-import {IExtendedResolver} from "lib/ens-contracts/contracts/resolvers/profiles/IExtendedResolver.sol";
+import {IExtendedResolver} from "ens-contracts/resolvers/profiles/IExtendedResolver.sol";
 import {ERC165} from "lib/openzeppelin-contracts/contracts/utils/introspection/ERC165.sol";
+import {SignatureVerifier} from "../lib/SignatureVerifier.sol";
 
 /**
  * Implements an ENS resolver that directs all queries to a CCIP read gateway.
@@ -34,7 +35,7 @@ contract L1Resolver is IExtendedResolver, ERC165 {
      * @return The return data, ABI encoded identically to the underlying function.
      */
     function resolve(bytes calldata name, bytes calldata data) external override view returns(bytes memory) {
-        bytes memory callData = abi.encodeWithSelector(IResolverService.resolve.selector, name, data);
+        bytes memory callData = abi.encodeWithSelector(L1Resolver.resolve.selector, name, data);
         string[] memory urls = new string[](1);
         urls[0] = url;
         revert OffchainLookup(
@@ -57,7 +58,7 @@ contract L1Resolver is IExtendedResolver, ERC165 {
         return result;
     }
 
-    function supportsInterface(bytes4 interfaceID) public pure override returns(bool) {
+    function supportsInterface(bytes4 interfaceID) public view override returns(bool) {
         return interfaceID == type(IExtendedResolver).interfaceId || super.supportsInterface(interfaceID);
     }
 }

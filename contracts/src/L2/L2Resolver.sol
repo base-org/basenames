@@ -1,6 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.23;
 
-contract L2Resolver {
+import {PublicResolver} from "ens-contracts/resolvers/PublicResolver.sol";
 
+contract L2Resolver is PublicResolver {
+
+    constructor(
+        ENS _ens,
+        INameWrapper _wrapperAddress,
+        address _trustedETHController,
+        address _trustedReverseRegistrar
+    ) PublicResolver(_ens, _wrapperAddress, _trustedETHController, _trustedReverseRegistrar) {
+
+    }
 }
