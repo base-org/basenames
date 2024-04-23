@@ -10,3 +10,6 @@
 [submodule "contracts/lib/solady"]
 	path = contracts/lib/solady
 	url = https://github.com/vectorized/solady
+[submodule "contracts/lib/buffer"]
+	path = contracts/lib/buffer
+	url = https://github.com/ensdomains/buffer
