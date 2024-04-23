@@ -2,17 +2,17 @@
 pragma solidity 0.8.23;
 
 import {BaseRegistrar} from "./BaseRegistrar.sol";
+import {ReverseRegistrar} from "./ReverseRegistrar.sol";
+
 import {StringUtils} from "ens-contracts/ethregistrar/StringUtils.sol";
 import {Resolver} from "ens-contracts/resolvers/Resolver.sol";
 import {ENS} from "ens-contracts/registry/ENS.sol";
-import {ReverseRegistrar} from "ens-contracts/reverseRegistrar/ReverseRegistrar.sol";
 import {ReverseClaimer} from "ens-contracts/reverseRegistrar/ReverseClaimer.sol";
 
-import {Ownable} from "lib/openzeppelin-contracts/contracts/access/Ownable.sol";
+import {Ownable} from "solady/auth/Ownable.sol";
 import {IERC165} from "lib/openzeppelin-contracts/contracts/utils/introspection/IERC165.sol";
 import {Address} from "lib/openzeppelin-contracts/contracts/utils/Address.sol";
 import {INameWrapper} from "ens-contracts/wrapper/INameWrapper.sol";
-import {ERC20Recoverable} from "ens-contracts/utils/ERC20Recoverable.sol";
 
 import "lib/openzeppelin-contracts/contracts/access/AccessControl.sol";
 import "lib/openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol";
@@ -30,7 +30,6 @@ error Unauthorised(bytes32 node);
 contract Registrar is
     Ownable,
     IERC165,
-    ERC20Recoverable,
     ReverseClaimer,
     AccessControl,
     EIP712
@@ -42,7 +41,7 @@ contract Registrar is
     bytes32 private constant ETH_NODE =
         0x7e7650bbd57a49caffbb4c83ce43045d2653261b7953b80d47500d9eb37b6134;
     uint64 private constant MAX_EXPIRY = type(uint64).max;
-    BaseRegistrarImplementation immutable base;
+    BaseRegistrar immutable base;
     ReverseRegistrar public immutable reverseRegistrar;
     INameWrapper public immutable nameWrapper;
 
@@ -69,14 +68,16 @@ contract Registrar is
     );
 
     constructor(
-        BaseRegistrarImplementation _base,
+        BaseRegistrar _base,
         ReverseRegistrar _reverseRegistrar,
         INameWrapper _nameWrapper,
-        ENS _ens
+        ENS _ens,
+        address _owner
     )
         ReverseClaimer(_ens, msg.sender)
         EIP712(SIGNING_DOMAIN, SIGNATURE_VERSION)
     {
+        _initializeOwner(_owner);
         base = _base;
         reverseRegistrar = _reverseRegistrar;
         nameWrapper = _nameWrapper;
@@ -289,7 +290,7 @@ contract Registrar is
     function _checkNameAndDuration(
         string memory name,
         uint256 duration
-    ) internal {
+    ) internal view {
         if (!available(name)) {
             revert NameNotAvailable(name);
         }

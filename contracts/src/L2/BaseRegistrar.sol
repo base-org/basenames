@@ -2,11 +2,12 @@
 pragma solidity 0.8.23;
 
 import {ENS} from "ens-contracts/registry/ENS.sol";
-import {IBaseRegistrar} from "ens-contracts/ethregistrar/IBaseRegistrar.sol";
+import {IBaseRegistrar} from "./interface/IBaseRegistrar.sol";
 import {ERC721} from "lib/solady/src/tokens/ERC721.sol";
 import {Ownable} from "lib/openzeppelin-contracts/contracts/access/Ownable.sol";
+import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
-contract BaseRegistrar is ERC721, IBaseRegistrar, Ownable {
+contract BaseRegistrar is ERC721, IBaseRegistrar, IERC165, Ownable {
     // A map of expiry times
     mapping(uint256 => uint256) expiries;
     // The ENS registry
@@ -52,7 +53,7 @@ contract BaseRegistrar is ERC721, IBaseRegistrar, Ownable {
             isApprovedForAll(owner, spender));
     }
 
-    constructor(ENS _ens, bytes32 _baseNode) ERC721("", "") {
+    constructor(ENS _ens, bytes32 _baseNode, address _owner) Ownable(_owner) {
         ens = _ens;
         baseNode = _baseNode;
     }
@@ -75,7 +76,7 @@ contract BaseRegistrar is ERC721, IBaseRegistrar, Ownable {
      */
     function ownerOf(
         uint256 tokenId
-    ) public view override(IERC721, ERC721) returns (address) {
+    ) public view override(ERC721) returns (address) {
         require(expiries[tokenId] > block.timestamp);
         return super.ownerOf(tokenId);
     }
@@ -184,10 +185,28 @@ contract BaseRegistrar is ERC721, IBaseRegistrar, Ownable {
         require(_isApprovedOrOwner(msg.sender, id));
         ens.setSubnodeOwner(baseNode, bytes32(id), owner);
     }
+    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+    /*                      ERC721 METADATA                       */
+    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+
+    /// @dev Returns the token collection name.
+    function name() public pure override returns (string memory){
+        return "";
+    }
+
+    /// @dev Returns the token collection symbol.
+    function symbol() public pure override returns (string memory) {
+        return "";
+    }
+
+    /// @dev Returns the Uniform Resource Identifier (URI) for token `id`.
+    function tokenURI(uint256) public pure override returns (string memory) {
+        return "";
+    }
 
     function supportsInterface(
         bytes4 interfaceID
-    ) public view override(ERC721, IERC165) returns (bool) {
+    ) public pure override(ERC721, IERC165) returns (bool) {
         return
             interfaceID == INTERFACE_META_ID ||
             interfaceID == ERC721_ID ||
