@@ -27,19 +27,12 @@ error Unauthorised(bytes32 node);
 /**
  * @dev A registrar controller for registering and renewing names at fixed cost.
  */
-contract Registrar is
-    Ownable,
-    IERC165,
-    ReverseClaimer,
-    AccessControl,
-    EIP712
-{
+contract Registrar is Ownable, IERC165, ReverseClaimer, AccessControl, EIP712 {
     using StringUtils for *;
     using Address for address;
 
     uint256 public constant MIN_REGISTRATION_DURATION = 28 days;
-    bytes32 private constant ETH_NODE =
-        0x7e7650bbd57a49caffbb4c83ce43045d2653261b7953b80d47500d9eb37b6134;
+    bytes32 private constant ETH_NODE = 0x7e7650bbd57a49caffbb4c83ce43045d2653261b7953b80d47500d9eb37b6134;
     uint64 private constant MAX_EXPIRY = type(uint64).max;
     BaseRegistrar immutable base;
     ReverseRegistrar public immutable reverseRegistrar;
@@ -53,19 +46,9 @@ contract Registrar is
     string private constant SIGNATURE_VERSION = "1";
 
     event NameRegistered(
-        string name,
-        bytes32 indexed label,
-        address indexed owner,
-        uint256 baseCost,
-        uint256 premium,
-        uint256 expires
+        string name, bytes32 indexed label, address indexed owner, uint256 baseCost, uint256 premium, uint256 expires
     );
-    event NameRenewed(
-        string name,
-        bytes32 indexed label,
-        uint256 cost,
-        uint256 expires
-    );
+    event NameRenewed(string name, bytes32 indexed label, uint256 cost, uint256 expires);
 
     constructor(
         BaseRegistrar _base,
@@ -73,10 +56,7 @@ contract Registrar is
         INameWrapper _nameWrapper,
         ENS _ens,
         address _owner
-    )
-        ReverseClaimer(_ens, msg.sender)
-        EIP712(SIGNING_DOMAIN, SIGNATURE_VERSION)
-    {
+    ) ReverseClaimer(_ens, msg.sender) EIP712(SIGNING_DOMAIN, SIGNATURE_VERSION) {
         _initializeOwner(_owner);
         base = _base;
         reverseRegistrar = _reverseRegistrar;
@@ -116,16 +96,10 @@ contract Registrar is
         return valid(name) && base.available(uint256(label));
     }
 
-    function registerWithSignature(
-        RegisterRequest calldata request,
-        bytes[] calldata data
-    ) public payable {
+    function registerWithSignature(RegisterRequest calldata request, bytes[] calldata data) public payable {
         address signer = _verifyRegisterRequest(request);
 
-        require(
-            hasRole(REGISTER_ROLE, signer),
-            "Signature invalid or unauthorized"
-        );
+        require(hasRole(REGISTER_ROLE, signer), "Signature invalid or unauthorized");
 
         require(request.validUntil > block.timestamp, "Request expired");
 
@@ -136,11 +110,7 @@ contract Registrar is
         _checkNameAndDuration(request.name, request.duration);
 
         uint256 expires = nameWrapper.registerAndWrapETH2LD(
-            request.name,
-            request.owner,
-            request.duration,
-            request.resolver,
-            request.ownerControlledFuses
+            request.name, request.owner, request.duration, request.resolver, request.ownerControlledFuses
         );
 
         if (data.length > 0) {
@@ -152,24 +122,14 @@ contract Registrar is
         }
 
         emit NameRegistered(
-            request.name,
-            keccak256(bytes(request.name)),
-            request.owner,
-            request.price,
-            request.price,
-            expires
+            request.name, keccak256(bytes(request.name)), request.owner, request.price, request.price, expires
         );
     }
 
-    function renewWithSignature(
-        RenewRequest calldata request
-    ) external payable {
+    function renewWithSignature(RenewRequest calldata request) external payable {
         address signer = _verifyRenewRequest(request);
 
-        require(
-            hasRole(RENEW_ROLE, signer),
-            "Signature invalid or unauthorized"
-        );
+        require(hasRole(RENEW_ROLE, signer), "Signature invalid or unauthorized");
 
         require(request.validUntil > block.timestamp, "Request expired");
 
@@ -189,94 +149,71 @@ contract Registrar is
         payable(owner()).transfer(address(this).balance);
     }
 
-    function supportsInterface(
-        bytes4 interfaceID
-    ) public view virtual override(IERC165, AccessControl) returns (bool) {
-        return
-            interfaceID == type(IERC165).interfaceId ||
-            interfaceID == type(AccessControl).interfaceId;
+    function supportsInterface(bytes4 interfaceID)
+        public
+        view
+        virtual
+        override(IERC165, AccessControl)
+        returns (bool)
+    {
+        return interfaceID == type(IERC165).interfaceId || interfaceID == type(AccessControl).interfaceId;
     }
 
     /* Internal functions */
 
-    function _setRecords(
-        address resolverAddress,
-        bytes32 label,
-        bytes[] calldata data
-    ) internal {
+    function _setRecords(address resolverAddress, bytes32 label, bytes[] calldata data) internal {
         // use hardcoded .base namehash
         bytes32 nodehash = keccak256(abi.encodePacked(ETH_NODE, label));
         Resolver resolver = Resolver(resolverAddress);
         resolver.multicallWithNodeCheck(nodehash, data);
     }
 
-    function _setReverseRecord(
-        string memory name,
-        address resolver,
-        address owner
-    ) internal {
-        reverseRegistrar.setNameForAddr(
-            msg.sender,
-            owner,
-            resolver,
-            string.concat(name, ".base")
-        );
+    function _setReverseRecord(string memory name, address resolver, address owner) internal {
+        reverseRegistrar.setNameForAddr(msg.sender, owner, resolver, string.concat(name, ".base"));
     }
 
-    function _verifyRegisterRequest(
-        RegisterRequest calldata request
-    ) internal view returns (address) {
+    function _verifyRegisterRequest(RegisterRequest calldata request) internal view returns (address) {
         bytes32 digest = _hashRegisterRequest(request);
         return ECDSA.recover(digest, request.signature);
     }
 
-    function _hashRegisterRequest(
-        RegisterRequest calldata request
-    ) internal view returns (bytes32) {
-        return
-            _hashTypedDataV4(
-                keccak256(
-                    abi.encode(
-                        keccak256(
-                            "RegisterRequest(string name,address owner,uint256 duration,uint256 validUntil,address resolver,bool reverseRecord,uint16 ownerControlledFuses,uint256 price)"
-                        ),
-                        keccak256(bytes(request.name)),
-                        request.owner,
-                        request.duration,
-                        request.validUntil,
-                        request.resolver,
-                        request.reverseRecord,
-                        request.ownerControlledFuses,
-                        request.price
-                    )
+    function _hashRegisterRequest(RegisterRequest calldata request) internal view returns (bytes32) {
+        return _hashTypedDataV4(
+            keccak256(
+                abi.encode(
+                    keccak256(
+                        "RegisterRequest(string name,address owner,uint256 duration,uint256 validUntil,address resolver,bool reverseRecord,uint16 ownerControlledFuses,uint256 price)"
+                    ),
+                    keccak256(bytes(request.name)),
+                    request.owner,
+                    request.duration,
+                    request.validUntil,
+                    request.resolver,
+                    request.reverseRecord,
+                    request.ownerControlledFuses,
+                    request.price
                 )
-            );
+            )
+        );
     }
 
-    function _verifyRenewRequest(
-        RenewRequest calldata request
-    ) internal view returns (address) {
+    function _verifyRenewRequest(RenewRequest calldata request) internal view returns (address) {
         bytes32 digest = _hashRenewRequest(request);
         return ECDSA.recover(digest, request.signature);
     }
 
-    function _hashRenewRequest(
-        RenewRequest calldata request
-    ) internal view returns (bytes32) {
-        return
-            _hashTypedDataV4(
-                keccak256(
-                    abi.encode(
-                        keccak256(
-                            "RenewRequest(string name,uint256 duration,uint256 validUntil,uint256 price)"
-                        ),
-                        keccak256(bytes(request.name)),
-                        request.duration,
-                        request.validUntil,
-                        request.price
-                    )
+    function _hashRenewRequest(RenewRequest calldata request) internal view returns (bytes32) {
+        return _hashTypedDataV4(
+            keccak256(
+                abi.encode(
+                    keccak256("RenewRequest(string name,uint256 duration,uint256 validUntil,uint256 price)"),
+                    keccak256(bytes(request.name)),
+                    request.duration,
+                    request.validUntil,
+                    request.price
                 )
-            );
+            )
+        );
     }
 
     function getChainID() external view returns (uint256) {
@@ -287,10 +224,7 @@ contract Registrar is
         return id;
     }
 
-    function _checkNameAndDuration(
-        string memory name,
-        uint256 duration
-    ) internal view {
+    function _checkNameAndDuration(string memory name, uint256 duration) internal view {
         if (!available(name)) {
             revert NameNotAvailable(name);
         }

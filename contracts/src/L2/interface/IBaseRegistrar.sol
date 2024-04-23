@@ -4,16 +4,8 @@ pragma solidity 0.8.23;
 interface IBaseRegistrar {
     event ControllerAdded(address indexed controller);
     event ControllerRemoved(address indexed controller);
-    event NameMigrated(
-        uint256 indexed id,
-        address indexed owner,
-        uint256 expires
-    );
-    event NameRegistered(
-        uint256 indexed id,
-        address indexed owner,
-        uint256 expires
-    );
+    event NameMigrated(uint256 indexed id, address indexed owner, uint256 expires);
+    event NameRegistered(uint256 indexed id, address indexed owner, uint256 expires);
     event NameRenewed(uint256 indexed id, uint256 expires);
 
     // Authorises a controller, who can register and renew domains.
@@ -34,11 +26,7 @@ interface IBaseRegistrar {
     /**
      * @dev Register a name.
      */
-    function register(
-        uint256 id,
-        address owner,
-        uint256 duration
-    ) external returns (uint256);
+    function register(uint256 id, address owner, uint256 duration) external returns (uint256);
 
     function renew(uint256 id, uint256 duration) external returns (uint256);
 

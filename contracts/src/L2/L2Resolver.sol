@@ -6,13 +6,7 @@ import {ENS} from "ens-contracts/registry/ENS.sol";
 import {INameWrapper} from "ens-contracts/wrapper/INameWrapper.sol";
 
 contract L2Resolver is PublicResolver {
-
-    constructor(
-        ENS _ens,
-        INameWrapper _wrapperAddress,
-        address _trustedETHController,
-        address _trustedReverseRegistrar
-    ) PublicResolver(_ens, _wrapperAddress, _trustedETHController, _trustedReverseRegistrar) {
-
-    }
+    constructor(ENS _ens, INameWrapper _wrapperAddress, address _trustedETHController, address _trustedReverseRegistrar)
+        PublicResolver(_ens, _wrapperAddress, _trustedETHController, _trustedReverseRegistrar)
+    {}
 }
