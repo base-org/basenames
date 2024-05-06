@@ -10,13 +10,13 @@ import {ENS} from "ens-contracts/registry/ENS.sol";
 import {ReverseClaimer} from "ens-contracts/reverseRegistrar/ReverseClaimer.sol";
 
 import {Ownable} from "solady/auth/Ownable.sol";
+import {ECDSA} from "solady/utils/ECDSA.sol";
 import {IERC165} from "lib/openzeppelin-contracts/contracts/utils/introspection/IERC165.sol";
 import {Address} from "lib/openzeppelin-contracts/contracts/utils/Address.sol";
 import {INameWrapper} from "ens-contracts/wrapper/INameWrapper.sol";
 
-import "lib/openzeppelin-contracts/contracts/access/AccessControl.sol";
-import "lib/openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol";
-import "lib/openzeppelin-contracts/contracts/utils/cryptography/EIP712.sol";
+import {AccessControl} from "lib/openzeppelin-contracts/contracts/access/AccessControl.sol";
+import {EIP712} from "lib/openzeppelin-contracts/contracts/utils/cryptography/EIP712.sol";
 
 error NameNotAvailable(string name);
 error DurationTooShort(uint256 duration);
@@ -32,7 +32,7 @@ contract Registrar is Ownable, IERC165, ReverseClaimer, AccessControl, EIP712 {
     using Address for address;
 
     uint256 public constant MIN_REGISTRATION_DURATION = 28 days;
-    bytes32 private constant ETH_NODE = 0x7e7650bbd57a49caffbb4c83ce43045d2653261b7953b80d47500d9eb37b6134;
+    bytes32 private constant ETH_NODE = 0xff1e3c0eb00ec714e34b6114125fbde1dea2f24a72fbf672e7b7fd5690328e10; // base.eth
     uint64 private constant MAX_EXPIRY = type(uint64).max;
     BaseRegistrar immutable base;
     ReverseRegistrar public immutable reverseRegistrar;
@@ -42,7 +42,7 @@ contract Registrar is Ownable, IERC165, ReverseClaimer, AccessControl, EIP712 {
 
     bytes32 public constant REGISTER_ROLE = keccak256("REGISTER_ROLE");
     bytes32 public constant RENEW_ROLE = keccak256("RENEW_ROLE");
-    string private constant SIGNING_DOMAIN = "BaseNameService";
+    string private constant SIGNING_DOMAIN = "BasedGateway";
     string private constant SIGNATURE_VERSION = "1";
 
     event NameRegistered(
