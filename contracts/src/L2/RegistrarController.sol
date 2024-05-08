@@ -27,7 +27,7 @@ error Unauthorised(bytes32 node);
 /**
  * @dev A registrar controller for registering and renewing names at fixed cost.
  */
-contract Registrar is Ownable, IERC165, ReverseClaimer, AccessControl, EIP712 {
+contract RegistrarController is Ownable, IERC165, ReverseClaimer, AccessControl, EIP712 {
     using StringUtils for *;
     using Address for address;
 
