@@ -6,7 +6,6 @@ import {Registry} from "src/L2/Registry.sol";
 
 contract DeployTestnetRegistry is Script {
     function run() external {
-
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
