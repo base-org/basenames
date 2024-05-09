@@ -3,21 +3,15 @@ pragma solidity 0.8.23;
 
 import {ENS} from "ens-contracts/registry/ENS.sol";
 import {IReverseRegistrar} from "ens-contracts/reverseRegistrar/IReverseRegistrar.sol";
+import {NameResolver} from "ens-contracts/resolvers/profiles/NameResolver.sol";
 import {Ownable} from "solady/auth/Ownable.sol";
 
-abstract contract NameResolver {
-    function setName(bytes32 node, string memory name) public virtual;
-}
-
-bytes32 constant lookup = 0x3031323334353637383961626364656600000000000000000000000000000000;
-
-bytes32 constant ADDR_REVERSE_NODE = 0x91d1777781884d03a6757a803996e38de2a42967fb37eeaca72729271025a9e2;
-
-// namehash('addr.reverse')
+import {ADDR_REVERSE_NODE} from "src/util/Constants.sol";
 
 contract ReverseRegistrar is Ownable, IReverseRegistrar {
     ENS public immutable ens;
     NameResolver public defaultResolver;
+    bytes32 constant SHA3_LOOKUP = 0x3031323334353637383961626364656600000000000000000000000000000000;
 
     event ReverseClaimed(address indexed addr, bytes32 indexed node);
     event DefaultResolverChanged(NameResolver indexed resolver);
@@ -25,6 +19,7 @@ contract ReverseRegistrar is Ownable, IReverseRegistrar {
     /**
      * @dev Constructor
      * @param ensAddr The address of the ENS registry.
+     * @param _owner The owner of the contract
      */
     constructor(ENS ensAddr, address _owner) {
         _initializeOwner(_owner);
@@ -144,10 +139,10 @@ contract ReverseRegistrar is Ownable, IReverseRegistrar {
         assembly {
             for { let i := 40 } gt(i, 0) {} {
                 i := sub(i, 1)
-                mstore8(i, byte(and(addr, 0xf), lookup))
+                mstore8(i, byte(and(addr, 0xf), SHA3_LOOKUP))
                 addr := div(addr, 0x10)
                 i := sub(i, 1)
-                mstore8(i, byte(and(addr, 0xf), lookup))
+                mstore8(i, byte(and(addr, 0xf), SHA3_LOOKUP))
                 addr := div(addr, 0x10)
             }
 
