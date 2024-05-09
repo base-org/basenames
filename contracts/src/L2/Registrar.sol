@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.23;
+pragma solidity ^0.8.23;
 
 import {BaseRegistrar} from "./BaseRegistrar.sol";
 import {ReverseRegistrar} from "./ReverseRegistrar.sol";
