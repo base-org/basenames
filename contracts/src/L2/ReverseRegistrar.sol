@@ -9,13 +9,42 @@ import {Ownable} from "solady/auth/Ownable.sol";
 import {ADDR_REVERSE_NODE} from "src/util/Constants.sol";
 
 contract ReverseRegistrar is Ownable, IReverseRegistrar {
+    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+    /*                          STORAGE                           */
+    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
     ENS public immutable ens;
     NameResolver public defaultResolver;
+
+    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+    /*                          CONSTANTS                         */
+    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
     bytes32 constant SHA3_LOOKUP = 0x3031323334353637383961626364656600000000000000000000000000000000;
 
+    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+    /*                          ERRORS                            */
+    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+    error NotAuthorized(address addr, address sender);
+    error NoZeroAddress();
+
+    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+    /*                          EVENTS                            */
+    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
     event ReverseClaimed(address indexed addr, bytes32 indexed node);
     event DefaultResolverChanged(NameResolver indexed resolver);
 
+    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+    /*                          MODIFIERS                         */
+    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+    modifier authorized(address addr) {
+        if (addr != msg.sender || !ens.isApprovedForAll(addr, msg.sender) || !ownsContract(addr)) {
+            revert NotAuthorized(addr, msg.sender);
+        }
+        _;
+    }
+
+    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+    /*                        IMPLEMENTATION                      */
+    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
     /**
      * @dev Constructor
      * @param ensAddr The address of the ENS registry.
@@ -32,16 +61,8 @@ contract ReverseRegistrar is Ownable, IReverseRegistrar {
         }
     }
 
-    modifier authorised(address addr) {
-        require(
-            addr == msg.sender || ens.isApprovedForAll(addr, msg.sender) || ownsContract(addr),
-            "ReverseRegistrar: Caller is not a controller or authorised by address or the address itself"
-        );
-        _;
-    }
-
     function setDefaultResolver(address resolver) public override onlyOwner {
-        require(address(resolver) != address(0), "ReverseRegistrar: Resolver address must not be 0");
+        if (address(resolver) == address(0)) revert NoZeroAddress();
         defaultResolver = NameResolver(resolver);
         emit DefaultResolverChanged(NameResolver(resolver));
     }
@@ -67,7 +88,7 @@ contract ReverseRegistrar is Ownable, IReverseRegistrar {
     function claimForAddr(address addr, address owner, address resolver)
         public
         override
-        authorised(addr)
+        authorized(addr)
         returns (bytes32)
     {
         bytes32 labelHash = sha3HexAddress(addr);
@@ -128,6 +149,14 @@ contract ReverseRegistrar is Ownable, IReverseRegistrar {
         return keccak256(abi.encodePacked(ADDR_REVERSE_NODE, sha3HexAddress(addr)));
     }
 
+    function ownsContract(address addr) internal view returns (bool) {
+        try Ownable(addr).owner() returns (address owner) {
+            return owner == msg.sender;
+        } catch {
+            return false;
+        }
+    }
+
     /**
      * @dev An optimised function to compute the sha3 of the lower-case
      *      hexadecimal representation of an Ethereum address.
@@ -147,14 +176,6 @@ contract ReverseRegistrar is Ownable, IReverseRegistrar {
             }
 
             ret := keccak256(0, 40)
-        }
-    }
-
-    function ownsContract(address addr) internal view returns (bool) {
-        try Ownable(addr).owner() returns (address owner) {
-            return owner == msg.sender;
-        } catch {
-            return false;
         }
     }
 }

@@ -19,7 +19,7 @@ contract BaseRegistrar is ERC721, Ownable {
     mapping(address => bool) public controllers;
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
-    /*                          CONSTANTS                          */
+    /*                          CONSTANTS                         */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
     uint256 public constant GRACE_PERIOD = 90 days;
     bytes4 private constant INTERFACE_META_ID = bytes4(keccak256("supportsInterface(bytes4)"));
@@ -55,40 +55,23 @@ contract BaseRegistrar is ERC721, Ownable {
     /*                          MODIFIERS                         */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
     modifier live() {
-        if(ens.owner(BASE_ETH_NODE) != address(this)) revert RegistrarNotLive();
+        if (ens.owner(BASE_ETH_NODE) != address(this)) revert RegistrarNotLive();
         _;
     }
 
     modifier onlyController() {
-        if(!controllers[msg.sender]) revert OnlyController();
+        if (!controllers[msg.sender]) revert OnlyController();
         _;
     }
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
-    /*                          IMPLEMENTATION                    */
+    /*                        IMPLEMENTATION                      */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
     constructor(ENS _ens, address _owner) {
         _initializeOwner(_owner);
         ens = _ens;
     }
 
-    /**
-     * @dev Gets the owner of the specified token ID. Names become unowned
-     *      when their registration expires.
-     * @param tokenId uint256 ID of the token to query the owner of
-     * @return address currently marked as the owner of the given token ID
-     */
-    function ownerOf(uint256 tokenId) public view override(ERC721) returns (address) {
-        if(expiries[tokenId] <= block.timestamp) revert Expired(tokenId);
-        return super.ownerOf(tokenId);
-    }
-
-    // Returns true iff the specified name is available for registration.
-    function available(uint256 id) public view returns (bool) {
-        // Not available if it's registered here or in its grace period.
-        return expiries[id] + GRACE_PERIOD < block.timestamp;
-    }
-    
     // Authorises a controller, who can register and renew domains.
     function addController(address controller) external onlyOwner {
         controllers[controller] = true;
@@ -131,13 +114,46 @@ contract BaseRegistrar is ERC721, Ownable {
         return _register(id, owner, duration, false);
     }
 
+    /**
+     * @dev Gets the owner of the specified token ID. Names become unowned
+     *      when their registration expires.
+     * @param tokenId uint256 ID of the token to query the owner of
+     * @return address currently marked as the owner of the given token ID
+     */
+    function ownerOf(uint256 tokenId) public view override(ERC721) returns (address) {
+        if (expiries[tokenId] <= block.timestamp) revert Expired(tokenId);
+        return super.ownerOf(tokenId);
+    }
+
+    // Returns true iff the specified name is available for registration.
+    function available(uint256 id) public view returns (bool) {
+        // Not available if it's registered here or in its grace period.
+        return expiries[id] + GRACE_PERIOD < block.timestamp;
+    }
+
+    function renew(uint256 id, uint256 duration) external live onlyController returns (uint256) {
+        if (expiries[id] + GRACE_PERIOD < block.timestamp) revert NotRegisteredOrInGrace(id); // Name must be registered here or in grace period
+
+        expiries[id] += duration;
+        emit NameRenewed(id, expiries[id]);
+        return expiries[id];
+    }
+
+    /**
+     * @dev Reclaim ownership of a name in ENS, if you own it in the registrar.
+     */
+    function reclaim(uint256 id, address owner) external live {
+        if (!_isApprovedOrOwner(msg.sender, id)) revert NotApprovedOwner(id, owner);
+        ens.setSubnodeOwner(BASE_ETH_NODE, bytes32(id), owner);
+    }
+
     function _register(uint256 id, address owner, uint256 duration, bool updateRegistry)
         internal
         live
         onlyController
         returns (uint256)
     {
-        if(!available(id)) revert NotAvailable(id);
+        if (!available(id)) revert NotAvailable(id);
 
         expiries[id] = block.timestamp + duration;
         if (_exists(id)) {
@@ -152,22 +168,6 @@ contract BaseRegistrar is ERC721, Ownable {
         emit NameRegistered(id, owner, block.timestamp + duration);
 
         return block.timestamp + duration;
-    }
-
-    function renew(uint256 id, uint256 duration) external live onlyController returns (uint256) {
-        if(expiries[id] + GRACE_PERIOD < block.timestamp) revert NotRegisteredOrInGrace(id); // Name must be registered here or in grace period
-
-        expiries[id] += duration;
-        emit NameRenewed(id, expiries[id]);
-        return expiries[id];
-    }
-
-    /**
-     * @dev Reclaim ownership of a name in ENS, if you own it in the registrar.
-     */
-    function reclaim(uint256 id, address owner) external live {
-        if(!_isApprovedOrOwner(msg.sender, id)) revert NotApprovedOwner(id, owner);
-        ens.setSubnodeOwner(BASE_ETH_NODE, bytes32(id), owner);
     }
 
     /**
