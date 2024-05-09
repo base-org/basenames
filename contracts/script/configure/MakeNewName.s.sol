@@ -16,15 +16,15 @@ contract MakeNewName is Script {
 
 
         // NAME AND RECORD DEFS /////////////////////////////
-        string memory NAME = "test";
+        string memory NAME = "david";
         address NAME_OWNER = deployerAddress;
-        address RESOLVED_ADDR = deployerAddress;
+        address RESOLVED_ADDR = 0xB18e4C959bccc8EF86D78DC297fb5efA99550d85;
         
         ///////////////////////////////////////////////////// 
 
 
         address ensAddress = 0xBD69dd64b94fe7435157F4851e4b4Aa3A0988c90;    // deployer-owned registry
-        address resolverAddr = 0xd9d7B7C7f89985e9abAfCa5Bc1211BA5d7C49d33;      // l2 resolver 
+        address resolverAddr = 0xd9d7B7C7f89985e9abAfCa5Bc1211BA5d7C49d33;  // l2 resolver 
         Registry registry = Registry(ensAddress);
 
 
