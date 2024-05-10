@@ -16,6 +16,8 @@ import {BaseRegistrar} from "./BaseRegistrar.sol";
 import {IDiscountValidator} from "./interface/IDiscountValidator.sol";
 import {ReverseRegistrar} from "./ReverseRegistrar.sol";
 import {L2Resolver} from "./L2Resolver.sol";
+import {BASE_ETH_NODE} from "src/util/Constants.sol";
+
 
 /**
  * @dev A registrar controller for registering and renewing names at fixed cost.
@@ -24,15 +26,20 @@ contract RegistrarController is Ownable, ReverseClaimer {
     using StringUtils for *;
     using Address for address;
 
-    struct DiscountDetails {
-        bool active;
+    struct RegisterRequest{
+        string name;
+        address owner;
         uint256 duration;
-        uint256 discount;
-        address discountValidator;
+        address resolver;
+        bytes[] data;
+        bool reverseRecord;
     }
 
-    function setDiscountDetails(bytes32 key, DiscountDetails memory details) external onlyOwner {
-        discounts[key] = details;
+    struct DiscountDetails {
+        bool active;
+        address discountValidator;
+        uint256 duration;
+        uint256 discount;
     }
 
     BaseRegistrar immutable base;
@@ -42,7 +49,7 @@ contract RegistrarController is Ownable, ReverseClaimer {
     mapping(bytes32 => DiscountDetails) public discounts;
 
     uint256 public constant MIN_REGISTRATION_DURATION = 28 days;
-    bytes32 private constant ETH_NODE = 0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae;
+    uint256 private constant MIN_NAME_LENGTH = 3;
     uint64 private constant MAX_EXPIRY = type(uint64).max;
 
     error NameNotAvailable(string name);
@@ -51,22 +58,25 @@ contract RegistrarController is Ownable, ReverseClaimer {
     error InactiveDiscount(bytes32 key);
     error InsufficientValue();
     error InvalidDiscount(bytes32 key, bytes data);
+    error InvalidDiscountAmount(bytes32 key, uint256 amount);
+    error InvalidValidator(bytes32 key, address validator);
+    error TransferFailed();
     error Unauthorised(bytes32 node);
 
     event NameRegistered(
-        string name, bytes32 indexed label, address indexed owner, uint256 baseCost, uint256 premium, uint256 expires
+        string name, bytes32 indexed label, address indexed owner, uint256 price, uint256 expires
     );
     event NameRenewed(string name, bytes32 indexed label, uint256 cost, uint256 expires);
 
-    modifier validRegistration(string calldata name, uint256 duration, address resolver, bytes[] calldata data) {
-        if (data.length > 0 && resolver == address(0)) {
+    modifier validRegistration(RegisterRequest calldata request) {
+        if (request.data.length > 0 && request.resolver == address(0)) {
             revert ResolverRequiredWhenDataSupplied();
         }
-        if (!available(name)) {
-            revert NameNotAvailable(name);
+        if (!available(request.name)) {
+            revert NameNotAvailable(request.name);
         }
-        if (duration < MIN_REGISTRATION_DURATION) {
-            revert DurationTooShort(duration);
+        if (request.duration < MIN_REGISTRATION_DURATION) {
+            revert DurationTooShort(request.duration);
         }
         _;
     }
@@ -84,37 +94,8 @@ contract RegistrarController is Ownable, ReverseClaimer {
         nameWrapper = _nameWrapper;
     }
 
-    function rentPrice(string memory name, uint256 duration) public view returns (IPriceOracle.Price memory price) {
-        bytes32 label = keccak256(bytes(name));
-        price = prices.price(name, base.nameExpires(uint256(label)), duration);
-    }
-
-    function discountRentPrice(string memory name, uint256 duration, bytes32 discountKey)
-        public
-        view
-        returns (IPriceOracle.Price memory price)
-    {
-        DiscountDetails memory details = discounts[discountKey];
-        if(details.duration > 0) {
-            price = rentPrice(name, details.duration);
-        } else {
-            price = rentPrice(name, duration);
-        }
-
-        // Prioritize discounting the base price
-        if(price.base >= details.discount) {
-            price.base -= details.discount;
-        } else if(price.base + price.premium <= details.discount) {
-            price.base = 0;
-            price.premium = 0;
-        } else { // base < discount < base+premium 
-            price.premium -= (details.discount - price.base);
-            price.base = 0;
-        }
-    }
-
     function valid(string memory name) public pure returns (bool) {
-        return name.strlen() >= 3;
+        return name.strlen() >= MIN_NAME_LENGTH;
     }
 
     function available(string memory name) public view returns (bool) {
@@ -122,12 +103,47 @@ contract RegistrarController is Ownable, ReverseClaimer {
         return valid(name) && base.available(uint256(label));
     }
 
+    function rentPrice(string memory name, uint256 duration) public view returns (IPriceOracle.Price memory price) {
+        bytes32 label = keccak256(bytes(name));
+        price = prices.price(name, base.nameExpires(uint256(label)), duration);
+    }
+
+    function registerPrice(string memory name, uint256 duration) public view returns (uint256) {
+        IPriceOracle.Price memory price = rentPrice(name, duration);
+        return price.base + price.premium;
+    }
+
+    function setDiscountDetails(bytes32 key, DiscountDetails memory details) external onlyOwner {
+        if(details.discount == 0) revert InvalidDiscountAmount(key, details.discount);
+        if(details.discountValidator == address(0)) revert InvalidValidator(key, details.discountValidator);
+        discounts[key] = details;
+    }
+
+    function discountRentPrice(string memory name, uint256 duration, bytes32 discountKey)
+        public
+        view
+        returns (uint256 price)
+    {
+        DiscountDetails memory details = discounts[discountKey];
+        if(details.duration > 0) {
+            price = registerPrice(name, details.duration);
+        } else {
+            price = registerPrice(name, duration);
+        }
+
+        if(price >= details.discount) {
+            price -= details.discount;
+        } else {
+            return 0;
+        }
+    }
+
     function _validateAndApplyDiscount(
         bytes32 discountKey,
         bytes calldata validationData,
         string calldata name,
         uint256 duration
-    ) internal returns (IPriceOracle.Price memory price) {
+    ) internal returns (uint256 price) {
         DiscountDetails memory details = discounts[discountKey];
 
         if (!details.active) revert InactiveDiscount(discountKey);
@@ -141,66 +157,47 @@ contract RegistrarController is Ownable, ReverseClaimer {
     }
 
     function discountedRegister(
-        string calldata name,
-        address owner,
-        uint256 duration,
-        address resolver,
-        bytes[] calldata data,
-        bool reverseRecord,
+        RegisterRequest calldata request,
+        uint16 ownerControlledFuses,
         bytes32 discountKey,
         bytes calldata validationData
-    ) public payable validRegistration(name, duration, resolver, data) {
-        IPriceOracle.Price memory price = _validateAndApplyDiscount(discountKey, validationData, name, duration);
-        if (msg.value < price.base + price.premium) {
-            revert InsufficientValue();
-        }
-
-        _register(name, owner, duration, resolver, data, reverseRecord, price);
-
-        if (msg.value > (price.base + price.premium)) {
-            payable(msg.sender).transfer(msg.value - (price.base + price.premium));
-        }
-    }
-
-    function _register(
-        string calldata name,
-        address owner,
-        uint256 duration,
-        address resolver,
-        bytes[] calldata data,
-        bool reverseRecord,
-        IPriceOracle.Price memory price
-    ) internal {
-        uint256 expires = nameWrapper.registerAndWrapETH2LD(name, owner, duration, resolver, uint16(0));
-
-        if (data.length > 0) {
-            _setRecords(resolver, keccak256(bytes(name)), data);
-        }
-
-        if (reverseRecord) {
-            _setReverseRecord(name, resolver, msg.sender);
-        }
-
-        emit NameRegistered(name, keccak256(bytes(name)), owner, price.base, price.premium, expires);
+    ) public payable validRegistration(request) {
+        uint256 price = _validateAndApplyDiscount(discountKey, validationData, request.name, request.duration);
+        _register(request, ownerControlledFuses, price);
     }
 
     function register(
-        string calldata name,
-        address owner,
-        uint256 duration,
-        address resolver,
-        bytes[] calldata data,
-        bool reverseRecord
-    ) public payable validRegistration(name, duration, resolver, data) {
-        IPriceOracle.Price memory price = rentPrice(name, duration);
-        if (msg.value < price.base + price.premium) {
+        RegisterRequest calldata request,
+        uint16 ownerControlledFuses
+    ) public payable validRegistration(request) {
+        uint256 price = registerPrice(request.name, request.duration);
+        _register(request, ownerControlledFuses, price);
+    }
+
+    function _register(
+        RegisterRequest calldata request,
+        uint16 ownerControlledFuses,
+        uint256 price
+    ) internal {
+        if (msg.value < price) {
             revert InsufficientValue();
         }
 
-        _register(name, owner, duration, resolver, data, reverseRecord, price);
+        uint256 expires = nameWrapper.registerAndWrapETH2LD(request.name, request.owner, request.duration, request.resolver, ownerControlledFuses);
 
-        if (msg.value > (price.base + price.premium)) {
-            payable(msg.sender).transfer(msg.value - (price.base + price.premium));
+        if (request.data.length > 0) {
+            _setRecords(request.resolver, keccak256(bytes(request.name)), request.data);
+        }
+
+        if (request.reverseRecord) {
+            _setReverseRecord(request.name, request.resolver, msg.sender);
+        }
+
+        emit NameRegistered(request.name, keccak256(bytes(request.name)), request.owner, price, expires);
+
+        if (msg.value > price) {
+            (bool sent, ) = payable(msg.sender).call{value: (msg.value - price)}("");
+            if(!sent) revert TransferFailed();
         }
     }
 
@@ -221,7 +218,8 @@ contract RegistrarController is Ownable, ReverseClaimer {
     }
 
     function withdraw() public {
-        payable(owner()).transfer(address(this).balance);
+        (bool sent, ) = payable(owner()).call{value: (address(this).balance)}("");
+        if(!sent) revert TransferFailed();
     }
 
     /**
@@ -235,13 +233,13 @@ contract RegistrarController is Ownable, ReverseClaimer {
     }
 
     function _setRecords(address resolverAddress, bytes32 label, bytes[] calldata data) internal {
-        // use hardcoded .eth namehash
-        bytes32 nodehash = keccak256(abi.encodePacked(ETH_NODE, label));
+        // use hardcoded base.eth namehash
+        bytes32 nodehash = keccak256(abi.encodePacked(BASE_ETH_NODE, label));
         L2Resolver resolver = L2Resolver(resolverAddress);
         resolver.multicallWithNodeCheck(nodehash, data);
     }
 
     function _setReverseRecord(string memory name, address resolver, address owner) internal {
-        reverseRegistrar.setNameForAddr(msg.sender, owner, resolver, string.concat(name, ".eth"));
+        reverseRegistrar.setNameForAddr(msg.sender, owner, resolver, string.concat(name, ".base.eth"));
     }
 }
