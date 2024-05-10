@@ -1,90 +1,78 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.23;
+pragma solidity ^0.8.23;
+
+import {Address} from "lib/openzeppelin-contracts/contracts/utils/Address.sol";
+import {ECDSA} from "solady/utils/ECDSA.sol";
+import {Ownable} from "solady/auth/Ownable.sol";
+import {ERC20} from "solady/tokens/ERC20.sol";
+
+import {ENS} from "ens-contracts/registry/ENS.sol";
+import {INameWrapper} from "ens-contracts/wrapper/INameWrapper.sol";
+import {IPriceOracle} from "ens-contracts/ethregistrar/IPriceOracle.sol";
+import {ReverseClaimer} from "ens-contracts/reverseRegistrar/ReverseClaimer.sol";
+import {StringUtils} from "ens-contracts/ethregistrar/StringUtils.sol";
 
 import {BaseRegistrar} from "./BaseRegistrar.sol";
 import {ReverseRegistrar} from "./ReverseRegistrar.sol";
-
-import {StringUtils} from "ens-contracts/ethregistrar/StringUtils.sol";
-import {Resolver} from "ens-contracts/resolvers/Resolver.sol";
-import {ENS} from "ens-contracts/registry/ENS.sol";
-import {ReverseClaimer} from "ens-contracts/reverseRegistrar/ReverseClaimer.sol";
-
-import {Ownable} from "solady/auth/Ownable.sol";
-import {ECDSA} from "solady/utils/ECDSA.sol";
-import {IERC165} from "lib/openzeppelin-contracts/contracts/utils/introspection/IERC165.sol";
-import {Address} from "lib/openzeppelin-contracts/contracts/utils/Address.sol";
-import {INameWrapper} from "ens-contracts/wrapper/INameWrapper.sol";
-
-import {AccessControl} from "lib/openzeppelin-contracts/contracts/access/AccessControl.sol";
-import {EIP712} from "lib/openzeppelin-contracts/contracts/utils/cryptography/EIP712.sol";
-
-error NameNotAvailable(string name);
-error DurationTooShort(uint256 duration);
-error ResolverRequiredWhenDataSupplied();
-error InsufficientValue();
-error Unauthorised(bytes32 node);
+import {L2Resolver} from "./L2Resolver.sol";
 
 /**
  * @dev A registrar controller for registering and renewing names at fixed cost.
  */
-contract RegistrarController is Ownable, IERC165, ReverseClaimer, AccessControl, EIP712 {
+contract RegistrarController is Ownable, ReverseClaimer {
     using StringUtils for *;
     using Address for address;
 
-    uint256 public constant MIN_REGISTRATION_DURATION = 28 days;
-    bytes32 private constant ETH_NODE = 0xff1e3c0eb00ec714e34b6114125fbde1dea2f24a72fbf672e7b7fd5690328e10; // base.eth
-    uint64 private constant MAX_EXPIRY = type(uint64).max;
     BaseRegistrar immutable base;
+    IPriceOracle public immutable prices;
     ReverseRegistrar public immutable reverseRegistrar;
     INameWrapper public immutable nameWrapper;
-
     mapping(bytes32 => uint256) public commitments;
 
-    bytes32 public constant REGISTER_ROLE = keccak256("REGISTER_ROLE");
-    bytes32 public constant RENEW_ROLE = keccak256("RENEW_ROLE");
-    string private constant SIGNING_DOMAIN = "BasedGateway";
-    string private constant SIGNATURE_VERSION = "1";
+    uint256 public constant MIN_REGISTRATION_DURATION = 28 days;
+    bytes32 private constant ETH_NODE = 0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae;
+    uint64 private constant MAX_EXPIRY = type(uint64).max;
+
+    error NameNotAvailable(string name);
+    error DurationTooShort(uint256 duration);
+    error ResolverRequiredWhenDataSupplied();
+    error InsufficientValue();
+    error Unauthorised(bytes32 node);
 
     event NameRegistered(
         string name, bytes32 indexed label, address indexed owner, uint256 baseCost, uint256 premium, uint256 expires
     );
     event NameRenewed(string name, bytes32 indexed label, uint256 cost, uint256 expires);
 
+    modifier validRegistration(string calldata name, uint256 duration, address resolver, bytes[] calldata data) {
+        if (data.length > 0 && resolver == address(0)) {
+            revert ResolverRequiredWhenDataSupplied();
+        }
+        if (!available(name)) {
+            revert NameNotAvailable(name);
+        }
+        if (duration < MIN_REGISTRATION_DURATION) {
+            revert DurationTooShort(duration);
+        }
+        _;
+    }
+
     constructor(
         BaseRegistrar _base,
+        IPriceOracle _prices,
         ReverseRegistrar _reverseRegistrar,
         INameWrapper _nameWrapper,
-        ENS _ens,
-        address _owner
-    ) ReverseClaimer(_ens, msg.sender) EIP712(SIGNING_DOMAIN, SIGNATURE_VERSION) {
-        _initializeOwner(_owner);
+        ENS _ens
+    ) ReverseClaimer(_ens, msg.sender) {
         base = _base;
+        prices = _prices;
         reverseRegistrar = _reverseRegistrar;
         nameWrapper = _nameWrapper;
-
-        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _grantRole(REGISTER_ROLE, msg.sender);
-        _grantRole(RENEW_ROLE, msg.sender);
     }
 
-    struct RegisterRequest {
-        string name;
-        address owner;
-        uint256 duration;
-        uint256 validUntil;
-        address resolver;
-        bool reverseRecord;
-        uint16 ownerControlledFuses;
-        uint256 price;
-        bytes signature;
-    }
-
-    struct RenewRequest {
-        string name;
-        uint256 duration;
-        uint256 validUntil;
-        uint256 price;
-        bytes signature;
+    function rentPrice(string memory name, uint256 duration) public view returns (IPriceOracle.Price memory price) {
+        bytes32 label = keccak256(bytes(name));
+        price = prices.price(name, base.nameExpires(uint256(label)), duration);
     }
 
     function valid(string memory name) public pure returns (bool) {
@@ -96,141 +84,75 @@ contract RegistrarController is Ownable, IERC165, ReverseClaimer, AccessControl,
         return valid(name) && base.available(uint256(label));
     }
 
-    function registerWithSignature(RegisterRequest calldata request, bytes[] calldata data) public payable {
-        address signer = _verifyRegisterRequest(request);
-
-        require(hasRole(REGISTER_ROLE, signer), "Signature invalid or unauthorized");
-
-        require(request.validUntil > block.timestamp, "Request expired");
-
-        if (msg.value < request.price) {
+    function register(
+        string calldata name,
+        address owner,
+        uint256 duration,
+        address resolver,
+        bytes[] calldata data,
+        bool reverseRecord,
+        uint16 ownerControlledFuses
+    ) public payable validRegistration(name, duration, resolver, data) {
+        IPriceOracle.Price memory price = rentPrice(name, duration);
+        if (msg.value < price.base + price.premium) {
             revert InsufficientValue();
         }
 
-        _checkNameAndDuration(request.name, request.duration);
-
-        uint256 expires = nameWrapper.registerAndWrapETH2LD(
-            request.name, request.owner, request.duration, request.resolver, request.ownerControlledFuses
-        );
+        uint256 expires = nameWrapper.registerAndWrapETH2LD(name, owner, duration, resolver, ownerControlledFuses);
 
         if (data.length > 0) {
-            _setRecords(request.resolver, keccak256(bytes(request.name)), data);
+            _setRecords(resolver, keccak256(bytes(name)), data);
         }
 
-        if (request.reverseRecord) {
-            _setReverseRecord(request.name, request.resolver, msg.sender);
+        if (reverseRecord) {
+            _setReverseRecord(name, resolver, msg.sender);
         }
 
-        emit NameRegistered(
-            request.name, keccak256(bytes(request.name)), request.owner, request.price, request.price, expires
-        );
+        emit NameRegistered(name, keccak256(bytes(name)), owner, price.base, price.premium, expires);
+
+        if (msg.value > (price.base + price.premium)) {
+            payable(msg.sender).transfer(msg.value - (price.base + price.premium));
+        }
     }
 
-    function renewWithSignature(RenewRequest calldata request) external payable {
-        address signer = _verifyRenewRequest(request);
-
-        require(hasRole(RENEW_ROLE, signer), "Signature invalid or unauthorized");
-
-        require(request.validUntil > block.timestamp, "Request expired");
-
-        if (msg.value < request.price) {
+    function renew(string calldata name, uint256 duration) external payable {
+        bytes32 labelhash = keccak256(bytes(name));
+        uint256 tokenId = uint256(labelhash);
+        IPriceOracle.Price memory price = rentPrice(name, duration);
+        if (msg.value < price.base) {
             revert InsufficientValue();
         }
+        uint256 expires = nameWrapper.renew(tokenId, duration);
 
-        bytes32 labelhash = keccak256(bytes(request.name));
-        uint256 tokenId = uint256(labelhash);
+        if (msg.value > price.base) {
+            payable(msg.sender).transfer(msg.value - price.base);
+        }
 
-        uint256 expires = nameWrapper.renew(tokenId, request.duration);
-
-        emit NameRenewed(request.name, labelhash, request.price, expires);
+        emit NameRenewed(name, labelhash, msg.value, expires);
     }
 
     function withdraw() public {
         payable(owner()).transfer(address(this).balance);
     }
 
-    function supportsInterface(bytes4 interfaceID)
-        public
-        view
-        virtual
-        override(IERC165, AccessControl)
-        returns (bool)
-    {
-        return interfaceID == type(IERC165).interfaceId || interfaceID == type(AccessControl).interfaceId;
+    /**
+     * @notice Recover ERC20 tokens sent to the contract by mistake.
+     * @param _to The address to send the tokens to.
+     * @param _token The address of the ERC20 token to recover
+     * @param _amount The amount of tokens to recover.
+     */
+    function recoverFunds(address _token, address _to, uint256 _amount) external onlyOwner {
+        ERC20(_token).transfer(_to, _amount);
     }
 
-    /* Internal functions */
-
     function _setRecords(address resolverAddress, bytes32 label, bytes[] calldata data) internal {
-        // use hardcoded .base namehash
+        // use hardcoded .eth namehash
         bytes32 nodehash = keccak256(abi.encodePacked(ETH_NODE, label));
-        Resolver resolver = Resolver(resolverAddress);
+        L2Resolver resolver = L2Resolver(resolverAddress);
         resolver.multicallWithNodeCheck(nodehash, data);
     }
 
     function _setReverseRecord(string memory name, address resolver, address owner) internal {
-        reverseRegistrar.setNameForAddr(msg.sender, owner, resolver, string.concat(name, ".base"));
-    }
-
-    function _verifyRegisterRequest(RegisterRequest calldata request) internal view returns (address) {
-        bytes32 digest = _hashRegisterRequest(request);
-        return ECDSA.recover(digest, request.signature);
-    }
-
-    function _hashRegisterRequest(RegisterRequest calldata request) internal view returns (bytes32) {
-        return _hashTypedDataV4(
-            keccak256(
-                abi.encode(
-                    keccak256(
-                        "RegisterRequest(string name,address owner,uint256 duration,uint256 validUntil,address resolver,bool reverseRecord,uint16 ownerControlledFuses,uint256 price)"
-                    ),
-                    keccak256(bytes(request.name)),
-                    request.owner,
-                    request.duration,
-                    request.validUntil,
-                    request.resolver,
-                    request.reverseRecord,
-                    request.ownerControlledFuses,
-                    request.price
-                )
-            )
-        );
-    }
-
-    function _verifyRenewRequest(RenewRequest calldata request) internal view returns (address) {
-        bytes32 digest = _hashRenewRequest(request);
-        return ECDSA.recover(digest, request.signature);
-    }
-
-    function _hashRenewRequest(RenewRequest calldata request) internal view returns (bytes32) {
-        return _hashTypedDataV4(
-            keccak256(
-                abi.encode(
-                    keccak256("RenewRequest(string name,uint256 duration,uint256 validUntil,uint256 price)"),
-                    keccak256(bytes(request.name)),
-                    request.duration,
-                    request.validUntil,
-                    request.price
-                )
-            )
-        );
-    }
-
-    function getChainID() external view returns (uint256) {
-        uint256 id;
-        assembly {
-            id := chainid()
-        }
-        return id;
-    }
-
-    function _checkNameAndDuration(string memory name, uint256 duration) internal view {
-        if (!available(name)) {
-            revert NameNotAvailable(name);
-        }
-
-        if (duration < MIN_REGISTRATION_DURATION) {
-            revert DurationTooShort(duration);
-        }
+        reverseRegistrar.setNameForAddr(msg.sender, owner, resolver, string.concat(name, ".eth"));
     }
 }
