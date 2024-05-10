@@ -13,6 +13,7 @@ import {ReverseClaimer} from "ens-contracts/reverseRegistrar/ReverseClaimer.sol"
 import {StringUtils} from "ens-contracts/ethregistrar/StringUtils.sol";
 
 import {BaseRegistrar} from "./BaseRegistrar.sol";
+import {IDiscountValidator} from "./interface/IDiscountValidator.sol";
 import {ReverseRegistrar} from "./ReverseRegistrar.sol";
 import {L2Resolver} from "./L2Resolver.sol";
 
@@ -23,11 +24,22 @@ contract RegistrarController is Ownable, ReverseClaimer {
     using StringUtils for *;
     using Address for address;
 
+    struct DiscountDetails {
+        bool active;
+        uint256 duration;
+        uint256 discount;
+        address discountValidator;
+    }
+
+    function setDiscountDetails(bytes32 key, DiscountDetails memory details) external onlyOwner {
+        discounts[key] = details;
+    }
+
     BaseRegistrar immutable base;
     IPriceOracle public immutable prices;
     ReverseRegistrar public immutable reverseRegistrar;
     INameWrapper public immutable nameWrapper;
-    mapping(bytes32 => uint256) public commitments;
+    mapping(bytes32 => DiscountDetails) public discounts;
 
     uint256 public constant MIN_REGISTRATION_DURATION = 28 days;
     bytes32 private constant ETH_NODE = 0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae;
@@ -36,7 +48,9 @@ contract RegistrarController is Ownable, ReverseClaimer {
     error NameNotAvailable(string name);
     error DurationTooShort(uint256 duration);
     error ResolverRequiredWhenDataSupplied();
+    error InactiveDiscount(bytes32 key);
     error InsufficientValue();
+    error InvalidDiscount(bytes32 key, bytes data);
     error Unauthorised(bytes32 node);
 
     event NameRegistered(
@@ -75,6 +89,30 @@ contract RegistrarController is Ownable, ReverseClaimer {
         price = prices.price(name, base.nameExpires(uint256(label)), duration);
     }
 
+    function discountRentPrice(string memory name, uint256 duration, bytes32 discountKey)
+        public
+        view
+        returns (IPriceOracle.Price memory price)
+    {
+        DiscountDetails memory details = discounts[discountKey];
+        if(details.duration > 0) {
+            price = rentPrice(name, details.duration);
+        } else {
+            price = rentPrice(name, duration);
+        }
+
+        // Prioritize discounting the base price
+        if(price.base >= details.discount) {
+            price.base -= details.discount;
+        } else if(price.base + price.premium <= details.discount) {
+            price.base = 0;
+            price.premium = 0;
+        } else { // base < discount < base+premium 
+            price.premium -= (details.discount - price.base);
+            price.base = 0;
+        }
+    }
+
     function valid(string memory name) public pure returns (bool) {
         return name.strlen() >= 3;
     }
@@ -84,21 +122,56 @@ contract RegistrarController is Ownable, ReverseClaimer {
         return valid(name) && base.available(uint256(label));
     }
 
-    function register(
+    function _validateAndApplyDiscount(
+        bytes32 discountKey,
+        bytes calldata validationData,
+        string calldata name,
+        uint256 duration
+    ) internal returns (IPriceOracle.Price memory price) {
+        DiscountDetails memory details = discounts[discountKey];
+
+        if (!details.active) revert InactiveDiscount(discountKey);
+
+        IDiscountValidator validator = IDiscountValidator(details.discountValidator);
+        if (!validator.isValidDiscountRegistration(msg.sender, validationData)) {
+            revert InvalidDiscount(discountKey, validationData);
+        }
+
+        price = discountRentPrice(name, duration, discountKey);
+    }
+
+    function discountedRegister(
         string calldata name,
         address owner,
         uint256 duration,
         address resolver,
         bytes[] calldata data,
         bool reverseRecord,
-        uint16 ownerControlledFuses
+        bytes32 discountKey,
+        bytes calldata validationData
     ) public payable validRegistration(name, duration, resolver, data) {
-        IPriceOracle.Price memory price = rentPrice(name, duration);
+        IPriceOracle.Price memory price = _validateAndApplyDiscount(discountKey, validationData, name, duration);
         if (msg.value < price.base + price.premium) {
             revert InsufficientValue();
         }
 
-        uint256 expires = nameWrapper.registerAndWrapETH2LD(name, owner, duration, resolver, ownerControlledFuses);
+        _register(name, owner, duration, resolver, data, reverseRecord, price);
+
+        if (msg.value > (price.base + price.premium)) {
+            payable(msg.sender).transfer(msg.value - (price.base + price.premium));
+        }
+    }
+
+    function _register(
+        string calldata name,
+        address owner,
+        uint256 duration,
+        address resolver,
+        bytes[] calldata data,
+        bool reverseRecord,
+        IPriceOracle.Price memory price
+    ) internal {
+        uint256 expires = nameWrapper.registerAndWrapETH2LD(name, owner, duration, resolver, uint16(0));
 
         if (data.length > 0) {
             _setRecords(resolver, keccak256(bytes(name)), data);
@@ -109,6 +182,22 @@ contract RegistrarController is Ownable, ReverseClaimer {
         }
 
         emit NameRegistered(name, keccak256(bytes(name)), owner, price.base, price.premium, expires);
+    }
+
+    function register(
+        string calldata name,
+        address owner,
+        uint256 duration,
+        address resolver,
+        bytes[] calldata data,
+        bool reverseRecord
+    ) public payable validRegistration(name, duration, resolver, data) {
+        IPriceOracle.Price memory price = rentPrice(name, duration);
+        if (msg.value < price.base + price.premium) {
+            revert InsufficientValue();
+        }
+
+        _register(name, owner, duration, resolver, data, reverseRecord, price);
 
         if (msg.value > (price.base + price.premium)) {
             payable(msg.sender).transfer(msg.value - (price.base + price.premium));
