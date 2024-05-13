@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.23;
+pragma solidity ^0.8.23;
 
 import {ENS} from "ens-contracts/registry/ENS.sol";
 import {ERC721} from "lib/solady/src/tokens/ERC721.sol";

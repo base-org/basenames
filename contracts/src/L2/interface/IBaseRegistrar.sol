@@ -2,15 +2,8 @@
 pragma solidity ^0.8.23;
 
 interface IBaseRegistrar {
-    event ControllerAdded(address indexed controller);
-    event ControllerRemoved(address indexed controller);
-    event NameMigrated(uint256 indexed id, address indexed owner, uint256 expires);
-    event NameRegistered(uint256 indexed id, address indexed owner, uint256 expires);
-    event NameRenewed(uint256 indexed id, uint256 expires);
-
     // Authorises a controller, who can register and renew domains.
     function addController(address controller) external;
-
     // Revoke controller permission for an address.
     function removeController(address controller) external;
 
