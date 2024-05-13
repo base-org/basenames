@@ -13,10 +13,12 @@ contract Registry is ENS {
     mapping(bytes32 => Record) records;
     mapping(address => mapping(address => bool)) operators;
 
+    error Unauthorized();
+
     // Permits modifications only by the owner of the specified node.
     modifier authorised(bytes32 node) {
-        address owner = records[node].owner;
-        require(owner == msg.sender || operators[owner][msg.sender]);
+        address owner_ = records[node].owner;
+        if(owner_ != msg.sender || !operators[owner_][msg.sender]) revert Unauthorized();
         _;
     }
 
@@ -30,49 +32,49 @@ contract Registry is ENS {
     /**
      * @dev Sets the record for a node.
      * @param node The node to update.
-     * @param owner The address of the new owner.
-     * @param resolver The address of the resolver.
-     * @param ttl The TTL in seconds.
+     * @param owner_ The address of the new owner.
+     * @param resolver_ The address of the resolver.
+     * @param ttl_ The TTL in seconds.
      */
-    function setRecord(bytes32 node, address owner, address resolver, uint64 ttl) external virtual override {
-        setOwner(node, owner);
-        _setResolverAndTTL(node, resolver, ttl);
+    function setRecord(bytes32 node, address owner_, address resolver_, uint64 ttl_) external virtual override {
+        setOwner(node, owner_);
+        _setResolverAndTTL(node, resolver_, ttl_);
     }
 
     /**
      * @dev Sets the record for a subnode.
      * @param node The parent node.
      * @param label The hash of the label specifying the subnode.
-     * @param owner The address of the new owner.
-     * @param resolver The address of the resolver.
-     * @param ttl The TTL in seconds.
+     * @param owner_ The address of the new owner.
+     * @param resolver_ The address of the resolver.
+     * @param ttl_ The TTL in seconds.
      */
-    function setSubnodeRecord(bytes32 node, bytes32 label, address owner, address resolver, uint64 ttl)
+    function setSubnodeRecord(bytes32 node, bytes32 label, address owner_, address resolver_, uint64 ttl_)
         external
         virtual
         override
     {
-        bytes32 subnode = setSubnodeOwner(node, label, owner);
-        _setResolverAndTTL(subnode, resolver, ttl);
+        bytes32 subnode = setSubnodeOwner(node, label, owner_);
+        _setResolverAndTTL(subnode, resolver_, ttl_);
     }
 
     /**
      * @dev Transfers ownership of a node to a new address. May only be called by the current owner of the node.
      * @param node The node to transfer ownership of.
-     * @param owner The address of the new owner.
+     * @param owner_ The address of the new owner.
      */
-    function setOwner(bytes32 node, address owner) public virtual override authorised(node) {
-        _setOwner(node, owner);
-        emit Transfer(node, owner);
+    function setOwner(bytes32 node, address owner_) public virtual override authorised(node) {
+        _setOwner(node, owner_);
+        emit Transfer(node, owner_);
     }
 
     /**
      * @dev Transfers ownership of a subnode keccak256(node, label) to a new address. May only be called by the owner of the parent node.
      * @param node The parent node.
      * @param label The hash of the label specifying the subnode.
-     * @param owner The address of the new owner.
+     * @param owner_ The address of the new owner.
      */
-    function setSubnodeOwner(bytes32 node, bytes32 label, address owner)
+    function setSubnodeOwner(bytes32 node, bytes32 label, address owner_)
         public
         virtual
         override
@@ -80,29 +82,29 @@ contract Registry is ENS {
         returns (bytes32)
     {
         bytes32 subnode = keccak256(abi.encodePacked(node, label));
-        _setOwner(subnode, owner);
-        emit NewOwner(node, label, owner);
+        _setOwner(subnode, owner_);
+        emit NewOwner(node, label, owner_);
         return subnode;
     }
 
     /**
      * @dev Sets the resolver address for the specified node.
      * @param node The node to update.
-     * @param resolver The address of the resolver.
+     * @param resolver_ The address of the resolver.
      */
-    function setResolver(bytes32 node, address resolver) public virtual override authorised(node) {
-        emit NewResolver(node, resolver);
-        records[node].resolver = resolver;
+    function setResolver(bytes32 node, address resolver_) public virtual override authorised(node) {
+        emit NewResolver(node, resolver_);
+        records[node].resolver = resolver_;
     }
 
     /**
      * @dev Sets the TTL for the specified node.
      * @param node The node to update.
-     * @param ttl The TTL in seconds.
+     * @param ttl_ The TTL in seconds.
      */
-    function setTTL(bytes32 node, uint64 ttl) public virtual override authorised(node) {
-        emit NewTTL(node, ttl);
-        records[node].ttl = ttl;
+    function setTTL(bytes32 node, uint64 ttl_) public virtual override authorised(node) {
+        emit NewTTL(node, ttl_);
+        records[node].ttl = ttl_;
     }
 
     /**
@@ -159,27 +161,27 @@ contract Registry is ENS {
 
     /**
      * @dev Query if an address is an authorized operator for another address.
-     * @param owner The address that owns the records.
+     * @param owner_ The address that owns the records.
      * @param operator The address that acts on behalf of the owner.
      * @return True if `operator` is an approved operator for `owner`, false otherwise.
      */
-    function isApprovedForAll(address owner, address operator) external view virtual override returns (bool) {
-        return operators[owner][operator];
+    function isApprovedForAll(address owner_, address operator) external view virtual override returns (bool) {
+        return operators[owner_][operator];
     }
 
-    function _setOwner(bytes32 node, address owner) internal virtual {
-        records[node].owner = owner;
+    function _setOwner(bytes32 node, address owner_) internal virtual {
+        records[node].owner = owner_;
     }
 
-    function _setResolverAndTTL(bytes32 node, address resolver, uint64 ttl) internal {
-        if (resolver != records[node].resolver) {
-            records[node].resolver = resolver;
-            emit NewResolver(node, resolver);
+    function _setResolverAndTTL(bytes32 node, address resolver_, uint64 ttl_) internal {
+        if (resolver_ != records[node].resolver) {
+            records[node].resolver = resolver_;
+            emit NewResolver(node, resolver_);
         }
 
-        if (ttl != records[node].ttl) {
-            records[node].ttl = ttl;
-            emit NewTTL(node, ttl);
+        if (ttl_ != records[node].ttl) {
+            records[node].ttl = ttl_;
+            emit NewTTL(node, ttl_);
         }
     }
 }
