@@ -18,6 +18,8 @@ import {ReverseRegistrar} from "./ReverseRegistrar.sol";
 import {L2Resolver} from "./L2Resolver.sol";
 import {BASE_ETH_NODE} from "src/util/Constants.sol";
 
+// @TODO we need to add support for USDC
+
 /**
  * @dev A registrar controller for registering and renewing names at fixed cost.
  */
@@ -37,8 +39,8 @@ contract RegistrarController is Ownable, ReverseClaimer {
     struct DiscountDetails {
         bool active;
         address discountValidator;
-        uint256 duration;
-        uint256 discount;
+        uint256 duration; // duration of discount (subtracted from RegisterRequest duration)
+        uint256 discount; // denom in dollars
     }
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
@@ -139,18 +141,19 @@ contract RegistrarController is Ownable, ReverseClaimer {
         view
         returns (uint256 price)
     {
+
         DiscountDetails memory details = discounts[discountKey];
         if (details.duration > 0) {
-            price = registerPrice(name, details.duration);
+            price = details.duration >= duration ? 
+                registerPrice(name, 0) :
+                registerPrice(name, duration - details.duration);
         } else {
             price = registerPrice(name, duration);
         }
 
-        if (price >= details.discount) {
-            price -= details.discount;
-        } else {
-            return 0;
-        }
+        price = (price >= details.discount) ?
+            price - details.discount : 
+            0;
     }
 
     function _validateAndApplyDiscount(
@@ -214,6 +217,8 @@ contract RegistrarController is Ownable, ReverseClaimer {
             if (!sent) revert TransferFailed();
         }
     }
+
+    //@TODO add renew with discount flow 
 
     function renew(string calldata name, uint256 duration) external payable {
         bytes32 labelhash = keccak256(bytes(name));
