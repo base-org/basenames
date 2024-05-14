@@ -19,18 +19,11 @@ interface Addr {
 address constant resolverAddr = 0xBD69dd64b94fe7435157F4851e4b4Aa3A0988c90; // l1 resolver
 
 contract ResolveCallback is Script {
-    function run() external {
-        // uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-        // vm.startBroadcast(deployerPrivateKey);
+    function run() external view {
 
-        /// L1 Resolver constructor data
-        string memory url =
-            "https://subdomain-did-api-dev.cbhq.net:8000/api/v1/domain/resolver/resolveDomain/{sender}/{data}"; //
-        address[] memory signers = new address[](1);
-        signers[0] = 0xa412c16ECd2198A6aBce8235651E105684Fb77ed; // DEV signer
+        address signer = 0xa412c16ECd2198A6aBce8235651E105684Fb77ed; // DEV signer
 
 
-        L1Resolver resolver = new L1Resolver(url, signers);
         (bytes memory dnsName ,bytes32 node) = NameEncoder.dnsEncodeName("david.base.eth");
         console.log("The data arg for resolve call");
         bytes memory extraData = abi.encodeWithSelector(
@@ -43,20 +36,18 @@ contract ResolveCallback is Script {
         );
         console.log("Extra data");
         console.logBytes(extraData);
-        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-        // resolver.resolve(dnsName, abi.encodeWithSelector(ExtendedResolver.resolve.selector, dnsName, abi.encodeWithSelector(Addr.addr.selector, node)));
 
         bytes memory callbackData = hex"00000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000066428903000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000020000000000000000000000000b18e4c959bccc8ef86d78dc297fb5efa99550d850000000000000000000000000000000000000000000000000000000000000041c147deedf5991f457236200665538c1f6f210a644839785aaf772ccecfc54f8318769d37a1ddf14be900b5799c88ca99d10fc5dc8049cb082e04289c3fd6d03f1b00000000000000000000000000000000000000000000000000000000000000";
 
         console.log("Calling verify");
-        (address signer, bytes memory response) = verify(extraData, callbackData);
+        (address recoveredSigner, bytes memory response) = verify(extraData, callbackData);
 
-        // bytes memory response = resolver.resolveWithProof(callbackData, extraData);
         console.log("Recovered signer:");
+        console.log(recoveredSigner);
+        console.log("Expected signer");
         console.log(signer);
         console.log("Response");
         console.logBytes(response);
-        // vm.stopBroadcast();
     }
 
     function verify(bytes memory request, bytes memory response) internal view returns (address, bytes memory) {

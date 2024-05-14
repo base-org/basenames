@@ -16,8 +16,9 @@ contract DeployL1Resolver is Script {
         address[] memory signers = new address[](1);
         signers[0] = 0xa412c16ECd2198A6aBce8235651E105684Fb77ed; // DEV signer
         address owner = deployerAddresss;
+        address rootResolver = address(0);
 
-        L1Resolver l1 = new L1Resolver(url, signers, owner);
+        L1Resolver l1 = new L1Resolver(url, signers, owner, rootResolver);
         console.log(address(l1));
 
         vm.stopBroadcast();
