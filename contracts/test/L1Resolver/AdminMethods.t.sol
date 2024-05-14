@@ -7,7 +7,7 @@ import {L1ResolverTestBase} from "./L1ResolverBase.t.sol";
 import {L1Resolver} from "src/L1/L1Resolver.sol";
 import {Ownable} from "solady/auth/Ownable.sol";
 
-contract OwnableMethods is L1ResolverTestBase {
+contract AdminMethods is L1ResolverTestBase {
     function test_setUrl(string memory newUrl) public {
         vm.prank(makeAddr("0x2"));
         vm.expectRevert(abi.encodeWithSelector(Ownable.Unauthorized.selector));

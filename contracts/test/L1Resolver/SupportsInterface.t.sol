@@ -6,11 +6,8 @@ import {L1ResolverTestBase} from "./L1ResolverBase.t.sol";
 
 import {L1Resolver} from "src/L1/L1Resolver.sol";
 import {Ownable} from "solady/auth/Ownable.sol";
-import {NameEncoder} from "ens-contracts/utils/NameEncoder.sol";
-import {PublicResolver} from "ens-contracts/resolvers/PublicResolver.sol";
 
-contract L1ResolverTest is L1ResolverTestBase {
-
+contract SupportsInterface is L1ResolverTestBase {
     function test_supportsInterface() public view {
         assertTrue(resolver.supportsInterface(bytes4(0x9061b923))); // https://docs.ens.domains/ensip/10
     }

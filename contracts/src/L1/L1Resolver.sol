@@ -24,7 +24,6 @@ contract L1Resolver is IExtendedResolver, ERC165, Ownable {
     event NewRootResolver(address resolver);
     event RemovedSigner(address signer);
 
-
     constructor(string memory _url, address[] memory _signers, address _owner, address _rootResolver) {
         url = _url;
         _initializeOwner(_owner);
@@ -35,21 +34,21 @@ contract L1Resolver is IExtendedResolver, ERC165, Ownable {
         }
         emit NewSigners(_signers);
     }
-    
+
     function setUrl(string calldata _url) external onlyOwner {
         url = _url;
         emit NewUrl(_url);
     }
 
     function addSigners(address[] calldata _signers) external onlyOwner {
-        for(uint i; i < _signers.length; i++) {
+        for (uint256 i; i < _signers.length; i++) {
             signers[_signers[i]] == true;
         }
         emit NewSigners(_signers);
     }
 
     function removeSigner(address _signer) external onlyOwner {
-        if(signers[_signer]) {
+        if (signers[_signer]) {
             delete signers[_signer];
             emit RemovedSigner(_signer);
         }
@@ -76,7 +75,7 @@ contract L1Resolver is IExtendedResolver, ERC165, Ownable {
      */
     function resolve(bytes calldata name, bytes calldata data) external view override returns (bytes memory) {
         // Resolution for root name should fallback to existing resolver
-        if(keccak256(BASE_ETH_NAME) == keccak256(name)){
+        if (keccak256(BASE_ETH_NAME) == keccak256(name)) {
             return IExtendedResolver(rootResolver).resolve(name, data);
         }
 
@@ -99,7 +98,7 @@ contract L1Resolver is IExtendedResolver, ERC165, Ownable {
         return interfaceID == type(IExtendedResolver).interfaceId || super.supportsInterface(interfaceID);
     }
 
-    // Handler for arbitrary resolution calls 
+    // Handler for arbitrary resolution calls
     fallback() external {
         address RESOLVER = rootResolver;
         assembly {
