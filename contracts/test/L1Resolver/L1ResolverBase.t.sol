@@ -9,16 +9,19 @@ import {MockPublicResolver} from "src/mocks/MockPublicResolver.sol";
 contract L1ResolverTestBase is Test {
     L1Resolver public resolver;
     MockPublicResolver public rootResolver;
+    string constant URL = "TEST_URL";
+    address public signer = makeAddr("0xal1ce");
+    address public owner = makeAddr("0x1");
 
     function setUp() public {
-        address[] memory _signer = new address[](1);
-        _signer[0] = makeAddr("0xal1ce");
-        address owner = makeAddr("0x1");
+        address[] memory signers = new address[](1);
+        signers[0] = signer;
         rootResolver = new MockPublicResolver();
-        
+        vm.expectEmit();
+        emit L1Resolver.NewSigners(signers);
         resolver = new L1Resolver(
-            "",
-            _signer,
+            URL,
+            signers,
             owner,
             address(rootResolver)
         );

@@ -20,9 +20,9 @@ contract L1Resolver is IExtendedResolver, ERC165, Ownable {
     error OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes extraData);
 
     event NewSigners(address[] signers);
-    event NewURL(string newUrl);
+    event NewUrl(string newUrl);
     event NewRootResolver(address resolver);
-    event SignerRemoved(address signer);
+    event RemovedSigner(address signer);
 
 
     constructor(string memory _url, address[] memory _signers, address _owner, address _rootResolver) {
@@ -38,6 +38,7 @@ contract L1Resolver is IExtendedResolver, ERC165, Ownable {
     
     function setUrl(string calldata _url) external onlyOwner {
         url = _url;
+        emit NewUrl(_url);
     }
 
     function addSigners(address[] calldata _signers) external onlyOwner {
@@ -50,8 +51,8 @@ contract L1Resolver is IExtendedResolver, ERC165, Ownable {
     function removeSigner(address _signer) external onlyOwner {
         if(signers[_signer]) {
             delete signers[_signer];
+            emit RemovedSigner(_signer);
         }
-        emit SignerRemoved(_signer);
     }
 
     function setRootResolver(address _rootResolver) external onlyOwner {
