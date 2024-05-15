@@ -9,10 +9,12 @@ contract L1ResolverTestBase is Test {
     L1Resolver public resolver;
     MockPublicResolver public rootResolver;
     string constant URL = "TEST_URL";
-    address public signer = makeAddr("0xal1ce");
+    address signer;
+    uint256 signerPk;
     address public owner = makeAddr("0x1");
 
     function setUp() public {
+        (signer, signerPk) = makeAddrAndKey("0xace");
         address[] memory signers = new address[](1);
         signers[0] = signer;
         rootResolver = new MockPublicResolver();
@@ -22,6 +24,7 @@ contract L1ResolverTestBase is Test {
     }
 
     function test_constructor() public {
+        (signer, signerPk) = makeAddrAndKey("0xace");
         address[] memory signers_ = new address[](1);
         signers_[0] = signer;
         emit L1Resolver.NewSigners(signers_);

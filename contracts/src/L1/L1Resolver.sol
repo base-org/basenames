@@ -17,6 +17,7 @@ contract L1Resolver is IExtendedResolver, ERC165, Ownable {
     mapping(address => bool) public signers;
     address public rootResolver;
 
+    error InvalidSigner();
     error OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes extraData);
 
     event NewSigners(address[] signers);
@@ -90,7 +91,7 @@ contract L1Resolver is IExtendedResolver, ERC165, Ownable {
      */
     function resolveWithProof(bytes calldata response, bytes calldata extraData) external view returns (bytes memory) {
         (address signer, bytes memory result) = SignatureVerifier.verify(extraData, response);
-        require(signers[signer], "SignatureVerifier: Invalid sigature");
+        if(!signers[signer]) revert InvalidSigner();
         return result;
     }
 
@@ -98,7 +99,7 @@ contract L1Resolver is IExtendedResolver, ERC165, Ownable {
         return interfaceID == type(IExtendedResolver).interfaceId || super.supportsInterface(interfaceID);
     }
 
-    // Handler for arbitrary resolution calls
+    // Handler for arbitrary resolver calls
     fallback() external {
         address RESOLVER = rootResolver;
         assembly {
