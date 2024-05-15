@@ -110,12 +110,19 @@ contract L1Resolver is IExtendedResolver, ERC165, Ownable {
 
             // Call the root resolver.
             // out and outsize are 0 because we don't know the size yet.
-            let result := delegatecall(gas(), RESOLVER, 0, calldatasize(), 0, 0)
+            let result := call(gas(), RESOLVER, 0, 0, calldatasize(), 0, 0)
 
             // Copy the returned data.
             returndatacopy(0, 0, returndatasize())
 
-            return(0, returndatasize())
+            switch result
+            // delegatecall returns 0 on error.
+            case 0 {
+                revert(0, returndatasize())
+            }
+            default {
+                return(0, returndatasize())
+            }
         }
     }
 }
