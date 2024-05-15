@@ -18,7 +18,8 @@ contract ReverseRegistrar is Ownable, IReverseRegistrar {
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                          CONSTANTS                         */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
-    bytes32 constant SHA3_LOOKUP = 0x3031323334353637383961626364656600000000000000000000000000000000;
+    // Hex encoding of "0123456789abcdef"
+    bytes32 constant ALPHABET = 0x3031323334353637383961626364656600000000000000000000000000000000;
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                          ERRORS                            */
@@ -168,10 +169,10 @@ contract ReverseRegistrar is Ownable, IReverseRegistrar {
         assembly {
             for { let i := 40 } gt(i, 0) {} {
                 i := sub(i, 1)
-                mstore8(i, byte(and(addr, 0xf), SHA3_LOOKUP))
+                mstore8(i, byte(and(addr, 0xf), ALPHABET))
                 addr := div(addr, 0x10)
                 i := sub(i, 1)
-                mstore8(i, byte(and(addr, 0xf), SHA3_LOOKUP))
+                mstore8(i, byte(and(addr, 0xf), ALPHABET))
                 addr := div(addr, 0x10)
             }
 
