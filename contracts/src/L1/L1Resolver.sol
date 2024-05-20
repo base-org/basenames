@@ -25,15 +25,15 @@ contract L1Resolver is IExtendedResolver, ERC165, Ownable {
     event NewRootResolver(address resolver);
     event RemovedSigner(address signer);
 
-    constructor(string memory _url, address[] memory _signers, address _owner, address _rootResolver) {
-        url = _url;
-        _initializeOwner(_owner);
-        rootResolver = _rootResolver;
+    constructor(string memory url_, address[] memory signers_, address owner_, address rootResolver_) {
+        url = url_;
+        _initializeOwner(owner_);
+        rootResolver = rootResolver_;
 
-        for (uint256 i = 0; i < _signers.length; i++) {
-            signers[_signers[i]] = true;
+        for (uint256 i = 0; i < signers_.length; i++) {
+            signers[signers_[i]] = true;
         }
-        emit NewSigners(_signers);
+        emit NewSigners(signers_);
     }
 
     function setUrl(string calldata _url) external onlyOwner {
