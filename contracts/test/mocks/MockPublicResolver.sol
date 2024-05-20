@@ -3,6 +3,8 @@ pragma solidity 0.8.23;
 
 import {BASE_ETH_NODE} from "src/util/Constants.sol";
 import {ExtendedResolver} from "ens-contracts/resolvers/profiles/ExtendedResolver.sol";
+import {IAddrResolver} from "ens-contracts/resolvers/profiles/IAddrResolver.sol";
+import {ITextResolver} from "ens-contracts/resolvers/profiles/ITextResolver.sol";
 
 contract MockPublicResolver is ExtendedResolver {
     mapping(bytes32 => address) addrs;
@@ -21,5 +23,9 @@ contract MockPublicResolver is ExtendedResolver {
 
     function text(bytes32 node, string calldata key) external view returns (string memory) {
         return texts[node][key];
+    }
+
+    function supportsInterface(bytes4 interfaceID) public pure returns (bool) {
+        return interfaceID == type(IAddrResolver).interfaceId || interfaceID == type(ITextResolver).interfaceId;
     }
 }

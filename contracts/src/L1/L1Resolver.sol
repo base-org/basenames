@@ -75,7 +75,8 @@ contract L1Resolver is IExtendedResolver, ERC165, Ownable {
      * @return The return data, ABI encoded identically to the underlying function.
      */
     function resolve(bytes calldata name, bytes calldata data) external view override returns (bytes memory) {
-        // Resolution for root name should fallback to existing resolver
+        // Resolution for root name "base.eth" should query the `rootResolver`
+        // All other requests will be for "*.base.eth" names and should follow the CCIP flow by reverting with OffchainLookup
         if (keccak256(BASE_ETH_NAME) == keccak256(name)) {
             return IExtendedResolver(rootResolver).resolve(name, data);
         }
@@ -95,8 +96,16 @@ contract L1Resolver is IExtendedResolver, ERC165, Ownable {
         return result;
     }
 
+    /// @notice ERC165 compliant signal for interface support
+    ///
+    /// @dev Checks interface support for this contract OR ERC165 OR rootResolver
+    /// https://eips.ethereum.org/EIPS/eip-165#how-interfaces-are-identified[EIP section]
+    ///
+    /// @param interfaceID the ERC165 iface id being checked for compliance
+    /// 
+    /// @return bool Whether this contract supports the provided interfaceID
     function supportsInterface(bytes4 interfaceID) public view override returns (bool) {
-        return interfaceID == type(IExtendedResolver).interfaceId || super.supportsInterface(interfaceID);
+        return interfaceID == type(IExtendedResolver).interfaceId || super.supportsInterface(interfaceID) || ERC165(rootResolver).supportsInterface(interfaceID);
     }
 
     // Handler for arbitrary resolver calls
