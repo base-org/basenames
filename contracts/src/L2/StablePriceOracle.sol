@@ -40,11 +40,11 @@ contract StablePriceOracle is IPriceOracle {
      * @param duration How long the name is being registered or extended for, in seconds.
      * @return base premium tuple of base price + premium price
      */
-    function price(
-        string calldata name,
-        uint256 expires,
-        uint256 duration
-    ) external view returns (IPriceOracle.Price memory) {
+    function price(string calldata name, uint256 expires, uint256 duration)
+        external
+        view
+        returns (IPriceOracle.Price memory)
+    {
         uint256 len = name.strlen();
         uint256 basePrice;
 
@@ -60,38 +60,29 @@ contract StablePriceOracle is IPriceOracle {
             basePrice = price1Letter * duration;
         }
         uint256 premium_ = _premium(name, expires, duration);
-        return
-            IPriceOracle.Price({
-                base_usdc: basePrice,
-                premium_usdc: premium_,
-                base_wei: attoUSDToWei(basePrice),
-                premium_wei: attoUSDToWei(premium_)
-            });
+        return IPriceOracle.Price({
+            base_usdc: basePrice,
+            premium_usdc: premium_,
+            base_wei: attoUSDToWei(basePrice),
+            premium_wei: attoUSDToWei(premium_)
+        });
     }
 
     /**
      * @dev Returns the pricing premium in wei.
      */
-    function premium(
-        string calldata name,
-        uint256 expires,
-        uint256 duration
-    ) external view returns (uint256) {
+    function premium(string calldata name, uint256 expires, uint256 duration) external view returns (uint256) {
         return attoUSDToWei(_premium(name, expires, duration));
     }
 
     /**
      * @dev Returns the pricing premium in internal base units.
      */
-    function _premium(
-        string memory,
-        uint256,
-        uint256
-    ) internal view virtual returns (uint256) {
+    function _premium(string memory, uint256, uint256) internal view virtual returns (uint256) {
         return 0;
     }
 
-    function attoUSDToWei(uint256 amount) internal view returns (uint256) {
+    function attoUSDToWei(uint256 amount) public view returns (uint256) {
         uint256 ethPrice = uint256(usdOracle.latestAnswer());
         return (amount * 1e8) / ethPrice;
     }
