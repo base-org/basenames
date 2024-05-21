@@ -5,7 +5,7 @@ import {ENS} from "ens-contracts/registry/ENS.sol";
 import {ERC721} from "lib/solady/src/tokens/ERC721.sol";
 import {Ownable} from "solady/auth/Ownable.sol";
 
-import {BASE_ETH_NODE} from "src/util/Constants.sol";
+import {BASE_ETH_NODE, GRACE_PERIOD} from "src/util/Constants.sol";
 
 contract BaseRegistrar is ERC721, Ownable {
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
@@ -21,7 +21,6 @@ contract BaseRegistrar is ERC721, Ownable {
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                          CONSTANTS                         */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
-    uint256 public constant GRACE_PERIOD = 90 days;
     bytes4 private constant INTERFACE_META_ID = bytes4(keccak256("supportsInterface(bytes4)"));
     bytes4 private constant ERC721_ID = bytes4(
         keccak256("balanceOf(address)") ^ keccak256("ownerOf(uint256)") ^ keccak256("approve(address,uint256)")
