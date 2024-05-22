@@ -1,28 +1,22 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import {Address} from "lib/openzeppelin-contracts/contracts/utils/Address.sol";
-import {ECDSA} from "solady/utils/ECDSA.sol";
-import {Ownable} from "solady/auth/Ownable.sol";
-import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
-import {SafeERC20} from "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
-
 import {ENS} from "ens-contracts/registry/ENS.sol";
+import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import {INameWrapper} from "ens-contracts/wrapper/INameWrapper.sol";
+import {Ownable} from "solady/auth/Ownable.sol";
 import {ReverseClaimer} from "ens-contracts/reverseRegistrar/ReverseClaimer.sol";
+import {SafeERC20} from "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 import {StringUtils} from "ens-contracts/ethregistrar/StringUtils.sol";
 
+import {BASE_ETH_NODE} from "src/util/Constants.sol";
 import {BaseRegistrar} from "./BaseRegistrar.sol";
 import {IDiscountValidator} from "./interface/IDiscountValidator.sol";
 import {IPriceOracle} from "./interface/IPriceOracle.sol";
-import {ReverseRegistrar} from "./ReverseRegistrar.sol";
 import {L2Resolver} from "./L2Resolver.sol";
-import {BASE_ETH_NODE} from "src/util/Constants.sol";
+import {ReverseRegistrar} from "./ReverseRegistrar.sol";
 
-// @TODO we need to add support for USDC
 // @TODO add renew with discount flow
-// @TODO emit discount claim event w/ type
-// @TODO track discounted claims by address to ensure no double dipping
 // @TODO active discounts
 // @TODO ++ Availability state check
 
@@ -31,7 +25,6 @@ import {BASE_ETH_NODE} from "src/util/Constants.sol";
  */
 contract RegistrarController is Ownable, ReverseClaimer {
     using StringUtils for *;
-    using Address for address;
     using SafeERC20 for IERC20;
 
     struct RegisterRequest {
@@ -87,9 +80,11 @@ contract RegistrarController is Ownable, ReverseClaimer {
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                          EVENTS                            */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
-    event USDCPaymentProcessed(address payee, uint256 price);
+    event USDCPaymentProcessed(address indexed payee, uint256 price);
+    event ETHPaymentProcessed(address indexed payee, uint256 price);
+    event RegisteredWithDiscount(address indexed registrant, bytes32 indexed discountKey);
     event NameRegistered(string name, bytes32 indexed label, address indexed owner, uint256 expires);
-    event NameRenewed(string name, bytes32 indexed label, uint256 cost, uint256 expires);
+    event NameRenewed(string name, bytes32 indexed label, uint256 expires);
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                          MODIFIERS                         */
@@ -200,7 +195,6 @@ contract RegistrarController is Ownable, ReverseClaimer {
         returns (uint256)
     {
         uint256 price_usdc = discountRentPriceUSDC(name, duration, discountKey);
-
         return prices.attoUSDToWei(price_usdc);
     }
 
@@ -233,6 +227,7 @@ contract RegistrarController is Ownable, ReverseClaimer {
         _refundExcessEth(price_wei);
 
         discountedRegistrants[msg.sender] = true;
+        emit RegisteredWithDiscount(msg.sender, discountKey);
     }
 
     function registerUSDC(RegisterRequest calldata request, uint16 ownerControlledFuses)
@@ -259,12 +254,40 @@ contract RegistrarController is Ownable, ReverseClaimer {
         _register(request, ownerControlledFuses);
 
         discountedRegistrants[msg.sender] = true;
+        emit RegisteredWithDiscount(msg.sender, discountKey);
+    }
+
+    function renewETH(string calldata name, uint256 duration) external payable {
+        bytes32 labelhash = keccak256(bytes(name));
+        uint256 tokenId = uint256(labelhash);
+        IPriceOracle.Price memory price = rentPrice(name, duration);
+
+        _validateETHPayment(price.base_wei);
+
+        uint256 expires = nameWrapper.renew(tokenId, duration);
+
+        _refundExcessEth(price.base_wei);
+
+        emit NameRenewed(name, labelhash, expires);
+    }
+
+    function renewUSDC(string calldata name, uint256 duration) external {
+        bytes32 labelhash = keccak256(bytes(name));
+        uint256 tokenId = uint256(labelhash);
+        IPriceOracle.Price memory price = rentPrice(name, duration);
+
+        _processUSDCPayment(price.base_usdc);
+
+        uint256 expires = nameWrapper.renew(tokenId, duration);
+
+        emit NameRenewed(name, labelhash, expires);
     }
 
     function _validateETHPayment(uint256 price) internal {
         if (msg.value < price) {
             revert InsufficientValue();
         }
+        emit ETHPaymentProcessed(msg.sender, price);
     }
 
     function _processUSDCPayment(uint256 price) internal {
@@ -287,25 +310,22 @@ contract RegistrarController is Ownable, ReverseClaimer {
         emit NameRegistered(request.name, keccak256(bytes(request.name)), request.owner, expires);
     }
 
-    function renewETH(string calldata name, uint256 duration) external payable {
-        bytes32 labelhash = keccak256(bytes(name));
-        uint256 tokenId = uint256(labelhash);
-        IPriceOracle.Price memory price = rentPrice(name, duration);
-
-        _validateETHPayment(price.base_wei);
-
-        uint256 expires = nameWrapper.renew(tokenId, duration);
-
-        _refundExcessEth(price.base_wei);
-
-        emit NameRenewed(name, labelhash, msg.value, expires);
-    }
-
     function _refundExcessEth(uint256 price) internal {
         if (msg.value > price) {
             (bool sent,) = payable(msg.sender).call{value: (msg.value - price)}("");
             if (!sent) revert TransferFailed();
         }
+    }
+
+    function _setRecords(address resolverAddress, bytes32 label, bytes[] calldata data) internal {
+        // use hardcoded base.eth namehash
+        bytes32 nodehash = keccak256(abi.encodePacked(BASE_ETH_NODE, label));
+        L2Resolver resolver = L2Resolver(resolverAddress);
+        resolver.multicallWithNodeCheck(nodehash, data);
+    }
+
+    function _setReverseRecord(string memory name, address resolver, address owner) internal {
+        reverseRegistrar.setNameForAddr(msg.sender, owner, resolver, string.concat(name, ".base.eth"));
     }
 
     function withdrawETH() public {
@@ -327,14 +347,4 @@ contract RegistrarController is Ownable, ReverseClaimer {
         IERC20(_token).safeTransfer(_to, _amount);
     }
 
-    function _setRecords(address resolverAddress, bytes32 label, bytes[] calldata data) internal {
-        // use hardcoded base.eth namehash
-        bytes32 nodehash = keccak256(abi.encodePacked(BASE_ETH_NODE, label));
-        L2Resolver resolver = L2Resolver(resolverAddress);
-        resolver.multicallWithNodeCheck(nodehash, data);
-    }
-
-    function _setReverseRecord(string memory name, address resolver, address owner) internal {
-        reverseRegistrar.setNameForAddr(msg.sender, owner, resolver, string.concat(name, ".base.eth"));
-    }
 }
