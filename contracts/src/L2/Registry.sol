@@ -10,7 +10,6 @@ contract Registry is ENS {
         uint64 ttl;
     }
 
-    address public immutable ROOT_OWNER;
     mapping(bytes32 => Record) records;
     mapping(address => mapping(address => bool)) operators;
 
