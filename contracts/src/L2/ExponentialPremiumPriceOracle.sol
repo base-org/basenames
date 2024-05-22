@@ -8,11 +8,11 @@ contract ExponentialPremiumPriceOracle is StablePriceOracle {
     uint256 immutable startPremium;
     uint256 immutable endValue;
 
-    constructor(AggregatorInterface _usdOracle, uint256[] memory _rentPrices, uint256 _startPremium, uint256 totalDays)
-        StablePriceOracle(_usdOracle, _rentPrices)
+    constructor(AggregatorInterface usdOracle, uint256[] memory rentPrices, uint256 startPremium_, uint256 totalDays)
+        StablePriceOracle(usdOracle, rentPrices)
     {
-        startPremium = _startPremium;
-        endValue = _startPremium >> totalDays;
+        startPremium = startPremium_;
+        endValue = startPremium_ >> totalDays;
     }
 
     uint256 constant PRECISION = 1e18;
@@ -61,11 +61,11 @@ contract ExponentialPremiumPriceOracle is StablePriceOracle {
         uint256 premium = startPremium_ >> intDays;
         uint256 partDay = (daysPast - intDays * PRECISION);
         uint256 fraction = (partDay * (2 ** 16)) / PRECISION;
-        uint256 totalPremium = addFractionalPremium(fraction, premium);
+        uint256 totalPremium = _addFractionalPremium(fraction, premium);
         return totalPremium;
     }
 
-    function addFractionalPremium(uint256 fraction, uint256 premium) internal pure returns (uint256) {
+    function _addFractionalPremium(uint256 fraction, uint256 premium) internal pure returns (uint256) {
         if (fraction & (1 << 0) != 0) {
             premium = (premium * bit1) / PRECISION;
         }

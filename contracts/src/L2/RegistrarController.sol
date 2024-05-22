@@ -2,6 +2,7 @@
 pragma solidity ^0.8.23;
 
 import {ENS} from "ens-contracts/registry/ENS.sol";
+import {EnumerableSetLib} from "solady/utils/EnumerableSetLib.sol";
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import {INameWrapper} from "ens-contracts/wrapper/INameWrapper.sol";
 import {Ownable} from "solady/auth/Ownable.sol";
@@ -17,7 +18,7 @@ import {L2Resolver} from "./L2Resolver.sol";
 import {ReverseRegistrar} from "./ReverseRegistrar.sol";
 
 // @TODO add renew with discount flow
-// @TODO active discounts
+// @TODO discount duration override register request duration? 
 // @TODO ++ Availability state check
 
 /**
@@ -26,6 +27,7 @@ import {ReverseRegistrar} from "./ReverseRegistrar.sol";
 contract RegistrarController is Ownable, ReverseClaimer {
     using StringUtils for *;
     using SafeERC20 for IERC20;
+    using EnumerableSetLib for EnumerableSetLib.Bytes32Set;
 
     struct RegisterRequest {
         string name;
@@ -39,8 +41,15 @@ contract RegistrarController is Ownable, ReverseClaimer {
     struct DiscountDetails {
         bool active;
         address discountValidator;
-        uint256 duration; // duration of discount (subtracted from RegisterRequest duration)
         uint256 discount; // denom in dollars
+    }
+
+    enum NameStates {
+        UNAVAILABLE,
+        AVAILABLE,
+        INVALID,
+        GRACE_PERIOD,
+        AUCTION
     }
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
@@ -51,7 +60,7 @@ contract RegistrarController is Ownable, ReverseClaimer {
     ReverseRegistrar public immutable reverseRegistrar;
     INameWrapper public immutable nameWrapper;
     IERC20 public immutable usdc;
-    bytes32[] public activeDiscounts; // push or pop discounts, make queryable
+    EnumerableSetLib.Bytes32Set internal activeDiscounts;
     mapping(bytes32 => DiscountDetails) public discounts;
     mapping(address => bool) public discountedRegistrants;
 
@@ -60,7 +69,6 @@ contract RegistrarController is Ownable, ReverseClaimer {
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
     uint256 public constant MIN_REGISTRATION_DURATION = 28 days;
     uint256 private constant MIN_NAME_LENGTH = 3;
-    uint64 private constant MAX_EXPIRY = type(uint64).max;
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                          ERRORS                            */
@@ -124,8 +132,8 @@ contract RegistrarController is Ownable, ReverseClaimer {
         IERC20 usdc_,
         ReverseRegistrar reverseRegistrar_,
         INameWrapper nameWrapper_,
-        ENS ens_
-    ) ReverseClaimer(ens_, msg.sender) {
+        ENS ens
+    ) ReverseClaimer(ens, msg.sender) {
         base = base_;
         prices = prices_;
         usdc = usdc_;
@@ -166,10 +174,24 @@ contract RegistrarController is Ownable, ReverseClaimer {
         return price.base_usdc + price.premium_usdc;
     }
 
+    function getActiveDiscounts() external view returns (DiscountDetails[] memory) {
+        bytes32[] memory activeDiscountKeys = activeDiscounts.values();
+        DiscountDetails[] memory activeDiscountDetails = new DiscountDetails[](activeDiscountKeys.length);
+        for(uint i; i< activeDiscountKeys.length; i++) {
+            activeDiscountDetails[i] = discounts[activeDiscountKeys[i]];
+        }
+        return activeDiscountDetails;
+    }
+
     function setDiscountDetails(bytes32 key, DiscountDetails memory details) external onlyOwner {
         if (details.discount == 0) revert InvalidDiscountAmount(key, details.discount);
         if (details.discountValidator == address(0)) revert InvalidValidator(key, details.discountValidator);
         discounts[key] = details;
+        _updateActiveDiscounts(key, details.active);
+    }
+
+    function _updateActiveDiscounts(bytes32 key, bool active) internal {
+        active ? activeDiscounts.add(key) : activeDiscounts.remove(key);
     }
 
     function discountRentPriceUSDC(string memory name, uint256 duration, bytes32 discountKey)
@@ -178,14 +200,7 @@ contract RegistrarController is Ownable, ReverseClaimer {
         returns (uint256 price_usdc)
     {
         DiscountDetails memory discount = discounts[discountKey];
-        if (discount.duration > 0) {
-            price_usdc = discount.duration >= duration
-                ? registerPriceUSDC(name, 0)
-                : registerPriceUSDC(name, duration - discount.duration);
-        } else {
-            price_usdc = registerPriceUSDC(name, duration);
-        }
-
+        price_usdc = registerPriceUSDC(name, duration);
         price_usdc = (price_usdc >= discount.discount) ? price_usdc - discount.discount : 0;
     }
 
@@ -223,10 +238,10 @@ contract RegistrarController is Ownable, ReverseClaimer {
         _validateETHPayment(price_wei);
 
         _register(request, ownerControlledFuses);
+        discountedRegistrants[msg.sender] = true;
 
         _refundExcessEth(price_wei);
 
-        discountedRegistrants[msg.sender] = true;
         emit RegisteredWithDiscount(msg.sender, discountKey);
     }
 
@@ -252,8 +267,8 @@ contract RegistrarController is Ownable, ReverseClaimer {
         _processUSDCPayment(price_usdc);
 
         _register(request, ownerControlledFuses);
-
         discountedRegistrants[msg.sender] = true;
+
         emit RegisteredWithDiscount(msg.sender, discountKey);
     }
 
