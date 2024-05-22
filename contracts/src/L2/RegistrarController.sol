@@ -58,8 +58,9 @@ contract RegistrarController is Ownable, ReverseClaimer {
     ReverseRegistrar public immutable reverseRegistrar;
     INameWrapper public immutable nameWrapper;
     IERC20 public immutable usdc;
+    bytes32[] public activeDiscounts; // push or pop discounts, make queryable
     mapping(bytes32 => DiscountDetails) public discounts;
-    DiscountDetails[] public activeDiscounts; // push or pop discounts, make queryable
+    mapping(address => bool) public discountedRegistrants;
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                          CONSTANTS                         */
@@ -71,6 +72,7 @@ contract RegistrarController is Ownable, ReverseClaimer {
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                          ERRORS                            */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+    error AlreadyClaimedWithDiscount(address sender);
     error NameNotAvailable(string name);
     error DurationTooShort(uint256 duration);
     error ResolverRequiredWhenDataSupplied();
@@ -105,10 +107,8 @@ contract RegistrarController is Ownable, ReverseClaimer {
         _;
     }
 
-    modifier validateDiscount(
-        bytes32 discountKey,
-        bytes calldata validationData
-    ) {
+    modifier validateDiscount(bytes32 discountKey, bytes calldata validationData) {
+        if (discountedRegistrants[msg.sender]) revert AlreadyClaimedWithDiscount(msg.sender);
         DiscountDetails memory details = discounts[discountKey];
 
         if (!details.active) revert InactiveDiscount(discountKey);
@@ -136,6 +136,15 @@ contract RegistrarController is Ownable, ReverseClaimer {
         usdc = usdc_;
         reverseRegistrar = reverseRegistrar_;
         nameWrapper = nameWrapper_;
+    }
+
+    function hasRegisteredWithDiscount(address[] memory addresses) public view returns (bool) {
+        for (uint256 i; i < addresses.length; i++) {
+            if (discountedRegistrants[addresses[i]]) {
+                return true;
+            }
+        }
+        return false;
     }
 
     function valid(string memory name) public pure returns (bool) {
@@ -168,7 +177,7 @@ contract RegistrarController is Ownable, ReverseClaimer {
         discounts[key] = details;
     }
 
-    function discountRentPrice(string memory name, uint256 duration, bytes32 discountKey)
+    function discountRentPriceUSDC(string memory name, uint256 duration, bytes32 discountKey)
         public
         view
         returns (uint256 price_usdc)
@@ -190,8 +199,23 @@ contract RegistrarController is Ownable, ReverseClaimer {
         view
         returns (uint256)
     {
-        uint256 price_usdc = discountRentPrice(name, duration, discountKey);
+        uint256 price_usdc = discountRentPriceUSDC(name, duration, discountKey);
+
         return prices.attoUSDToWei(price_usdc);
+    }
+
+    function registerETH(RegisterRequest calldata request, uint16 ownerControlledFuses)
+        public
+        payable
+        validRegistration(request)
+    {
+        uint256 price_wei = registerPriceETH(request.name, request.duration);
+
+        _validateETHPayment(price_wei);
+
+        _register(request, ownerControlledFuses);
+
+        _refundExcessEth(price_wei);
     }
 
     function discountedRegisterETH(
@@ -201,20 +225,25 @@ contract RegistrarController is Ownable, ReverseClaimer {
         bytes calldata validationData
     ) public payable validateDiscount(discountKey, validationData) validRegistration(request) {
         uint256 price_wei = discountRentPriceETH(request.name, request.duration, discountKey);
+
         _validateETHPayment(price_wei);
+
         _register(request, ownerControlledFuses);
+
         _refundExcessEth(price_wei);
+
+        discountedRegistrants[msg.sender] = true;
     }
 
-    function registerETH(RegisterRequest calldata request, uint16 ownerControlledFuses)
+    function registerUSDC(RegisterRequest calldata request, uint16 ownerControlledFuses)
         public
-        payable
         validRegistration(request)
     {
-        uint256 price_wei = registerPriceETH(request.name, request.duration);
-        _validateETHPayment(price_wei);
+        uint256 price = registerPriceUSDC(request.name, request.duration);
+
         _register(request, ownerControlledFuses);
-        _refundExcessEth(price_wei);
+
+        _refundExcessEth(price);
     }
 
     function discountedRegisterUSDC(
@@ -222,10 +251,14 @@ contract RegistrarController is Ownable, ReverseClaimer {
         uint16 ownerControlledFuses,
         bytes32 discountKey,
         bytes calldata validationData
-    ) public payable validateDiscount(discountKey, validationData) validRegistration(request) {
-        uint256 price_usdc = discountRentPrice(request.name, request.duration, discountKey);
+    ) public validateDiscount(discountKey, validationData) validRegistration(request) {
+        uint256 price_usdc = discountRentPriceUSDC(request.name, request.duration, discountKey);
+
         _processUSDCPayment(price_usdc);
+
         _register(request, ownerControlledFuses);
+
+        discountedRegistrants[msg.sender] = true;
     }
 
     function _validateETHPayment(uint256 price) internal {
@@ -236,16 +269,6 @@ contract RegistrarController is Ownable, ReverseClaimer {
 
     function _processUSDCPayment(uint256 price) internal {
         usdc.safeTransferFrom(msg.sender, address(this), price);
-    }
-
-    function registerUSDC(RegisterRequest calldata request, uint16 ownerControlledFuses)
-        public
-        payable
-        validRegistration(request)
-    {
-        uint256 price = registerPriceUSDC(request.name, request.duration);
-        _register(request, ownerControlledFuses);
-        _refundExcessEth(price);
     }
 
     function _register(RegisterRequest calldata request, uint16 ownerControlledFuses) internal {
@@ -264,28 +287,26 @@ contract RegistrarController is Ownable, ReverseClaimer {
         emit NameRegistered(request.name, keccak256(bytes(request.name)), request.owner, expires);
     }
 
+    function renewETH(string calldata name, uint256 duration) external payable {
+        bytes32 labelhash = keccak256(bytes(name));
+        uint256 tokenId = uint256(labelhash);
+        IPriceOracle.Price memory price = rentPrice(name, duration);
+
+        _validateETHPayment(price.base_wei);
+
+        uint256 expires = nameWrapper.renew(tokenId, duration);
+
+        _refundExcessEth(price.base_wei);
+
+        emit NameRenewed(name, labelhash, msg.value, expires);
+    }
+
     function _refundExcessEth(uint256 price) internal {
         if (msg.value > price) {
             (bool sent,) = payable(msg.sender).call{value: (msg.value - price)}("");
             if (!sent) revert TransferFailed();
         }
     }
-
-    // function renew(string calldata name, uint256 duration) external payable {
-    //     bytes32 labelhash = keccak256(bytes(name));
-    //     uint256 tokenId = uint256(labelhash);
-    //     IPriceOracle.Price memory price = rentPrice(name, duration);
-    //     if (msg.value < price.base) {
-    //         revert InsufficientValue();
-    //     }
-    //     uint256 expires = nameWrapper.renew(tokenId, duration);
-
-    //     if (msg.value > price.base) {
-    //         payable(msg.sender).transfer(msg.value - price.base);
-    //     }
-
-    //     emit NameRenewed(name, labelhash, msg.value, expires);
-    // }
 
     function withdrawETH() public {
         (bool sent,) = payable(owner()).call{value: (address(this).balance)}("");
