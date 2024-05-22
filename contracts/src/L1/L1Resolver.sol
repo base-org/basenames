@@ -55,7 +55,7 @@ contract L1Resolver is IExtendedResolver, ERC165, Ownable {
         }
     }
 
-    function setRootResolver(address _rootResolver) external onlyOwner {
+    function setRootResolver(address rootResolver_) external onlyOwner {
         rootResolver = _rootResolver;
         emit NewRootResolver(_rootResolver);
     }
