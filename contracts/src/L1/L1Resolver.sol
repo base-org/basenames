@@ -36,9 +36,9 @@ contract L1Resolver is IExtendedResolver, ERC165, Ownable {
         emit NewSigners(signers_);
     }
 
-    function setUrl(string calldata _url) external onlyOwner {
-        url = _url;
-        emit NewUrl(_url);
+    function setUrl(string calldata url_) external onlyOwner {
+        url = url_;
+        emit NewUrl(url_);
     }
 
     function addSigners(address[] calldata _signers) external onlyOwner {
@@ -49,15 +49,15 @@ contract L1Resolver is IExtendedResolver, ERC165, Ownable {
     }
 
     function removeSigner(address signer) external onlyOwner {
-        if (signers[_signer]) {
-            delete signers[_signer];
-            emit RemovedSigner(_signer);
+        if (signers[signer]) {
+            delete signers[signer];
+            emit RemovedSigner(signer);
         }
     }
 
     function setRootResolver(address rootResolver_) external onlyOwner {
-        rootResolver = _rootResolver;
-        emit NewRootResolver(_rootResolver);
+        rootResolver = rootResolver_;
+        emit NewRootResolver(rootResolver_);
     }
 
     function makeSignatureHash(address target, uint64 expires, bytes memory request, bytes memory result)
