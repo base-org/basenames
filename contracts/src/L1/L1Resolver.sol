@@ -48,7 +48,7 @@ contract L1Resolver is IExtendedResolver, ERC165, Ownable {
         emit NewSigners(_signers);
     }
 
-    function removeSigner(address _signer) external onlyOwner {
+    function removeSigner(address signer) external onlyOwner {
         if (signers[_signer]) {
             delete signers[_signer];
             emit RemovedSigner(_signer);
