@@ -18,15 +18,15 @@ contract Registry is ENS {
     // Permits modifications only by the owner of the specified node.
     modifier authorised(bytes32 node) {
         address owner_ = records[node].owner;
-        if (owner_ != msg.sender || !operators[owner_][msg.sender]) revert Unauthorized();
+        if(owner_ != msg.sender && !operators[owner_][msg.sender]) revert Unauthorized();
         _;
     }
 
     /**
      * @dev Constructs a new ENS registry.
      */
-    constructor() {
-        records[0x0].owner = msg.sender;
+    constructor(address rootOwner) {
+        records[0x0].owner = rootOwner;
     }
 
     /**
