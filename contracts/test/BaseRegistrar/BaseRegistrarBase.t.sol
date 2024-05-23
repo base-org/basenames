@@ -12,6 +12,11 @@ contract BaseRegistrarBase is Test {
     BaseRegistrar public baseRegistrar;
     address public owner = makeAddr("0x1");
     address public user = makeAddr("0x2");
+    address public controller = makeAddr("0x3");
+    bytes32 public label = keccak256("test");
+    uint256 public id = uint256(label);
+    uint256 public duration = 30 days;
+    uint256 public blockTimestamp = 1716496498;     // May 23, 2024
 
     function setUp() public {
         vm.prank(owner);
@@ -28,5 +33,16 @@ contract BaseRegistrarBase is Test {
         registry.setSubnodeOwner(0x0, ethLabel, owner);
         vm.prank(owner);
         registry.setSubnodeOwner(ETH_NODE, baseLabel, address(baseRegistrar));
+    }
+    
+    function _registrationSetup() internal virtual {
+        vm.prank(owner);
+        baseRegistrar.addController(controller);
+    }
+
+    function _registerName(bytes32 label_, address nameOwner, uint256 duration_) internal virtual returns (uint256) {
+        vm.warp(blockTimestamp); 
+        vm.prank(controller);
+        return baseRegistrar.register(uint256(label_), nameOwner, duration_);
     }
 }
