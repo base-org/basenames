@@ -18,7 +18,7 @@ import {L2Resolver} from "./L2Resolver.sol";
 import {ReverseRegistrar} from "./ReverseRegistrar.sol";
 
 // @TODO add renew with discount flow
-// @TODO discount duration override register request duration? 
+// @TODO discount duration override register request duration?
 // @TODO ++ Availability state check
 
 /**
@@ -177,7 +177,7 @@ contract RegistrarController is Ownable, ReverseClaimer {
     function getActiveDiscounts() external view returns (DiscountDetails[] memory) {
         bytes32[] memory activeDiscountKeys = activeDiscounts.values();
         DiscountDetails[] memory activeDiscountDetails = new DiscountDetails[](activeDiscountKeys.length);
-        for(uint i; i< activeDiscountKeys.length; i++) {
+        for (uint256 i; i < activeDiscountKeys.length; i++) {
             activeDiscountDetails[i] = discounts[activeDiscountKeys[i]];
         }
         return activeDiscountDetails;
@@ -361,5 +361,4 @@ contract RegistrarController is Ownable, ReverseClaimer {
     function recoverFunds(address _token, address _to, uint256 _amount) external onlyOwner {
         IERC20(_token).safeTransfer(_to, _amount);
     }
-
 }
