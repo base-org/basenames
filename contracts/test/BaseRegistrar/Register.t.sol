@@ -6,8 +6,6 @@ import {BaseRegistrarBase} from "./BaseRegistrarBase.t.sol";
 import {ERC721} from "lib/solady/src/tokens/ERC721.sol";
 import {ENS} from "ens-contracts/registry/ENS.sol";
 import {BASE_ETH_NODE, GRACE_PERIOD} from "src/util/Constants.sol";
-import {NameEncoder} from "ens-contracts/utils/NameEncoder.sol";
-import "forge-std/console.sol";
 
 contract Register is BaseRegistrarBase {
     function test_reverts_whenTheRegistrarIsNotLive() public {

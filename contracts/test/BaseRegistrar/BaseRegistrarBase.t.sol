@@ -15,7 +15,7 @@ contract BaseRegistrarBase is Test {
     address public controller = makeAddr("0x3");
     bytes32 public label = keccak256("test");
     uint256 public id = uint256(label);
-    uint256 public duration = 30 days;
+    uint256 public duration = 365 days;
     uint256 public blockTimestamp = 1716496498; // May 23, 2024
 
     function setUp() public {
