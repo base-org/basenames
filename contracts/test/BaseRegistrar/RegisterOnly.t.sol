@@ -29,7 +29,7 @@ contract RegisterOnly is BaseRegistrarBase {
         vm.expectEmit(address(baseRegistrar));
         emit BaseRegistrar.NameRegistered(id, user, duration + blockTimestamp);
 
-        vm.warp(blockTimestamp); 
+        vm.warp(blockTimestamp);
         vm.prank(controller);
         uint256 expires = baseRegistrar.registerOnly(id, user, duration);
 
@@ -42,7 +42,7 @@ contract RegisterOnly is BaseRegistrarBase {
         vm.assume(newOwner != user);
         _registrationSetup();
 
-        vm.warp(blockTimestamp); 
+        vm.warp(blockTimestamp);
         vm.prank(controller);
         baseRegistrar.registerOnly(id, user, duration);
 
@@ -54,7 +54,7 @@ contract RegisterOnly is BaseRegistrarBase {
         vm.expectEmit(address(baseRegistrar));
         emit BaseRegistrar.NameRegistered(id, newOwner, duration + newBlockTimestamp);
 
-        vm.warp(newBlockTimestamp); 
+        vm.warp(newBlockTimestamp);
         vm.prank(controller);
         uint256 expires = baseRegistrar.registerOnly(id, newOwner, duration);
 
@@ -66,7 +66,7 @@ contract RegisterOnly is BaseRegistrarBase {
     function test_reverts_ifTheNameIsNotAvailable(address newOwner) public {
         vm.assume(newOwner != user);
         _registrationSetup();
-        vm.warp(blockTimestamp); 
+        vm.warp(blockTimestamp);
         vm.prank(controller);
         baseRegistrar.registerOnly(id, user, duration);
 
@@ -74,11 +74,11 @@ contract RegisterOnly is BaseRegistrarBase {
         vm.prank(controller);
         baseRegistrar.registerOnly(id, newOwner, duration);
     }
-    
+
     function test_reverts_ifTheNameIsNotAvailable_duringGracePeriod(address newOwner) public {
         vm.assume(newOwner != user);
         _registrationSetup();
-        vm.warp(blockTimestamp); 
+        vm.warp(blockTimestamp);
         vm.prank(controller);
         baseRegistrar.registerOnly(id, user, duration);
 

@@ -33,7 +33,7 @@ contract Register is BaseRegistrarBase {
         vm.expectEmit(address(baseRegistrar));
         emit BaseRegistrar.NameRegistered(id, user, duration + blockTimestamp);
 
-        vm.warp(blockTimestamp); 
+        vm.warp(blockTimestamp);
         vm.prank(controller);
         uint256 expires = baseRegistrar.register(id, user, duration);
 
@@ -57,7 +57,7 @@ contract Register is BaseRegistrarBase {
         vm.expectEmit(address(baseRegistrar));
         emit BaseRegistrar.NameRegistered(id, newOwner, duration + newBlockTimestamp);
 
-        vm.warp(newBlockTimestamp); 
+        vm.warp(newBlockTimestamp);
         vm.prank(controller);
         uint256 expires = baseRegistrar.register(id, newOwner, duration);
 
@@ -75,7 +75,7 @@ contract Register is BaseRegistrarBase {
         vm.prank(controller);
         baseRegistrar.register(id, newOwner, duration);
     }
-    
+
     function test_reverts_ifTheNameIsNotAvailable_duringGracePeriod(address newOwner) public {
         vm.assume(newOwner != user);
         _registrationSetup();

@@ -22,7 +22,16 @@ contract Resolve is L1ResolverTestBase {
         bytes memory callData = abi.encodeWithSelector(resolver.resolve.selector, dnsName, data);
         string[] memory urls = new string[](1);
         urls[0] = resolver.url();
-        vm.expectRevert(abi.encodeWithSelector(L1Resolver.OffchainLookup.selector, address(resolver), urls, callData, L1Resolver.resolveWithProof.selector, callData));
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                L1Resolver.OffchainLookup.selector,
+                address(resolver),
+                urls,
+                callData,
+                L1Resolver.resolveWithProof.selector,
+                callData
+            )
+        );
         resolver.resolve(dnsName, data);
     }
 

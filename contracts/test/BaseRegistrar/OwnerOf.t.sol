@@ -9,7 +9,7 @@ contract OwnerOf is BaseRegistrarBase {
         _registrationSetup();
         uint256 expires = _registerName(label, user, duration);
 
-        vm.warp(expires+1);
+        vm.warp(expires + 1);
         vm.expectRevert(abi.encodeWithSelector(BaseRegistrar.Expired.selector, id));
         baseRegistrar.ownerOf(id);
     }

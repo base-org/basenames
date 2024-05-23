@@ -20,19 +20,17 @@ contract SupportsInterface is L1ResolverTestBase {
     }
 
     function test_supportsForwarding_toIAddrCompliantRootResolver() public view {
-        assertTrue(resolver.supportsInterface(type(IAddrResolver).interfaceId)); 
+        assertTrue(resolver.supportsInterface(type(IAddrResolver).interfaceId));
     }
 
     function test_supportsForwarding_toITextCompliantRootResolver() public view {
-        assertTrue(resolver.supportsInterface(type(ITextResolver).interfaceId)); 
+        assertTrue(resolver.supportsInterface(type(ITextResolver).interfaceId));
     }
 
     function test_doesNotSupportArbitraryInterfaceId(bytes4 interfaceID) public view {
         vm.assume(
-            interfaceID != bytes4(0x9061b923) && 
-            interfaceID != type(IERC165).interfaceId && 
-            interfaceID != type(IAddrResolver).interfaceId && 
-            interfaceID != type(ITextResolver).interfaceId
+            interfaceID != bytes4(0x9061b923) && interfaceID != type(IERC165).interfaceId
+                && interfaceID != type(IAddrResolver).interfaceId && interfaceID != type(ITextResolver).interfaceId
         );
         assertFalse(resolver.supportsInterface(interfaceID));
     }
