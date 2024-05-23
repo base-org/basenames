@@ -8,14 +8,13 @@ import {ETH_NODE, BASE_ETH_NODE} from "src/util/Constants.sol";
 import {NameEncoder} from "ens-contracts/utils/NameEncoder.sol";
 import {RegistryBase} from "./RegistryBase.t.sol";
 
-
 contract SetResolver is RegistryBase {
     function test_setsApprovalCorrectly() public {
         vm.expectEmit();
         emit ENS.ApprovalForAll(ethOwner, nodeOwner, true);
         vm.prank(ethOwner);
-        registry.setApprovalForAll(nodeOwner, true);        
-        
+        registry.setApprovalForAll(nodeOwner, true);
+
         vm.prank(nodeOwner);
         address newResolver = makeAddr("resolver");
         registry.setResolver(ETH_NODE, newResolver);

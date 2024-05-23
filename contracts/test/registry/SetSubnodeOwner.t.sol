@@ -8,7 +8,6 @@ import {ETH_NODE, BASE_ETH_NODE} from "src/util/Constants.sol";
 import {NameEncoder} from "ens-contracts/utils/NameEncoder.sol";
 import {RegistryBase} from "./RegistryBase.t.sol";
 
-
 contract SetSubnodeOwner is RegistryBase {
     bytes32 label = keccak256("test");
 
@@ -17,8 +16,8 @@ contract SetSubnodeOwner is RegistryBase {
         vm.expectEmit();
         emit ENS.NewOwner(ETH_NODE, label, nodeOwner);
         vm.prank(ethOwner);
-        registry.setSubnodeOwner(ETH_NODE, label, nodeOwner);        
-        
+        registry.setSubnodeOwner(ETH_NODE, label, nodeOwner);
+
         address storedOwner = registry.owner(node);
         assertTrue(storedOwner == nodeOwner);
     }

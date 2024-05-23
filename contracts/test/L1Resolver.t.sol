@@ -5,16 +5,12 @@ import {Test} from "forge-std/Test.sol";
 import {L1Resolver} from "src/L1/L1Resolver.sol";
 
 contract L1ResolverTest is Test {
-
     L1Resolver public resolver;
 
     function setUp() public {
         address[] memory _signer = new address[](1);
         _signer[0] = makeAddr("0xal1ce");
-        resolver = new L1Resolver(
-            "",
-            _signer
-        );
+        resolver = new L1Resolver("", _signer);
     }
 
     function test_supportsInterface() public view {

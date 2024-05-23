@@ -8,14 +8,13 @@ import {ETH_NODE, BASE_ETH_NODE} from "src/util/Constants.sol";
 import {NameEncoder} from "ens-contracts/utils/NameEncoder.sol";
 import {RegistryBase} from "./RegistryBase.t.sol";
 
-
 contract SetTTL is RegistryBase {
     function test_setsTheTTLCorrectly() public {
         vm.expectEmit();
         emit ENS.NewTTL(ETH_NODE, TTL);
         vm.prank(ethOwner);
-        registry.setTTL(ETH_NODE, TTL);        
-        
+        registry.setTTL(ETH_NODE, TTL);
+
         uint64 storedTtl = registry.ttl(ETH_NODE);
         assertTrue(storedTtl == TTL);
     }

@@ -8,7 +8,6 @@ import {ETH_NODE, BASE_ETH_NODE} from "src/util/Constants.sol";
 import {NameEncoder} from "ens-contracts/utils/NameEncoder.sol";
 import {RegistryBase} from "./RegistryBase.t.sol";
 
-
 contract SetRecord is RegistryBase {
     function test_setsTheRecordCorrectly() public {
         vm.expectEmit();
@@ -18,8 +17,8 @@ contract SetRecord is RegistryBase {
         vm.expectEmit();
         emit ENS.NewTTL(ETH_NODE, TTL);
         vm.prank(ethOwner);
-        registry.setRecord(ETH_NODE, nodeOwner, address(resolver), TTL);        
-        
+        registry.setRecord(ETH_NODE, nodeOwner, address(resolver), TTL);
+
         address storedOwner = registry.owner(ETH_NODE);
         address storedResolver = registry.resolver(ETH_NODE);
         uint64 storedTtl = registry.ttl(ETH_NODE);

@@ -8,7 +8,6 @@ import {ETH_NODE, BASE_ETH_NODE} from "src/util/Constants.sol";
 import {NameEncoder} from "ens-contracts/utils/NameEncoder.sol";
 import {RegistryBase} from "./RegistryBase.t.sol";
 
-
 contract SetSubnodeRecord is RegistryBase {
     bytes32 label = keccak256("test");
 
@@ -21,8 +20,8 @@ contract SetSubnodeRecord is RegistryBase {
         vm.expectEmit();
         emit ENS.NewTTL(node, TTL);
         vm.prank(ethOwner);
-        registry.setSubnodeRecord(ETH_NODE, label, nodeOwner, address(resolver), TTL);        
-        
+        registry.setSubnodeRecord(ETH_NODE, label, nodeOwner, address(resolver), TTL);
+
         address storedOwner = registry.owner(node);
         address storedResolver = registry.resolver(node);
         uint64 storedTtl = registry.ttl(node);

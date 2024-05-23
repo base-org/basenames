@@ -11,7 +11,7 @@ contract RegistryBase is Test {
     uint64 TTL = type(uint64).max;
     Registry public registry;
     MockPublicResolver public resolver;
-    
+
     address public rootOwner = makeAddr("0x1");
     address public ethOwner = makeAddr("eth");
     address public baseEthOwner = makeAddr("base");
@@ -30,7 +30,7 @@ contract RegistryBase is Test {
     }
 
     function _ownershipSetup() public virtual {
-        // establish the base.eth namespace  
+        // establish the base.eth namespace
         bytes32 ethLabel = keccak256("eth");
         bytes32 baseLabel = keccak256("base");
         vm.prank(rootOwner);
