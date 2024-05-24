@@ -11,7 +11,7 @@ contract Registry is ENS {
     }
 
     mapping(bytes32 => Record) records;
-    mapping(address => mapping(address => bool)) operators;
+    mapping(address nameHolder => mapping(address operator => bool isApproved)) operators;
 
     error Unauthorized();
 
@@ -93,8 +93,8 @@ contract Registry is ENS {
      * @param resolver_ The address of the resolver.
      */
     function setResolver(bytes32 node, address resolver_) public virtual override authorised(node) {
-        emit NewResolver(node, resolver_);
         records[node].resolver = resolver_;
+        emit NewResolver(node, resolver_);
     }
 
     /**
@@ -103,8 +103,8 @@ contract Registry is ENS {
      * @param ttl_ The TTL in seconds.
      */
     function setTTL(bytes32 node, uint64 ttl_) public virtual override authorised(node) {
-        emit NewTTL(node, ttl_);
         records[node].ttl = ttl_;
+        emit NewTTL(node, ttl_);
     }
 
     /**
