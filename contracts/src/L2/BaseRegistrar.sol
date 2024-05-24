@@ -5,7 +5,7 @@ import {ENS} from "ens-contracts/registry/ENS.sol";
 import {ERC721} from "lib/solady/src/tokens/ERC721.sol";
 import {Ownable} from "solady/auth/Ownable.sol";
 
-import {BASE_ETH_NODE, GRACE_PERIOD} from "src/util/Constants.sol";
+import {GRACE_PERIOD} from "src/util/Constants.sol";
 
 contract BaseRegistrar is ERC721, Ownable {
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
@@ -15,8 +15,11 @@ contract BaseRegistrar is ERC721, Ownable {
     mapping(uint256 => uint256) expiries;
     // The ENS registry
     ENS public ens;
+    // The namehash of the TLD this registrar owns (eg, .eth)
+    bytes32 public baseNode;
     // A map of addresses that are authorised to register and renew names.
     mapping(address => bool) public controllers;
+
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                          CONSTANTS                         */
@@ -54,7 +57,7 @@ contract BaseRegistrar is ERC721, Ownable {
     /*                          MODIFIERS                         */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
     modifier live() {
-        if (ens.owner(BASE_ETH_NODE) != address(this)) revert RegistrarNotLive();
+        if (ens.owner(baseNode) != address(this)) revert RegistrarNotLive();
         _;
     }
 
@@ -66,9 +69,10 @@ contract BaseRegistrar is ERC721, Ownable {
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                        IMPLEMENTATION                      */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
-    constructor(ENS _ens, address _owner) {
+    constructor(ENS _ens, address _owner, bytes32 baseNode_) {
         _initializeOwner(_owner);
         ens = _ens;
+        baseNode = baseNode_;
     }
 
     // Authorises a controller, who can register and renew domains.
@@ -85,7 +89,7 @@ contract BaseRegistrar is ERC721, Ownable {
 
     // Set the resolver for the TLD this registrar manages.
     function setResolver(address resolver) external onlyOwner {
-        ens.setResolver(BASE_ETH_NODE, resolver);
+        ens.setResolver(baseNode, resolver);
     }
 
     // Returns the expiration timestamp of the specified id.
@@ -143,7 +147,7 @@ contract BaseRegistrar is ERC721, Ownable {
      */
     function reclaim(uint256 id, address owner) external live {
         if (!_isApprovedOrOwner(msg.sender, id)) revert NotApprovedOwner(id, owner);
-        ens.setSubnodeOwner(BASE_ETH_NODE, bytes32(id), owner);
+        ens.setSubnodeOwner(baseNode, bytes32(id), owner);
     }
 
     function _register(uint256 id, address owner, uint256 duration, bool updateRegistry)
@@ -161,7 +165,7 @@ contract BaseRegistrar is ERC721, Ownable {
         }
         _mint(owner, id);
         if (updateRegistry) {
-            ens.setSubnodeOwner(BASE_ETH_NODE, bytes32(id), owner);
+            ens.setSubnodeOwner(baseNode, bytes32(id), owner);
         }
 
         emit NameRegistered(id, owner, block.timestamp + duration);
