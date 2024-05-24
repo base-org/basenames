@@ -12,13 +12,13 @@ contract BaseRegistrar is ERC721, Ownable {
     /*                          STORAGE                           */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
     // A map of expiry times
-    mapping(uint256 => uint256) expiries;
+    mapping(uint256 id => uint256 expiry) expiries;
     // The ENS registry
     ENS public ens;
     // The namehash of the TLD this registrar owns (eg, .eth)
     bytes32 public baseNode;
     // A map of addresses that are authorised to register and renew names.
-    mapping(address => bool) public controllers;
+    mapping(address controller => bool isApproved) public controllers;
 
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
