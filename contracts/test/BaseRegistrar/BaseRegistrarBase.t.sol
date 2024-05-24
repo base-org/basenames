@@ -5,7 +5,7 @@ import {Test, console} from "forge-std/Test.sol";
 import {BaseRegistrar} from "src/L2/BaseRegistrar.sol";
 import {MockPublicResolver} from "test/mocks/MockPublicResolver.sol";
 import {Registry} from "src/L2/Registry.sol";
-import {ETH_NODE} from "src/util/Constants.sol";
+import {ETH_NODE, BASE_ETH_NODE} from "src/util/Constants.sol";
 
 contract BaseRegistrarBase is Test {
     Registry public registry;
@@ -21,7 +21,7 @@ contract BaseRegistrarBase is Test {
     function setUp() public {
         vm.prank(owner);
         registry = new Registry(owner);
-        baseRegistrar = new BaseRegistrar(registry, owner);
+        baseRegistrar = new BaseRegistrar(registry, owner, BASE_ETH_NODE);
         _ensSetup();
     }
 
