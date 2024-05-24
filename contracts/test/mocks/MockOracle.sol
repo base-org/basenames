@@ -1,8 +1,10 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ~0.8.17;
 
-contract MockOracle {
-    int256 private price;
+import "src/L2/StablePriceOracle.sol";
+
+contract MockOracle is AggregatorInterface {
+    int256 private price; // int256 is compatible with the return type of Aggregator Interface
 
     constructor(int256 _initialPrice) {
         price = _initialPrice;
