@@ -18,7 +18,6 @@ import {L2Resolver} from "./L2Resolver.sol";
 import {ReverseRegistrar} from "./ReverseRegistrar.sol";
 
 // @TODO add renew with discount flow
-// @TODO discount duration override register request duration?
 // @TODO ++ Availability state check
 
 /**
@@ -42,14 +41,6 @@ contract RegistrarController is Ownable, ReverseClaimer {
         bool active;
         address discountValidator;
         uint256 discount; // denom in dollars
-    }
-
-    enum NameStates {
-        UNAVAILABLE,
-        AVAILABLE,
-        INVALID,
-        GRACE_PERIOD,
-        AUCTION
     }
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
