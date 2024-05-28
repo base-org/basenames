@@ -10,7 +10,7 @@ contract PriceTest is Test {
     MockOracle mockOracle;
 
     function setUp() public {
-        mockOracle = new MockOracle(150000000);
+        mockOracle = new MockOracle(3000);
         uint256[] memory rentPrices = new uint256[](5);
 
         rentPrices[0] = 1000000;
@@ -55,8 +55,12 @@ contract PriceTest is Test {
         assertEq(premiumWei, 0);
     }
 
-    function testAttoUSDToWei() public {
-        
+    function testAttoUSDToWei() public view {
+        uint256 attoUSD = 30000000000000; // precise to ten decimal places
+        uint256 expectedWei = 1e18;
+        uint256 convertedWei = stablePriceOracle.attoUSDToWei(attoUSD);
+        console.log("converted Wei", convertedWei);
+        assertEq(convertedWei, expectedWei);
     }
 
 }
