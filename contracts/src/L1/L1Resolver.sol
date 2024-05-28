@@ -43,7 +43,7 @@ contract L1Resolver is IExtendedResolver, ERC165, Ownable {
 
     function addSigners(address[] calldata _signers) external onlyOwner {
         for (uint256 i; i < _signers.length; i++) {
-            signers[_signers[i]] == true;
+            signers[_signers[i]] = true;
         }
         emit NewSigners(_signers);
     }
