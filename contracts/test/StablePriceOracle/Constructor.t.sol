@@ -31,4 +31,20 @@ contract StablePriceOracleTest is Test {
         assertEq(stablePriceOracle.price4Letter(), 4000000);
         assertEq(stablePriceOracle.price5Letter(), 5000000);
     }
+
+    // function testConstructorZeroAddress() public {
+    //     uint256[] memory rentPrices = new uint256[](5);
+
+    //     rentPrices[0] = 1000000;
+    //     rentPrices[1] = 2000000;
+    //     rentPrices[2] = 3000000;
+    //     rentPrices[3] = 4000000;
+    //     rentPrices[4] = 5000000;
+    //     vm.expectRevert("Address can't be zero");
+    //     new StablePriceOracle(AggregatorInterface(address(0)), rentPrices);
+    // }
+    // function testConstructorEmptyRentPrices() public {
+    //     uint256[] memory rentPrices = new uint256[](0);
+    //     vm.expectRevert("Rent prices array length mismatch");
+    // }
 }
