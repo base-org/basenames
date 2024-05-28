@@ -4,7 +4,7 @@ pragma solidity ~0.8.17;
 import "src/L2/StablePriceOracle.sol";
 
 contract MockOracle is AggregatorInterface {
-    int256 private price; // int256 is compatible with the return type of Aggregator Interface
+    int256 private price; 
 
     constructor(int256 _initialPrice) {
         price = _initialPrice;
