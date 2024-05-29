@@ -40,7 +40,7 @@ contract RegistrarController is Ownable, ReverseClaimer {
     struct DiscountDetails {
         bool active;
         address discountValidator;
-        uint256 discount; // denom in dollars
+        uint256 discount; // denom in usdc 
     }
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
