@@ -2,8 +2,9 @@
 pragma solidity ^0.8.17;
 
 import {Test, console} from "forge-std/Test.sol";
-import "src/L2/StablePriceOracle.sol";
-import "../mocks/MockOracle.sol";
+import {StablePriceOracle} from "src/L2/StablePriceOracle.sol";
+import {IPriceOracle} from "src/L2/interface/IPriceOracle.sol";
+import {MockOracle} from "../mocks/MockOracle.sol";
 import {StablePriceOracleTest} from "./ConstructorTest.t.sol";
 
 contract PriceTest is StablePriceOracleTest {
