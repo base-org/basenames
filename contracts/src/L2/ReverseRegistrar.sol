@@ -8,6 +8,7 @@ import {Ownable} from "solady/auth/Ownable.sol";
 import {ADDR_REVERSE_NODE} from "src/util/Constants.sol";
 import {Sha3} from "src/lib/Sha3.sol";
 
+import "forge-std/console.sol";
 contract ReverseRegistrar is Ownable {
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                          STORAGE                           */
@@ -31,7 +32,7 @@ contract ReverseRegistrar is Ownable {
     /*                          MODIFIERS                         */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
     modifier authorized(address addr) {
-        if (addr != msg.sender && !ens.isApprovedForAll(addr, msg.sender) && !ownsContract(addr)) {
+        if (addr != msg.sender && !ens.isApprovedForAll(addr, msg.sender) && !_ownsContract(addr)) {
             revert NotAuthorized(addr, msg.sender);
         }
         _;
@@ -136,11 +137,24 @@ contract ReverseRegistrar is Ownable {
         return keccak256(abi.encodePacked(ADDR_REVERSE_NODE, Sha3.hexAddress(addr)));
     }
 
-    function ownsContract(address addr) internal view returns (bool) {
+    function _ownsContract(address addr) internal view returns (bool) {
+        // Determine if a contract exists at `addr` and return early if not 
+        if (!_isContract(addr)) {
+            return false;
+        }
+        // If a contract does exist, try and call `Ownable.owner()` 
         try Ownable(addr).owner() returns (address owner) {
             return owner == msg.sender;
         } catch {
             return false;
         }
+    }
+
+    function _isContract(address addr) internal view returns (bool) {
+        uint32 size;
+        assembly {
+            size := extcodesize(addr)
+        }
+        return size > 0;
     }
 }
