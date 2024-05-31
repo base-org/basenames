@@ -34,9 +34,26 @@ contract StablePriceFuzzTest is Test {
 
     function test_price(string memory name, uint256 expires, uint256 duration) public view {
         vm.assume(bytes(name).length > 0 && bytes(name).length <= 512);
-
+        // vm.assume(isValidUnicodeString(name));
         stablePriceOracle.price(name, expires, duration);
     }
+
+    // function isValidUnicodeString(string memory str) internal pure returns (bool) {
+    // bytes memory b = bytes(str);
+    // for (uint i = 0; i < b.length; i++) {
+    //     bytes1 char = b[i];
+    //     if (char >= 0x80) {
+    //         if (char < 0xC2 || char > 0xF4) {
+    //             return false;
+    //         }
+    //         i++;
+    //         if (i >= b.length || b[i] < 0x80 || b[i] > 0xBF) {
+    //             return false;
+    //         }
+    //     }
+    // }
+    // return true;
+    // }
 
     function test_AttoUSDToWei(uint256 attoUSD) public view{
         uint256 scaledAttoUSD = attoUSD / 1e10;
