@@ -34,7 +34,7 @@ contract StablePriceOracleTest is Test {
         stablePriceOracle  = new StablePriceOracle(mockOracle, rentPrices);
     }
 
-    function testConstructor() public view {
+    function test_constructor() public view {
         assertEq(address(stablePriceOracle.usdOracle()), address(mockOracle));
 
         assertEq(stablePriceOracle.price1Letter(), 1000000);

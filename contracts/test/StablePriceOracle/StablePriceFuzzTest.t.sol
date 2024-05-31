@@ -20,7 +20,7 @@ contract StablePriceFuzzTest is Test {
         stablePriceOracle = new StablePriceOracle(mockOracle, rentPrices);
     }
 
-    function testFailingCase() public view { // Test case for the failed fuzz test to determine which field is causing the error
+    function test_price_reverts_unicodeCharacters() public { // Test case for the failed fuzz test to determine which field is causing the error
     
         string memory name = unicode"𐏔Ⱥs%𝔵b.ハ|\"*༸&`"; // Erroring on input with Unicode characters
 
@@ -28,16 +28,17 @@ contract StablePriceFuzzTest is Test {
 
         uint256 duration = 120886407775381395340616426642328538404563530755442021068989041128827069110; // duration value in the counterexample
 
-        // vm.expectRevert(); Expected revert based on the counterexample but this test passes
+        vm.expectRevert(); 
         stablePriceOracle.price(name, expires, duration);
 }
-    function testFuzzPrice(string memory name, uint256 expires, uint256 duration) public view {
+
+    function test_price(string memory name, uint256 expires, uint256 duration) public view {
         vm.assume(bytes(name).length > 0 && bytes(name).length <= 512);
 
         stablePriceOracle.price(name, expires, duration);
     }
 
-    function testFuzzAttoUSDToWei(uint256 attoUSD) public view{
+    function test_AttoUSDToWei(uint256 attoUSD) public view{
         uint256 scaledAttoUSD = attoUSD / 1e10;
         stablePriceOracle.attoUSDToWei(scaledAttoUSD);
     }
