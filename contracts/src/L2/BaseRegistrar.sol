@@ -135,7 +135,7 @@ contract BaseRegistrar is ERC721, Ownable {
      * @param tokenId uint256 ID of the token to query the owner of
      * @return address currently marked as the owner of the given token ID
      */
-    function ownerOf(uint256 tokenId) public view override(ERC721) returns (address) {
+    function ownerOf(uint256 tokenId) public view override returns (address) {
         if (expiries[tokenId] <= block.timestamp) revert Expired(tokenId);
         return super.ownerOf(tokenId);
     }
@@ -146,8 +146,17 @@ contract BaseRegistrar is ERC721, Ownable {
         return expiries[id] + GRACE_PERIOD < block.timestamp;
     }
 
+    /// @notice Allows holders of names can renew their ownerhsip and extend their expiry
+    ///
+    /// @dev Renewal can be called while owning a subdomain or while the name is in the 
+    /// @dev grace period. Can only be called by a controller.
+    /// 
+    /// @param id The Id to renew
+    /// @param duration The time that will be added to this name's expiry 
+    /// 
+    /// @return The new expiry date
     function renew(uint256 id, uint256 duration) external live onlyController returns (uint256) {
-        if (expiries[id] + GRACE_PERIOD < block.timestamp) revert NotRegisteredOrInGrace(id); // Name must be registered here or in grace period
+        if (expiries[id] + GRACE_PERIOD < block.timestamp) revert NotRegisteredOrInGrace(id);
 
         expiries[id] += duration;
         emit NameRenewed(id, expiries[id]);
