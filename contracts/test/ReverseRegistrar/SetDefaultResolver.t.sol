@@ -6,7 +6,6 @@ import {Ownable} from "solady/auth/Ownable.sol";
 import {ReverseRegistrarBase} from "./ReverseRegistrarBase.t.sol";
 import {ReverseRegistrar} from "src/L2/ReverseRegistrar.sol";
 
-
 contract SetDefaultResolver is ReverseRegistrarBase {
     function test_reverts_whenCalledByNonOwner(address caller) public {
         vm.assume(caller != owner);
@@ -14,7 +13,7 @@ contract SetDefaultResolver is ReverseRegistrarBase {
         vm.prank(caller);
         reverse.setDefaultResolver(makeAddr("fake"));
     }
-    
+
     function test_reverts_whenPassedZeroAddress() public {
         vm.expectRevert(ReverseRegistrar.NoZeroAddress.selector);
         vm.prank(owner);

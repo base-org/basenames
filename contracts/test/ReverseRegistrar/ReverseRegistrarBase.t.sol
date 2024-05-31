@@ -28,8 +28,8 @@ contract ReverseRegistrarBase is Test {
         registry.setSubnodeOwner(0x0, ethLabel, owner);
         vm.prank(owner);
         registry.setSubnodeOwner(ETH_NODE, baseLabel, owner);
-        
-        // establish the addr.reverse namespace 
+
+        // establish the addr.reverse namespace
         vm.prank(owner);
         registry.setSubnodeOwner(0x0, keccak256("reverse"), owner);
         vm.prank(owner);

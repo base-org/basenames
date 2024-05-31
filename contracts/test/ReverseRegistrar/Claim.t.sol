@@ -17,7 +17,7 @@ contract Claim is ReverseRegistrarBase {
         bytes32 reverseNode = keccak256(abi.encodePacked(ADDR_REVERSE_NODE, labelHash));
         vm.prank(owner);
         reverse.setDefaultResolver(resolver);
-        
+
         vm.expectEmit();
         emit ReverseRegistrar.ReverseClaimed(user, reverseNode);
         vm.prank(user);

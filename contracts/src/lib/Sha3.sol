@@ -5,7 +5,7 @@ library Sha3 {
     // Hex encoding of "0123456789abcdef"
     bytes32 constant ALPHABET = 0x3031323334353637383961626364656600000000000000000000000000000000;
 
-        /**
+    /**
      * @dev An optimised function to compute the sha3 of the lower-case
      *      hexadecimal representation of an Ethereum address.
      * @param addr The address to hash

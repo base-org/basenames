@@ -74,11 +74,7 @@ contract ReverseRegistrar is Ownable {
      * @param resolver The resolver of the reverse node
      * @return The ENS node hash of the reverse record.
      */
-    function claimForAddr(address addr, address owner, address resolver)
-        public
-        authorized(addr)
-        returns (bytes32)
-    {
+    function claimForAddr(address addr, address owner, address resolver) public authorized(addr) returns (bytes32) {
         bytes32 labelHash = Sha3.hexAddress(addr);
         bytes32 reverseNode = keccak256(abi.encodePacked(ADDR_REVERSE_NODE, labelHash));
         emit ReverseClaimed(addr, reverseNode);
@@ -137,11 +133,11 @@ contract ReverseRegistrar is Ownable {
     }
 
     function _ownsContract(address addr) internal view returns (bool) {
-        // Determine if a contract exists at `addr` and return early if not 
+        // Determine if a contract exists at `addr` and return early if not
         if (!_isContract(addr)) {
             return false;
         }
-        // If a contract does exist, try and call `Ownable.owner()` 
+        // If a contract does exist, try and call `Ownable.owner()`
         try Ownable(addr).owner() returns (address owner) {
             return owner == msg.sender;
         } catch {
