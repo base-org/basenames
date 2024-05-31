@@ -6,6 +6,7 @@ import {NameResolver} from "ens-contracts/resolvers/profiles/NameResolver.sol";
 import {Ownable} from "solady/auth/Ownable.sol";
 
 import {ADDR_REVERSE_NODE} from "src/util/Constants.sol";
+import {Sha3} from "src/lib/Sha3.sol";
 
 contract ReverseRegistrar is Ownable {
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
@@ -13,12 +14,6 @@ contract ReverseRegistrar is Ownable {
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
     ENS public immutable ens;
     NameResolver public defaultResolver;
-
-    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
-    /*                          CONSTANTS                         */
-    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
-    // Hex encoding of "0123456789abcdef"
-    bytes32 constant ALPHABET = 0x3031323334353637383961626364656600000000000000000000000000000000;
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                          ERRORS                            */
@@ -36,7 +31,7 @@ contract ReverseRegistrar is Ownable {
     /*                          MODIFIERS                         */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
     modifier authorized(address addr) {
-        if (addr != msg.sender || !ens.isApprovedForAll(addr, msg.sender) || !ownsContract(addr)) {
+        if (addr != msg.sender && !ens.isApprovedForAll(addr, msg.sender) && !ownsContract(addr)) {
             revert NotAuthorized(addr, msg.sender);
         }
         _;
@@ -58,7 +53,7 @@ contract ReverseRegistrar is Ownable {
     function setDefaultResolver(address resolver) public onlyOwner {
         if (address(resolver) == address(0)) revert NoZeroAddress();
         defaultResolver = NameResolver(resolver);
-        emit DefaultResolverChanged(NameResolver(resolver));
+        emit DefaultResolverChanged(defaultResolver);
     }
 
     /**
@@ -84,7 +79,7 @@ contract ReverseRegistrar is Ownable {
         authorized(addr)
         returns (bytes32)
     {
-        bytes32 labelHash = sha3HexAddress(addr);
+        bytes32 labelHash = Sha3.hexAddress(addr);
         bytes32 reverseNode = keccak256(abi.encodePacked(ADDR_REVERSE_NODE, labelHash));
         emit ReverseClaimed(addr, reverseNode);
         ens.setSubnodeRecord(ADDR_REVERSE_NODE, labelHash, owner, resolver, 0);
@@ -138,7 +133,7 @@ contract ReverseRegistrar is Ownable {
      * @return The ENS node hash.
      */
     function node(address addr) public pure returns (bytes32) {
-        return keccak256(abi.encodePacked(ADDR_REVERSE_NODE, sha3HexAddress(addr)));
+        return keccak256(abi.encodePacked(ADDR_REVERSE_NODE, Sha3.hexAddress(addr)));
     }
 
     function ownsContract(address addr) internal view returns (bool) {
@@ -146,28 +141,6 @@ contract ReverseRegistrar is Ownable {
             return owner == msg.sender;
         } catch {
             return false;
-        }
-    }
-
-    /**
-     * @dev An optimised function to compute the sha3 of the lower-case
-     *      hexadecimal representation of an Ethereum address.
-     * @param addr The address to hash
-     * @return ret The SHA3 hash of the lower-case hexadecimal encoding of the
-     *         input address.
-     */
-    function sha3HexAddress(address addr) private pure returns (bytes32 ret) {
-        assembly {
-            for { let i := 40 } gt(i, 0) {} {
-                i := sub(i, 1)
-                mstore8(i, byte(and(addr, 0xf), ALPHABET))
-                addr := div(addr, 0x10)
-                i := sub(i, 1)
-                mstore8(i, byte(and(addr, 0xf), ALPHABET))
-                addr := div(addr, 0x10)
-            }
-
-            ret := keccak256(0, 40)
         }
     }
 }

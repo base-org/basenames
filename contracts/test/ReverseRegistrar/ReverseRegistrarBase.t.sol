@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity 0.8.23;
+pragma solidity ^0.8.23;
 
 import {Test, console} from "forge-std/Test.sol";
 import {ReverseRegistrar} from "src/L2/ReverseRegistrar.sol";
@@ -37,6 +37,7 @@ contract ReverseRegistrarBase is Test {
     }
 
     function test_constructor() public view {
-        assertTrue(registry.owner(ADDR_REVERSE_NODE) == address(reverse));
+        assertTrue(reverse.owner() == owner);
+        assertTrue(address(reverse.ens()) == address(registry));
     }
 }
