@@ -8,7 +8,6 @@ import {Ownable} from "solady/auth/Ownable.sol";
 import {ADDR_REVERSE_NODE} from "src/util/Constants.sol";
 import {Sha3} from "src/lib/Sha3.sol";
 
-import "forge-std/console.sol";
 contract ReverseRegistrar is Ownable {
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                          STORAGE                           */
