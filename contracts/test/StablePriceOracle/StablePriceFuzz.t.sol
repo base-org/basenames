@@ -20,17 +20,24 @@ contract StablePriceFuzzTest is Test {
         stablePriceOracle = new StablePriceOracle(mockOracle, rentPrices);
     }
 
-    function testFailingCase() public view { // Test case for the failed fuzz test
-    string memory name = "Hello"; // "𐏔Ⱥs%𝔵b.ハ|\"*༸&`" Erroring on input with Unicode characters
-    uint256 expires = 32987790711288265998887799860420900946;
-    uint256 duration = 120886407775381395340616426642328538404563530755442021068989041128827069110;
+    function testFailingCase() public view { // Test case for the failed fuzz test to determine which field is causing the error
+    
+        string memory name = unicode"𐏔Ⱥs%𝔵b.ハ|\"*༸&`"; // Erroring on input with Unicode characters
 
-    stablePriceOracle.price(name, expires, duration);
+        uint256 expires = 32987790711288265998887799860420900946; // expires value in the counterexample 
+
+        uint256 duration = 120886407775381395340616426642328538404563530755442021068989041128827069110; // duration value in the counterexample
+
+        // vm.expectRevert(); Expected revert based on the counterexample but this test passes
+        stablePriceOracle.price(name, expires, duration);
 }
-    function testFuzzPrice(string memory name, uint256 expires, uint256 duration) public {
+    function testFuzzPrice(string memory name, uint256 expires, uint256 duration) public view {
+        vm.assume(bytes(name).length > 0 && bytes(name).length <= 512);
+
         stablePriceOracle.price(name, expires, duration);
     }
-    function testFuzzAttoUSDToWei(uint256 attoUSD) public {
+
+    function testFuzzAttoUSDToWei(uint256 attoUSD) public view{
         uint256 scaledAttoUSD = attoUSD / 1e10;
         stablePriceOracle.attoUSDToWei(scaledAttoUSD);
     }

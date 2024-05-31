@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ~0.8.17;
 
-import "src/L2/StablePriceOracle.sol";
+import {AggregatorInterface} from "src/L2/StablePriceOracle.sol";
 
 contract MockOracle is AggregatorInterface {
     int256 private price; 

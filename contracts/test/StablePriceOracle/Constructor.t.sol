@@ -9,10 +9,22 @@ contract StablePriceOracleTest is Test {
     StablePriceOracle stablePriceOracle;
     MockOracle mockOracle;
 
+    uint256 rent1;
+    uint256 rent2;
+    uint256 rent3;
+    uint256 rent4;
+    uint256 rent5;
+
     function setUp() public {
-        mockOracle = new MockOracle(15000000);
+        mockOracle = new MockOracle(3000);
 
         uint256[] memory rentPrices = new uint256[](5);
+
+        rent1 = 1000000;
+        rent2 = 2000000;
+        rent3 = 3000000;
+        rent4 = 4000000;
+        rent5 = 5000000;
 
         rentPrices[0] = 1000000;
         rentPrices[1] = 2000000;
@@ -32,19 +44,4 @@ contract StablePriceOracleTest is Test {
         assertEq(stablePriceOracle.price5Letter(), 5000000);
     }
 
-    // function testConstructorZeroAddress() public {
-    //     uint256[] memory rentPrices = new uint256[](5);
-
-    //     rentPrices[0] = 1000000;
-    //     rentPrices[1] = 2000000;
-    //     rentPrices[2] = 3000000;
-    //     rentPrices[3] = 4000000;
-    //     rentPrices[4] = 5000000;
-    //     vm.expectRevert("Address can't be zero");
-    //     new StablePriceOracle(AggregatorInterface(address(0)), rentPrices);
-    // }
-    // function testConstructorEmptyRentPrices() public {
-    //     uint256[] memory rentPrices = new uint256[](0);
-    //     vm.expectRevert("Rent prices array length mismatch");
-    // }
 }
