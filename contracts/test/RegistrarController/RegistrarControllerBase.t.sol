@@ -17,7 +17,7 @@ import {MockUSDC} from "test/mocks/MockUSDC.sol";
 import {MockNameWrapper} from "test/mocks/MockNameWrapper.sol";
 import {MockPriceOracle} from "test/mocks/MockPriceOracle.sol";
 
-import {ADDR_REVERSE_NODE} from "src/util/Constants.sol";
+import {REVERSE_NODE} from "src/util/Constants.sol";
 
 
 contract RegistrarControllerBase is Test {
@@ -40,7 +40,12 @@ contract RegistrarControllerBase is Test {
         wrapper = new MockNameWrapper();
         prices = new MockPriceOracle();
         registry = new Registry(owner);
-        registry.setSubnodeOwner(ADDR_REVERSE_NODE, address(reverse));
+        bytes32 reverseLabel = keccak256("reverse");
+        vm.prank(owner);
+        registry.setSubnodeOwner(0x0, reverseLabel, owner);
+        bytes32 addrLabel = keccak256("addr");
+        vm.prank(owner);
+        registry.setSubnodeOwner(REVERSE_NODE, addrLabel, address(reverse));
 
         controller = new RegistrarController(
             BaseRegistrar(address(base)),
