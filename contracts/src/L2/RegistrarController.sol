@@ -156,7 +156,7 @@ contract RegistrarController is Ownable, ReverseClaimer {
 
     function registerPrice(string memory name, uint256 duration) public view returns (uint256) {
         IPriceOracle.Price memory price = rentPrice(name, duration);
-        return price.base_wei + price.premium_wei;
+        return price.base + price.premium;
     }
 
     function getActiveDiscounts() external view returns (DiscountDetails[] memory) {
@@ -226,11 +226,11 @@ contract RegistrarController is Ownable, ReverseClaimer {
         uint256 tokenId = uint256(labelhash);
         IPriceOracle.Price memory price = rentPrice(name, duration);
 
-        _validateETHPayment(price.base_wei);
+        _validateETHPayment(price.base);
 
         uint256 expires = nameWrapper.renew(tokenId, duration);
 
-        _refundExcessEth(price.base_wei);
+        _refundExcessEth(price.base);
 
         emit NameRenewed(name, labelhash, expires);
     }
