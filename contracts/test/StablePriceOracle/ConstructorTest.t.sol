@@ -5,7 +5,7 @@ import {Test, console} from "forge-std/Test.sol";
 import {StablePriceOracle} from "src/L2/StablePriceOracle.sol";
 import {MockOracle} from "../mocks/MockOracle.sol";
 
-contract StablePriceOracleTest is Test {
+contract StablePriceOracleBase is Test {
     StablePriceOracle stablePriceOracle;
     MockOracle mockOracle;
 
@@ -16,7 +16,8 @@ contract StablePriceOracleTest is Test {
     uint256 rent5;
 
     function setUp() public {
-        mockOracle = new MockOracle(3000);
+        int256 mockEthPrice = 3000;
+        mockOracle = new MockOracle(mockEthPrice);
 
         uint256[] memory rentPrices = new uint256[](5);
 
@@ -26,22 +27,22 @@ contract StablePriceOracleTest is Test {
         rent4 = 4000000;
         rent5 = 5000000;
 
-        rentPrices[0] = 1000000;
-        rentPrices[1] = 2000000;
-        rentPrices[2] = 3000000;
-        rentPrices[3] = 4000000;
-        rentPrices[4] = 5000000;
+        rentPrices[0] = rent1;
+        rentPrices[1] = rent2;
+        rentPrices[2] = rent3;
+        rentPrices[3] = rent4;
+        rentPrices[4] = rent5;
         stablePriceOracle  = new StablePriceOracle(mockOracle, rentPrices);
     }
 
     function test_constructor() public view {
         assertEq(address(stablePriceOracle.usdOracle()), address(mockOracle));
 
-        assertEq(stablePriceOracle.price1Letter(), 1000000);
-        assertEq(stablePriceOracle.price2Letter(), 2000000);
-        assertEq(stablePriceOracle.price3Letter(), 3000000);
-        assertEq(stablePriceOracle.price4Letter(), 4000000);
-        assertEq(stablePriceOracle.price5Letter(), 5000000);
+        assertEq(stablePriceOracle.price1Letter(), rent1);
+        assertEq(stablePriceOracle.price2Letter(), rent2);
+        assertEq(stablePriceOracle.price3Letter(), rent3);
+        assertEq(stablePriceOracle.price4Letter(), rent4);
+        assertEq(stablePriceOracle.price5Letter(), rent5);
     }
 
 }

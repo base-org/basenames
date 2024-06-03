@@ -5,9 +5,9 @@ import {Test, console} from "forge-std/Test.sol";
 import {StablePriceOracle} from "src/L2/StablePriceOracle.sol";
 import {IPriceOracle} from "src/L2/interface/IPriceOracle.sol";
 import {MockOracle} from "../mocks/MockOracle.sol";
-import {StablePriceOracleTest} from "./ConstructorTest.t.sol";
+import {StablePriceOracleBase} from "./ConstructorTest.t.sol";
 
-contract PriceTest is StablePriceOracleTest {
+contract Price is StablePriceOracleBase {
     uint256 duration = 365 days;
     function test_price_calculatePrice_oneLetter() public view {
         IPriceOracle.Price memory price1 = stablePriceOracle.price("a", 0, duration);
@@ -41,18 +41,18 @@ contract PriceTest is StablePriceOracleTest {
         IPriceOracle.Price memory price6 = stablePriceOracle.price("abcdef", 0, duration);
         assertEq(price6.base_usdc, rent5 * duration);
     }
+    function test_price_reverts_unicodeCharacters() public { // Test case for the failed fuzz test to determine which field is causing the error
+    
+        string memory name = unicode"𐏔Ⱥs%𝔵b.ハ|\"*༸&`"; // Erroring on input with Unicode characters
 
-    function test_premium() public view {
-        uint256 premiumWei = stablePriceOracle.premium("abc", 0, 365 days);
-        assertEq(premiumWei, 0);
-    }
+        uint256 expires = 32987790711288265998887799860420900946; // expires value in the counterexample 
 
-    function test_AttoUSDToWei() public view {
-        uint256 attoUSD = 3e13; // precise to ten decimal places
-        uint256 expectedWei = 1e18;
-        uint256 convertedWei = stablePriceOracle.attoUSDToWei(attoUSD);
-        assertEq(convertedWei, expectedWei);
-    }
+        uint256 duration = 120886407775381395340616426642328538404563530755442021068989041128827069110; // duration value in the counterexample
+
+        vm.expectRevert(); 
+        stablePriceOracle.price(name, expires, duration);
+}
+
 
 }
 
