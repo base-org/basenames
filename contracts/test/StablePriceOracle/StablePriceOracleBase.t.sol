@@ -16,7 +16,7 @@ contract StablePriceOracleBase is Test {
 
     function setUp() public {
 
-        uint256[] memory rentPrices = new uint256[](5);
+        uint256[] memory rentPrices = new uint256[](6);
 
         rent1 = 1E19;
         rent2 = 1E18;
@@ -31,6 +31,8 @@ contract StablePriceOracleBase is Test {
         rentPrices[3] = rent4;
         rentPrices[4] = rent5;
         rentPrices[5] = rent10;
+
+        stablePriceOracle = new StablePriceOracle(rentPrices);
     }
 
     function test_constructor() public view {

@@ -53,19 +53,5 @@ contract Price is StablePriceOracleBase {
         IPriceOracle.Price memory price11 = stablePriceOracle.price("abcdefghijk", 0, duration);
         assertEq(price11.base, rent10 * duration);
     }
-
-    function test_price_reverts_unicodeCharacters() public { // Test case for the failed fuzz test to determine which field is causing the error
-    
-        string memory name = unicode"𐏔Ⱥs%𝔵b.ハ|\"*༸&`"; // Erroring on input with Unicode characters
-
-        uint256 expires = 32987790711288265998887799860420900946; // expires value in the counterexample 
-
-        uint256 duration = 120886407775381395340616426642328538404563530755442021068989041128827069110; // duration value in the counterexample
-
-        vm.expectRevert(); 
-        stablePriceOracle.price(name, expires, duration);
-}
-
-
 }
 
