@@ -1,8 +1,6 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import {NameResolver} from "ens-contracts/resolvers/profiles/NameResolver.sol";
-import {Ownable} from "solady/auth/Ownable.sol";
 import {ReverseRegistrarBase} from "./ReverseRegistrarBase.t.sol";
 import {ReverseRegistrar} from "src/L2/ReverseRegistrar.sol";
 import {Sha3} from "src/lib/Sha3.sol";
