@@ -8,7 +8,6 @@ import {BaseRegistrar} from "src/L2/BaseRegistrar.sol";
 import {Registry} from "src/L2/Registry.sol";
 import {IReverseRegistrar} from "src/L2/interface/IReverseRegistrar.sol";
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
-import {INameWrapper} from "ens-contracts/wrapper/INameWrapper.sol";
 import {ENS} from "ens-contracts/registry/ENS.sol";
 
 import {MockBaseRegistrar} from "test/mocks/MockBaseRegistrar.sol";
@@ -26,7 +25,6 @@ contract RegistrarControllerBase is Test {
     MockBaseRegistrar public base;
     MockReverseRegistrar public reverse;
     MockUSDC public usdc;
-    MockNameWrapper public wrapper;
     MockPriceOracle public prices;
     Registry public registry;
 
@@ -37,18 +35,16 @@ contract RegistrarControllerBase is Test {
         base = new MockBaseRegistrar();
         reverse = new MockReverseRegistrar();
         usdc = new MockUSDC();
-        wrapper = new MockNameWrapper();
         prices = new MockPriceOracle();
         registry = new Registry(owner);
         _establishNamespace();
-        
+
         vm.prank(owner);
         controller = new RegistrarController(
             BaseRegistrar(address(base)),
             IPriceOracle(address(prices)),
             IERC20(address(usdc)),
             IReverseRegistrar(address(reverse)),
-            INameWrapper(address(wrapper)),
             owner
         );
     }
@@ -56,7 +52,6 @@ contract RegistrarControllerBase is Test {
     function test_controller_constructor() public view {
         assertEq(address(controller.prices()), address(prices));
         assertEq(address(controller.reverseRegistrar()), address(reverse));
-        assertEq(address(controller.nameWrapper()), address(wrapper));
         assertEq(address(controller.usdc()), address(usdc));
         assertTrue(reverse.hasClaimed());
         assertEq(controller.owner(), owner);

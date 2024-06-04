@@ -61,6 +61,9 @@ contract BaseRegistrar is ERC721, Ownable {
     event ControllerRemoved(address indexed controller);
     event NameMigrated(uint256 indexed id, address indexed owner, uint256 expires);
     event NameRegistered(uint256 indexed id, address indexed owner, uint256 expires);
+    event NameRegisteredWithRecord(
+        uint256 indexed id, address indexed owner, uint256 expires, address resolver, uint64 ttl
+    );
     event NameRenewed(uint256 indexed id, uint256 expires);
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
@@ -73,6 +76,11 @@ contract BaseRegistrar is ERC721, Ownable {
 
     modifier onlyController() {
         if (!controllers[msg.sender]) revert OnlyController();
+        _;
+    }
+
+    modifier isAvailable(uint256 id) {
+        if (!available(id)) revert NotAvailable(id);
         _;
     }
 
@@ -118,6 +126,21 @@ contract BaseRegistrar is ERC721, Ownable {
     }
 
     /**
+     * @dev Register a name and add details to the record in the Registry.
+     * @param id The token ID (keccak256 of the label).
+     * @param owner The address that should own the registration.
+     * @param duration Duration in seconds for the registration.
+     * @param resolver Address of the resolver for the name
+     * @param ttl time-to-live for the name
+     */
+    function registerWithRecord(uint256 id, address owner, uint256 duration, address resolver, uint64 ttl)
+        external
+        returns (uint256)
+    {
+        return _registerWithRecord(id, owner, duration, resolver, ttl);
+    }
+
+    /**
      * @dev Register a name, without modifying the registry.
      * @param id The token ID (keccak256 of the label).
      * @param owner The address that should own the registration.
@@ -160,27 +183,42 @@ contract BaseRegistrar is ERC721, Ownable {
         ens.setSubnodeOwner(baseNode, bytes32(id), owner);
     }
 
-    function _register(uint256 id, address owner, uint256 duration, bool updateRegistry)
-        internal
-        live
-        onlyController
-        returns (uint256)
-    {
-        if (!available(id)) revert NotAvailable(id);
-
-        expiries[id] = block.timestamp + duration;
+    function _internalRegister(uint256 id, address owner, uint256 duration) internal returns (uint256 expiry) {
+        expiry = block.timestamp + duration;
+        expiries[id] = expiry;
         if (_exists(id)) {
             // Name was previously owned, and expired
             _burn(id);
         }
         _mint(owner, id);
+    }
+
+    function _register(uint256 id, address owner, uint256 duration, bool updateRegistry)
+        internal
+        live
+        onlyController
+        isAvailable(id)
+        returns (uint256)
+    {
+        uint256 expiry = _internalRegister(id, owner, duration);
         if (updateRegistry) {
             ens.setSubnodeOwner(baseNode, bytes32(id), owner);
         }
+        emit NameRegistered(id, owner, expiry);
+        return expiry;
+    }
 
-        emit NameRegistered(id, owner, block.timestamp + duration);
-
-        return block.timestamp + duration;
+    function _registerWithRecord(uint256 id, address owner, uint256 duration, address resolver, uint64 ttl)
+        internal
+        live
+        onlyController
+        isAvailable(id)
+        returns (uint256)
+    {
+        uint256 expiry = _internalRegister(id, owner, duration);
+        ens.setSubnodeRecord(baseNode, bytes32(id), owner, resolver, ttl);
+        emit NameRegisteredWithRecord(id, owner, expiry, resolver, ttl);
+        return expiry;
     }
 
     /**
