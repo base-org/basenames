@@ -8,8 +8,8 @@ import {ENS} from "ens-contracts/registry/ENS.sol";
 import {ETH_NODE, REVERSE_NODE} from "src/util/Constants.sol";
 
 contract ReverseRegistrarBase is Test {
-    address public owner = makeAddr("0x1");
-    address public user = makeAddr("0x2");
+    address public owner = makeAddr("owner");
+    address public user = makeAddr("user");
 
     Registry public registry;
     ReverseRegistrar public reverse;
