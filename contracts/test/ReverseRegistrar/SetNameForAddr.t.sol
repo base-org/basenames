@@ -34,7 +34,7 @@ contract SetNameForAddr is ReverseRegistrarBase {
     function test_allowsOperator_toSetName_forUserAddress() public {
         bytes32 labelHash = Sha3.hexAddress(user);
         bytes32 reverseNode = keccak256(abi.encodePacked(ADDR_REVERSE_NODE, labelHash));
-        address operator = makeAddr("0x3");
+        address operator = makeAddr("operator");
         vm.prank(user);
         registry.setApprovalForAll(operator, true);
 
