@@ -13,7 +13,7 @@ contract ClaimWithResolver is ReverseRegistrarBase {
         bytes32 labelHash = Sha3.hexAddress(user);
         bytes32 reverseNode = keccak256(abi.encodePacked(ADDR_REVERSE_NODE, labelHash));
 
-        vm.expectEmit();
+        vm.expectEmit(address(reverse));
         emit ReverseRegistrar.ReverseClaimed(user, reverseNode);
         vm.prank(user);
         bytes32 returnedReverseNode = reverse.claimWithResolver(user, resolver);

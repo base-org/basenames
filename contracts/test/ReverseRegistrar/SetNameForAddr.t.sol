@@ -19,7 +19,7 @@ contract SetNameForAddr is ReverseRegistrarBase {
         vm.prank(owner);
         reverse.setDefaultResolver(address(resolver));
 
-        vm.expectEmit();
+        vm.expectEmit(address(reverse));
         emit ReverseRegistrar.ReverseClaimed(user, reverseNode);
         vm.prank(user);
         bytes32 returnedReverseNode = reverse.setNameForAddr(user, user, address(resolver), name);
@@ -41,7 +41,7 @@ contract SetNameForAddr is ReverseRegistrarBase {
         vm.prank(owner);
         reverse.setDefaultResolver(address(resolver));
 
-        vm.expectEmit();
+        vm.expectEmit(address(reverse));
         emit ReverseRegistrar.ReverseClaimed(user, reverseNode);
         vm.prank(operator);
         bytes32 returnedReverseNode = reverse.setNameForAddr(user, user, address(resolver), name);
@@ -58,7 +58,7 @@ contract SetNameForAddr is ReverseRegistrarBase {
         bytes32 labelHash = Sha3.hexAddress(address(ownedContract));
         bytes32 reverseNode = keccak256(abi.encodePacked(ADDR_REVERSE_NODE, labelHash));
 
-        vm.expectEmit();
+        vm.expectEmit(address(reverse));
         emit ReverseRegistrar.ReverseClaimed(address(ownedContract), reverseNode);
         vm.prank(user);
         bytes32 returnedReverseNode = reverse.setNameForAddr(address(ownedContract), user, address(resolver), name);

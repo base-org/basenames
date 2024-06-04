@@ -21,7 +21,7 @@ contract ClaimForAddr is ReverseRegistrarBase {
         bytes32 labelHash = Sha3.hexAddress(user);
         bytes32 reverseNode = keccak256(abi.encodePacked(ADDR_REVERSE_NODE, labelHash));
 
-        vm.expectEmit();
+        vm.expectEmit(address(reverse));
         emit ReverseRegistrar.ReverseClaimed(user, reverseNode);
         vm.prank(user);
         bytes32 returnedReverseNode = reverse.claimForAddr(user, user, resolver);
@@ -39,7 +39,7 @@ contract ClaimForAddr is ReverseRegistrarBase {
         vm.prank(user);
         registry.setApprovalForAll(operator, true);
 
-        vm.expectEmit();
+        vm.expectEmit(address(reverse));
         emit ReverseRegistrar.ReverseClaimed(user, reverseNode);
         vm.prank(operator);
         bytes32 returnedReverseNode = reverse.claimForAddr(user, user, resolver);
@@ -55,7 +55,7 @@ contract ClaimForAddr is ReverseRegistrarBase {
         bytes32 labelHash = Sha3.hexAddress(address(ownedContract));
         bytes32 reverseNode = keccak256(abi.encodePacked(ADDR_REVERSE_NODE, labelHash));
 
-        vm.expectEmit();
+        vm.expectEmit(address(reverse));
         emit ReverseRegistrar.ReverseClaimed(address(ownedContract), reverseNode);
         vm.prank(user);
         bytes32 returnedReverseNode = reverse.claimForAddr(address(ownedContract), user, resolver);

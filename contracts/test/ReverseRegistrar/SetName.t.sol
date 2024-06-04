@@ -18,7 +18,7 @@ contract SetName is ReverseRegistrarBase {
         vm.prank(owner);
         reverse.setDefaultResolver(address(resolver));
 
-        vm.expectEmit();
+        vm.expectEmit(address(reverse));
         emit ReverseRegistrar.ReverseClaimed(user, reverseNode);
         vm.prank(user);
         bytes32 returnedReverseNode = reverse.setName(name);

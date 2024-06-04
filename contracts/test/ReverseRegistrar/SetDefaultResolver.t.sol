@@ -22,7 +22,7 @@ contract SetDefaultResolver is ReverseRegistrarBase {
 
     function test_setsTheDefaultResolver() public {
         address resolverAddr = makeAddr("resolver");
-        vm.expectEmit();
+        vm.expectEmit(address(reverse));
         emit ReverseRegistrar.DefaultResolverChanged(NameResolver(resolverAddr));
         vm.prank(owner);
         reverse.setDefaultResolver(resolverAddr);
