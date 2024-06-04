@@ -1,12 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import {ENS} from "ens-contracts/registry/ENS.sol";
 import {EnumerableSetLib} from "solady/utils/EnumerableSetLib.sol";
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
-import {INameWrapper} from "ens-contracts/wrapper/INameWrapper.sol";
 import {Ownable} from "solady/auth/Ownable.sol";
-import {ReverseClaimer} from "ens-contracts/reverseRegistrar/ReverseClaimer.sol";
 import {SafeERC20} from "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 import {StringUtils} from "ens-contracts/ethregistrar/StringUtils.sol";
 
@@ -15,16 +12,12 @@ import {BaseRegistrar} from "./BaseRegistrar.sol";
 import {IDiscountValidator} from "./interface/IDiscountValidator.sol";
 import {IPriceOracle} from "./interface/IPriceOracle.sol";
 import {L2Resolver} from "./L2Resolver.sol";
-import {ReverseRegistrar} from "./ReverseRegistrar.sol";
-import "forge-std/console.sol";
-
-// @TODO add renew with discount flow
-// @TODO ++ Availability state check
+import {IReverseRegistrar} from "./interface/IReverseRegistrar.sol";
 
 /**
  * @dev A registrar controller for registering and renewing names at fixed cost.
  */
-contract RegistrarController is Ownable, ReverseClaimer {
+contract RegistrarController is Ownable {
     using StringUtils for *;
     using SafeERC20 for IERC20;
     using EnumerableSetLib for EnumerableSetLib.Bytes32Set;
@@ -49,8 +42,7 @@ contract RegistrarController is Ownable, ReverseClaimer {
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
     BaseRegistrar immutable base;
     IPriceOracle public immutable prices;
-    ReverseRegistrar public immutable reverseRegistrar;
-    INameWrapper public immutable nameWrapper;
+    IReverseRegistrar public immutable reverseRegistrar;
     IERC20 public immutable usdc;
     EnumerableSetLib.Bytes32Set internal activeDiscounts;
     mapping(bytes32 => DiscountDetails) public discounts;
@@ -121,20 +113,16 @@ contract RegistrarController is Ownable, ReverseClaimer {
         BaseRegistrar base_,
         IPriceOracle prices_,
         IERC20 usdc_,
-        ReverseRegistrar reverseRegistrar_,
-        INameWrapper nameWrapper_,
-        ENS ens
-    ) ReverseClaimer(ens, msg.sender) {
-        console.log("setting base");
+        IReverseRegistrar reverseRegistrar_,
+        address owner_
+    ) {
         base = base_;
-        console.log("setting prices");
         prices = prices_;
-        console.log("setting usdc");
         usdc = usdc_;
-        console.log("setting reverse");
         reverseRegistrar = reverseRegistrar_;
-        console.log("setting wrapper");
-        nameWrapper = nameWrapper_;
+        _initializeOwner(owner_);
+        // Assign ownership of this contract's reverse record to this contract's owner
+        reverseRegistrar.claim(owner_);
     }
 
     function hasRegisteredWithDiscount(address[] memory addresses) public view returns (bool) {
@@ -234,7 +222,7 @@ contract RegistrarController is Ownable, ReverseClaimer {
 
         _validateETHPayment(price.base);
 
-        uint256 expires = nameWrapper.renew(tokenId, duration);
+        uint256 expires = base.renew(tokenId, duration);
 
         _refundExcessEth(price.base);
 
@@ -249,8 +237,11 @@ contract RegistrarController is Ownable, ReverseClaimer {
     }
 
     function _register(RegisterRequest calldata request, uint16 ownerControlledFuses) internal {
-        uint256 expires = nameWrapper.registerAndWrapETH2LD(
-            request.name, request.owner, request.duration, request.resolver, ownerControlledFuses
+        uint256 expires = base.register(
+            uint256(keccak256(bytes(request.name))), 
+            request.owner, 
+            request.duration, 
+            request.resolver
         );
 
         if (request.data.length > 0) {

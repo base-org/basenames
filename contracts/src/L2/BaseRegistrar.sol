@@ -7,15 +7,14 @@ import {Ownable} from "solady/auth/Ownable.sol";
 
 import {GRACE_PERIOD} from "src/util/Constants.sol";
 
-
-/// @title Base Registrar 
+/// @title Base Registrar
 ///
 /// @notice The base-level tokenization contract for an ens domain. The Base Registrar implements ERC721 and, as the owner
 ///         of a 2LD, can mint and assign ownership rights to its subdomains. I.e. This contract owns "base.eth" and allows
 ///         users to mint subdomains like "vitalik.base.eth". Registration is delegated to "controller" contracts which have
 ///         rights to call `onlyController` protected methods.
 ///
-///         The implementation is heavily inspired by the original ENS BaseRegistrarImplementation contract: 
+///         The implementation is heavily inspired by the original ENS BaseRegistrarImplementation contract:
 ///         https://github.com/ensdomains/ens-contracts/blob/staging/contracts/ethregistrar/BaseRegistrarImplementation.sol
 ///
 /// @author Coinbase (https://github.com/base-org/usernames)
@@ -31,7 +30,6 @@ contract BaseRegistrar is ERC721, Ownable {
     bytes32 public baseNode;
     // A map of addresses that are authorised to register and renew names.
     mapping(address controller => bool isApproved) public controllers;
-
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                          CONSTANTS                         */

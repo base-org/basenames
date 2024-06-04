@@ -6,7 +6,7 @@ import {RegistrarController} from "src/L2/RegistrarController.sol";
 import {IPriceOracle} from "src/L2/interface/IPriceOracle.sol";
 import {BaseRegistrar} from "src/L2/BaseRegistrar.sol";
 import {Registry} from "src/L2/Registry.sol";
-import {ReverseRegistrar} from "src/L2/ReverseRegistrar.sol";
+import {IReverseRegistrar} from "src/L2/interface/IReverseRegistrar.sol";
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import {INameWrapper} from "ens-contracts/wrapper/INameWrapper.sol";
 import {ENS} from "ens-contracts/registry/ENS.sol";
@@ -22,8 +22,7 @@ import {REVERSE_NODE} from "src/util/Constants.sol";
 import "forge-std/console.sol";
 
 contract RegistrarControllerBase is Test {
-    
-    RegistrarController public controller; 
+    RegistrarController public controller;
     MockBaseRegistrar public base;
     MockReverseRegistrar public reverse;
     MockUSDC public usdc;
@@ -31,8 +30,8 @@ contract RegistrarControllerBase is Test {
     MockPriceOracle public prices;
     Registry public registry;
 
-    address owner = makeAddr("0x1");
-    address user = makeAddr("0x2");
+    address owner = makeAddr("owner");
+    address user = makeAddr("user");
 
     function setUp() public {
         base = new MockBaseRegistrar();
@@ -42,31 +41,26 @@ contract RegistrarControllerBase is Test {
         prices = new MockPriceOracle();
         registry = new Registry(owner);
         _establishNamespace();
+        
         vm.prank(owner);
         controller = new RegistrarController(
             BaseRegistrar(address(base)),
             IPriceOracle(address(prices)),
             IERC20(address(usdc)),
-            ReverseRegistrar(address(reverse)),
+            IReverseRegistrar(address(reverse)),
             INameWrapper(address(wrapper)),
-            ENS(address(registry))
+            owner
         );
     }
 
     function test_controller_constructor() public view {
-        assertTrue(address(controller.prices()) == address(prices));
-        assertTrue(address(controller.reverseRegistrar()) == address(reverse));
-        assertTrue(address(controller.nameWrapper()) == address(wrapper));
-        assertTrue(address(controller.usdc()) == address(usdc));
+        assertEq(address(controller.prices()), address(prices));
+        assertEq(address(controller.reverseRegistrar()), address(reverse));
+        assertEq(address(controller.nameWrapper()), address(wrapper));
+        assertEq(address(controller.usdc()), address(usdc));
         assertTrue(reverse.hasClaimed());
+        assertEq(controller.owner(), owner);
     }
 
-    function _establishNamespace() internal virtual {
-        bytes32 reverseLabel = keccak256("reverse");
-        vm.prank(owner);
-        registry.setSubnodeOwner(0x0, reverseLabel, owner);
-        bytes32 addrLabel = keccak256("addr");
-        vm.prank(owner);
-        registry.setSubnodeOwner(REVERSE_NODE, addrLabel, address(reverse));
-    }
+    function _establishNamespace() internal virtual {}
 }

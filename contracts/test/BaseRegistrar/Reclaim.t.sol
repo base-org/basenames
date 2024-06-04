@@ -8,11 +8,10 @@ import {ENS} from "ens-contracts/registry/ENS.sol";
 import {BASE_ETH_NODE, GRACE_PERIOD} from "src/util/Constants.sol";
 
 contract Reclaim is BaseRegistrarBase {
-    
     function test_reverts_whenNotLive() public {
         vm.prank(address(baseRegistrar));
         registry.setOwner(BASE_ETH_NODE, makeAddr("0xdead"));
-        
+
         vm.expectRevert(BaseRegistrar.RegistrarNotLive.selector);
 
         baseRegistrar.reclaim(id, user);
@@ -24,7 +23,7 @@ contract Reclaim is BaseRegistrarBase {
         _registerName(label, user, duration);
 
         vm.expectRevert(abi.encodeWithSelector(BaseRegistrar.NotApprovedOwner.selector, id, caller));
-        
+
         vm.prank(caller);
         baseRegistrar.reclaim(id, caller);
     }
@@ -34,7 +33,7 @@ contract Reclaim is BaseRegistrarBase {
         uint256 expires = _registerName(label, user, duration);
 
         vm.expectRevert(abi.encodeWithSelector(BaseRegistrar.Expired.selector, id));
-        
+
         vm.warp(expires + 1);
         vm.prank(user);
         baseRegistrar.reclaim(id, user);
