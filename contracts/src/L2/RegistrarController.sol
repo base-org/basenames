@@ -16,6 +16,7 @@ import {IDiscountValidator} from "./interface/IDiscountValidator.sol";
 import {IPriceOracle} from "./interface/IPriceOracle.sol";
 import {L2Resolver} from "./L2Resolver.sol";
 import {ReverseRegistrar} from "./ReverseRegistrar.sol";
+import "forge-std/console.sol";
 
 // @TODO add renew with discount flow
 // @TODO ++ Availability state check
@@ -124,10 +125,15 @@ contract RegistrarController is Ownable, ReverseClaimer {
         INameWrapper nameWrapper_,
         ENS ens
     ) ReverseClaimer(ens, msg.sender) {
+        console.log("setting base");
         base = base_;
+        console.log("setting prices");
         prices = prices_;
+        console.log("setting usdc");
         usdc = usdc_;
+        console.log("setting reverse");
         reverseRegistrar = reverseRegistrar_;
+        console.log("setting wrapper");
         nameWrapper = nameWrapper_;
     }
 
