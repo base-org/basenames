@@ -2,35 +2,28 @@
 pragma solidity ~0.8.17;
 
 import {StringUtils} from "ens-contracts/ethregistrar/StringUtils.sol";
-import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
-import {IPriceOracle} from "./interface/IPriceOracle.sol";
+import {IPriceOracle} from "src/L2/interface/IPriceOracle.sol";
 
-interface AggregatorInterface {
-    function latestAnswer() external view returns (int256);
-}
-
-// StablePriceOracle sets a price in USD, based on an oracle.
+// StablePriceOracle sets a price in wei
 contract StablePriceOracle is IPriceOracle {
     using StringUtils for *;
 
-    // Rent in USDC by length
+    // Rent in wei by length
     uint256 public immutable price1Letter;
     uint256 public immutable price2Letter;
     uint256 public immutable price3Letter;
     uint256 public immutable price4Letter;
     uint256 public immutable price5Letter;
+    uint256 public immutable price10Letter;
 
-    // Oracle address
-    AggregatorInterface public immutable usdOracle;
-
-    constructor(AggregatorInterface _usdOracle, uint256[] memory _rentPrices) {
-        usdOracle = _usdOracle;
+    constructor(uint256[] memory _rentPrices) {
         price1Letter = _rentPrices[0];
         price2Letter = _rentPrices[1];
         price3Letter = _rentPrices[2];
         price4Letter = _rentPrices[3];
         price5Letter = _rentPrices[4];
+        price10Letter = _rentPrices[5];
     }
 
     /**
@@ -48,7 +41,9 @@ contract StablePriceOracle is IPriceOracle {
         uint256 len = name.strlen();
         uint256 basePrice;
 
-        if (len >= 5) {
+        if (len >= 10) {
+            basePrice = price10Letter * duration;
+        } else if (len >= 5 && len < 10) {
             basePrice = price5Letter * duration;
         } else if (len == 4) {
             basePrice = price4Letter * duration;
@@ -60,19 +55,14 @@ contract StablePriceOracle is IPriceOracle {
             basePrice = price1Letter * duration;
         }
         uint256 premium_ = _premium(name, expires, duration);
-        return IPriceOracle.Price({
-            base_usdc: basePrice,
-            premium_usdc: premium_,
-            base_wei: attoUSDToWei(basePrice),
-            premium_wei: attoUSDToWei(premium_)
-        });
+        return IPriceOracle.Price({base: basePrice, premium: premium_});
     }
 
     /**
      * @dev Returns the pricing premium in wei.
      */
     function premium(string calldata name, uint256 expires, uint256 duration) external view returns (uint256) {
-        return attoUSDToWei(_premium(name, expires, duration));
+        return _premium(name, expires, duration);
     }
 
     /**
@@ -80,15 +70,5 @@ contract StablePriceOracle is IPriceOracle {
      */
     function _premium(string memory, uint256, uint256) internal view virtual returns (uint256) {
         return 0;
-    }
-
-    function attoUSDToWei(uint256 amount) public view returns (uint256) {
-        uint256 ethPrice = uint256(usdOracle.latestAnswer());
-        return (amount * 1e8) / ethPrice;
-    }
-
-    function weiToAttoUSD(uint256 amount) internal view returns (uint256) {
-        uint256 ethPrice = uint256(usdOracle.latestAnswer());
-        return (amount * ethPrice) / 1e8;
     }
 }

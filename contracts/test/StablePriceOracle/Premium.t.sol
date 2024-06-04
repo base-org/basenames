@@ -3,7 +3,7 @@ pragma solidity ^0.8.17;
 
 import {Test} from "forge-std/Test.sol";
 import {StablePriceOracle} from "src/L2/StablePriceOracle.sol";
-import {StablePriceOracleBase} from "./ConstructorTest.t.sol";
+import {StablePriceOracleBase} from "./StablePriceOracleBase.t.sol";
 
 contract Premium is StablePriceOracleBase {
     function test_premium() public view {

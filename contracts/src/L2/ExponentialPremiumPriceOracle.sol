@@ -8,8 +8,8 @@ contract ExponentialPremiumPriceOracle is StablePriceOracle {
     uint256 immutable startPremium;
     uint256 immutable endValue;
 
-    constructor(AggregatorInterface usdOracle, uint256[] memory rentPrices, uint256 startPremium_, uint256 totalDays)
-        StablePriceOracle(usdOracle, rentPrices)
+    constructor(uint256[] memory rentPrices, uint256 startPremium_, uint256 totalDays)
+        StablePriceOracle(rentPrices)
     {
         startPremium = startPremium_;
         endValue = startPremium_ >> totalDays;

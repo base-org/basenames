@@ -3,10 +3,8 @@ pragma solidity >=0.8.17 <0.9.0;
 
 interface IPriceOracle {
     struct Price {
-        uint256 base_usdc;
-        uint256 premium_usdc;
-        uint256 base_wei;
-        uint256 premium_wei;
+        uint256 base;
+        uint256 premium;
     }
 
     /**
@@ -17,6 +15,4 @@ interface IPriceOracle {
      * @return base premium tuple of base price + premium price
      */
     function price(string calldata name, uint256 expires, uint256 duration) external view returns (Price calldata);
-
-    function attoUSDToWei(uint256 amount) external view returns (uint256);
 }
