@@ -8,7 +8,7 @@ import {ADDR_REVERSE_NODE} from "src/util/Constants.sol";
 import {NameResolver, MockNameResolver} from "test/mocks/MockNameResolver.sol";
 import {MockOwnedContract} from "test/mocks/MockOwnedContract.sol";
 
-contract SetName is ReverseRegistrarBase {
+contract SetNameForAddr is ReverseRegistrarBase {
     NameResolver resolver = new MockNameResolver();
     string name = "name";
 
