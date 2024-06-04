@@ -183,31 +183,27 @@ contract RegistrarController is Ownable {
         price = (price >= discount.discount) ? price - discount.discount : 0;
     }
 
-    function registerETH(RegisterRequest calldata request, uint16 ownerControlledFuses)
-        public
-        payable
-        validRegistration(request)
-    {
+    function registerETH(RegisterRequest calldata request) public payable validRegistration(request) {
         uint256 price = registerPrice(request.name, request.duration);
 
         _validateETHPayment(price);
 
-        _register(request, ownerControlledFuses);
+        _register(request);
 
         _refundExcessEth(price);
     }
 
-    function discountedRegisterETH(
-        RegisterRequest calldata request,
-        uint16 ownerControlledFuses,
-        bytes32 discountKey,
-        bytes calldata validationData
-    ) public payable validateDiscount(discountKey, validationData) validRegistration(request) {
+    function discountedRegisterETH(RegisterRequest calldata request, bytes32 discountKey, bytes calldata validationData)
+        public
+        payable
+        validateDiscount(discountKey, validationData)
+        validRegistration(request)
+    {
         uint256 price = discountRentPrice(request.name, request.duration, discountKey);
 
         _validateETHPayment(price);
 
-        _register(request, ownerControlledFuses);
+        _register(request);
         discountedRegistrants[msg.sender] = true;
 
         _refundExcessEth(price);
@@ -236,13 +232,8 @@ contract RegistrarController is Ownable {
         emit ETHPaymentProcessed(msg.sender, price);
     }
 
-    function _register(RegisterRequest calldata request, uint16 ownerControlledFuses) internal {
-        uint256 expires = base.register(
-            uint256(keccak256(bytes(request.name))), 
-            request.owner, 
-            request.duration, 
-            request.resolver
-        );
+    function _register(RegisterRequest calldata request) internal {
+        uint256 expires = base.register(uint256(keccak256(bytes(request.name))), request.owner, request.duration);
 
         if (request.data.length > 0) {
             _setRecords(request.resolver, keccak256(bytes(request.name)), request.data);
