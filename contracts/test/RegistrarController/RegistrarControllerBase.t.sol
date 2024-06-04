@@ -19,6 +19,7 @@ import {MockPriceOracle} from "test/mocks/MockPriceOracle.sol";
 
 import {REVERSE_NODE} from "src/util/Constants.sol";
 
+import "forge-std/console.sol";
 
 contract RegistrarControllerBase is Test {
     
@@ -40,13 +41,8 @@ contract RegistrarControllerBase is Test {
         wrapper = new MockNameWrapper();
         prices = new MockPriceOracle();
         registry = new Registry(owner);
-        bytes32 reverseLabel = keccak256("reverse");
+        _establishNamespace();
         vm.prank(owner);
-        registry.setSubnodeOwner(0x0, reverseLabel, owner);
-        bytes32 addrLabel = keccak256("addr");
-        vm.prank(owner);
-        registry.setSubnodeOwner(REVERSE_NODE, addrLabel, address(reverse));
-
         controller = new RegistrarController(
             BaseRegistrar(address(base)),
             IPriceOracle(address(prices)),
@@ -57,11 +53,20 @@ contract RegistrarControllerBase is Test {
         );
     }
 
-    function test_constructor() public view {
+    function test_controller_constructor() public view {
         assertTrue(address(controller.prices()) == address(prices));
         assertTrue(address(controller.reverseRegistrar()) == address(reverse));
         assertTrue(address(controller.nameWrapper()) == address(wrapper));
         assertTrue(address(controller.usdc()) == address(usdc));
         assertTrue(reverse.hasClaimed());
+    }
+
+    function _establishNamespace() internal virtual {
+        bytes32 reverseLabel = keccak256("reverse");
+        vm.prank(owner);
+        registry.setSubnodeOwner(0x0, reverseLabel, owner);
+        bytes32 addrLabel = keccak256("addr");
+        vm.prank(owner);
+        registry.setSubnodeOwner(REVERSE_NODE, addrLabel, address(reverse));
     }
 }

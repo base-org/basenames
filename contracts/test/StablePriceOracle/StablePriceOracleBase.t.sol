@@ -15,15 +15,14 @@ contract StablePriceOracleBase is Test {
     uint256 rent10;
 
     function setUp() public {
-
         uint256[] memory rentPrices = new uint256[](6);
 
-        rent1 = 1E19;
-        rent2 = 1E18;
-        rent3 = 1E17;
-        rent4 = 1E16;
-        rent5 = 1E15;
-        rent10 = 1E14;
+        rent1 = 1e19;
+        rent2 = 1e18;
+        rent3 = 1e17;
+        rent4 = 1e16;
+        rent5 = 1e15;
+        rent10 = 1e14;
 
         rentPrices[0] = rent1;
         rentPrices[1] = rent2;
@@ -36,7 +35,6 @@ contract StablePriceOracleBase is Test {
     }
 
     function test_constructor() public view {
-
         assertEq(stablePriceOracle.price1Letter(), rent1);
         assertEq(stablePriceOracle.price2Letter(), rent2);
         assertEq(stablePriceOracle.price3Letter(), rent3);
@@ -44,5 +42,4 @@ contract StablePriceOracleBase is Test {
         assertEq(stablePriceOracle.price5Letter(), rent5);
         assertEq(stablePriceOracle.price10Letter(), rent10);
     }
-
 }

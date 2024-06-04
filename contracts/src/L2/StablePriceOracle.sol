@@ -5,7 +5,6 @@ import {StringUtils} from "ens-contracts/ethregistrar/StringUtils.sol";
 
 import {IPriceOracle} from "src/L2/interface/IPriceOracle.sol";
 
-
 // StablePriceOracle sets a price in wei
 contract StablePriceOracle is IPriceOracle {
     using StringUtils for *;
@@ -42,9 +41,9 @@ contract StablePriceOracle is IPriceOracle {
         uint256 len = name.strlen();
         uint256 basePrice;
 
-        if(len >= 10) {
+        if (len >= 10) {
             basePrice = price10Letter * duration;
-        } else if (len >= 5 && len <10) {
+        } else if (len >= 5 && len < 10) {
             basePrice = price5Letter * duration;
         } else if (len == 4) {
             basePrice = price4Letter * duration;
@@ -56,10 +55,7 @@ contract StablePriceOracle is IPriceOracle {
             basePrice = price1Letter * duration;
         }
         uint256 premium_ = _premium(name, expires, duration);
-        return IPriceOracle.Price({
-            base: basePrice,
-            premium: premium_
-        });
+        return IPriceOracle.Price({base: basePrice, premium: premium_});
     }
 
     /**
