@@ -76,6 +76,7 @@ contract RegistrarController is Ownable {
     event RegisteredWithDiscount(address indexed registrant, bytes32 indexed discountKey);
     event NameRegistered(string name, bytes32 indexed label, address indexed owner, uint256 expires);
     event NameRenewed(string name, bytes32 indexed label, uint256 expires);
+    event DiscountUpdated(bytes32 indexed discountKey, DiscountDetails details);
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                          MODIFIERS                         */
@@ -167,6 +168,7 @@ contract RegistrarController is Ownable {
         if (details.discountValidator == address(0)) revert InvalidValidator(key, details.discountValidator);
         discounts[key] = details;
         _updateActiveDiscounts(key, details.active);
+        emit DiscountUpdated(key, details);
     }
 
     function _updateActiveDiscounts(bytes32 key, bool active) internal {
@@ -183,17 +185,17 @@ contract RegistrarController is Ownable {
         price = (price >= discount.discount) ? price - discount.discount : 0;
     }
 
-    function registerETH(RegisterRequest calldata request) public payable validRegistration(request) {
+    function register(RegisterRequest calldata request) public payable validRegistration(request) {
         uint256 price = registerPrice(request.name, request.duration);
 
-        _validateETHPayment(price);
+        _validatePayment(price);
 
         _register(request);
 
         _refundExcessEth(price);
     }
 
-    function discountedRegisterETH(RegisterRequest calldata request, bytes32 discountKey, bytes calldata validationData)
+    function discountedRegister(RegisterRequest calldata request, bytes32 discountKey, bytes calldata validationData)
         public
         payable
         validateDiscount(discountKey, validationData)
@@ -201,7 +203,7 @@ contract RegistrarController is Ownable {
     {
         uint256 price = discountRentPrice(request.name, request.duration, discountKey);
 
-        _validateETHPayment(price);
+        _validatePayment(price);
 
         _register(request);
         discountedRegistrants[msg.sender] = true;
@@ -216,7 +218,7 @@ contract RegistrarController is Ownable {
         uint256 tokenId = uint256(labelhash);
         IPriceOracle.Price memory price = rentPrice(name, duration);
 
-        _validateETHPayment(price.base);
+        _validatePayment(price.base);
 
         uint256 expires = base.renew(tokenId, duration);
 
@@ -225,7 +227,7 @@ contract RegistrarController is Ownable {
         emit NameRenewed(name, labelhash, expires);
     }
 
-    function _validateETHPayment(uint256 price) internal {
+    function _validatePayment(uint256 price) internal {
         if (msg.value < price) {
             revert InsufficientValue();
         }

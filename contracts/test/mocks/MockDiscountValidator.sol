@@ -3,7 +3,7 @@ pragma solidity ^0.8.23;
 
 import "src/L2/interface/IDiscountValidator.sol";
 
-contract MockDiscountValidtor is IDiscountValidator {
+contract MockDiscountValidator is IDiscountValidator {
     bool returnValue = true;
 
     function isValidDiscountRegistration(address, bytes calldata) external view returns (bool) {

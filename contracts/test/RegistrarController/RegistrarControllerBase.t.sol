@@ -15,6 +15,7 @@ import {MockReverseRegistrar} from "test/mocks/MockReverseRegistrar.sol";
 import {MockUSDC} from "test/mocks/MockUSDC.sol";
 import {MockNameWrapper} from "test/mocks/MockNameWrapper.sol";
 import {MockPriceOracle} from "test/mocks/MockPriceOracle.sol";
+import {MockDiscountValidator} from "test/mocks/MockDiscountValidator.sol";
 
 import {REVERSE_NODE} from "src/util/Constants.sol";
 
@@ -30,6 +31,17 @@ contract RegistrarControllerBase is Test {
 
     address owner = makeAddr("owner");
     address user = makeAddr("user");
+    address resolver = makeAddr("resolver");
+
+    string public name = "test";
+    string public shortName = "t";
+    bytes32 public nameLabel = keccak256(bytes(name));
+    bytes32 public shortNameLabel = keccak256(bytes(shortName));
+
+    MockDiscountValidator public validator;
+    bytes32 public discountKey = keccak256(bytes("default.discount"));
+    uint256 discountAmount = 0.1 ether;
+    uint256 duration = 365 days;
 
     function setUp() public {
         base = new MockBaseRegistrar();
@@ -37,6 +49,7 @@ contract RegistrarControllerBase is Test {
         usdc = new MockUSDC();
         prices = new MockPriceOracle();
         registry = new Registry(owner);
+        validator = new MockDiscountValidator();
         _establishNamespace();
 
         vm.prank(owner);
@@ -58,4 +71,28 @@ contract RegistrarControllerBase is Test {
     }
 
     function _establishNamespace() internal virtual {}
+
+    function _getDefaultDiscount() internal view returns (RegistrarController.DiscountDetails memory) {
+        return  RegistrarController.DiscountDetails({
+            active: true,
+            discountValidator: address(validator),
+            discount: discountAmount
+        });
+    }
+
+    function _getDefaultRegisterRequest() internal virtual view returns (RegistrarController.RegisterRequest memory) {
+        return RegistrarController.RegisterRequest({
+            name: name, 
+            owner: user,
+            duration: duration,
+            resolver: resolver, 
+            data: _getDefaultRegisterData(),
+            reverseRecord: false
+        });
+    }
+
+    function _getDefaultRegisterData() internal virtual view returns (bytes[] memory data) {
+        data = new bytes[](1);
+        data[0] = bytes(name);
+    }
 }
