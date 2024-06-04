@@ -233,7 +233,7 @@ contract RegistrarController is Ownable {
     }
 
     function _register(RegisterRequest calldata request) internal {
-        uint256 expires = base.register(uint256(keccak256(bytes(request.name))), request.owner, request.duration);
+        uint256 expires = base.registerWithRecord(uint256(keccak256(bytes(request.name))), request.owner, request.duration, request.resolver, 0);
 
         if (request.data.length > 0) {
             _setRecords(request.resolver, keccak256(bytes(request.name)), request.data);
