@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import {Test, console} from "forge-std/Test.sol";
+import {Test} from "forge-std/Test.sol";
 import {ReverseRegistrar} from "src/L2/ReverseRegistrar.sol";
 import {Registry} from "src/L2/Registry.sol";
 import {ENS} from "ens-contracts/registry/ENS.sol";
