@@ -5,7 +5,7 @@ import {Test, console} from "forge-std/Test.sol";
 import {ReverseRegistrar} from "src/L2/ReverseRegistrar.sol";
 import {Registry} from "src/L2/Registry.sol";
 import {ENS} from "ens-contracts/registry/ENS.sol";
-import {ETH_NODE, REVERSE_NODE, ADDR_REVERSE_NODE} from "src/util/Constants.sol";
+import {ETH_NODE, REVERSE_NODE} from "src/util/Constants.sol";
 
 contract ReverseRegistrarBase is Test {
     address public owner = makeAddr("0x1");
