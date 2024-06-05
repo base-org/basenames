@@ -64,6 +64,9 @@ contract BaseRegistrar is ERC721, Ownable {
     event NameMigrated(uint256 indexed id, address indexed owner, uint256 expires);
     event NameRegistered(uint256 indexed id, address indexed owner, uint256 expires);
     event NameRenewed(uint256 indexed id, uint256 expires);
+    event NameRegisteredWithRecord(
+        uint256 indexed id, address indexed owner, uint256 expires, address resolver, uint64 ttl
+    );
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                          MODIFIERS                         */
@@ -177,39 +180,6 @@ contract BaseRegistrar is ERC721, Ownable {
     /// @return The new expiry date
     function renew(uint256 id, uint256 duration) external live onlyController returns (uint256) {
         if (expiries[id] + GRACE_PERIOD < block.timestamp) revert NotRegisteredOrInGrace(id);
-
-        expiries[id] += duration;
-        emit NameRenewed(id, expiries[id]);
-        return expiries[id];
-    }
-
-    /**
-     * @dev Reclaim ownership of a name in ENS, if you own it in the registrar.
-     */
-    function reclaim(uint256 id, address owner) external live {
-        if (!_isApprovedOrOwner(msg.sender, id)) revert NotApprovedOwner(id, owner);
-        ens.setSubnodeOwner(baseNode, bytes32(id), owner);
-    }
-
-    /**
-     * @dev Gets the owner of the specified token ID. Names become unowned
-     *      when their registration expires.
-     * @param tokenId uint256 ID of the token to query the owner of
-     * @return address currently marked as the owner of the given token ID
-     */
-    function ownerOf(uint256 tokenId) public view override(ERC721) returns (address) {
-        if (expiries[tokenId] <= block.timestamp) revert Expired(tokenId);
-        return super.ownerOf(tokenId);
-    }
-
-    // Returns true iff the specified name is available for registration.
-    function available(uint256 id) public view returns (bool) {
-        // Not available if it's registered here or in its grace period.
-        return expiries[id] + GRACE_PERIOD < block.timestamp;
-    }
-
-    function renew(uint256 id, uint256 duration) external live onlyController returns (uint256) {
-        if (expiries[id] + GRACE_PERIOD < block.timestamp) revert NotRegisteredOrInGrace(id); // Name must be registered here or in grace period
 
         expiries[id] += duration;
         emit NameRenewed(id, expiries[id]);
