@@ -64,8 +64,24 @@ contract Register is RegistrarControllerBase {
         vm.prank(user);
         controller.register{value: price}(request);
 
-        bytes memory retByte = resolver.firstByte();
+        bytes memory retByte = resolver.firstBytes();
         assertEq(keccak256(retByte), keccak256(request.data[0]));
         assertTrue(reverse.hasClaimed(user));
+    }
+
+    function test_sendsARefund_ifUserOverpayed() public {
+        vm.deal(user, 1 ether);
+        RegistrarController.RegisterRequest memory request = _getDefaultRegisterRequest();
+
+        uint256 price = controller.registerPrice(request.name, request.duration);
+        base.setAvailable(uint256(nameLabel), true);
+        uint256 expires =  block.timestamp + request.duration;
+        base.setNameExpires(uint256(nameLabel), expires);
+
+        vm.prank(user);
+        controller.register{value: price + 1}(request);
+
+        uint256 expectedBalance = 1 ether - price;
+        assertEq(user.balance, expectedBalance);
     }
 }

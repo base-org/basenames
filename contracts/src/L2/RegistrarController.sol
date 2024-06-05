@@ -14,6 +14,8 @@ import {IPriceOracle} from "./interface/IPriceOracle.sol";
 import {L2Resolver} from "./L2Resolver.sol";
 import {IReverseRegistrar} from "./interface/IReverseRegistrar.sol";
 
+import "forge-std/console.sol";
+
 /**
  * @dev A registrar controller for registering and renewing names at fixed cost.
  */

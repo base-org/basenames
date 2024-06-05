@@ -21,6 +21,7 @@ contract MockReverseRegistrar {
         returns (bytes32)
     {
         record = MockReverseRecord({addr: addr, owner: owner, resolver: resolver, name: name});
+        hasClaimed[owner] = true;
         return bytes32(0);
     }
 }
