@@ -9,11 +9,11 @@ contract MockReverseRegistrar {
         string name;
     }
 
-    bool public hasClaimed;
+    mapping(address => bool) public hasClaimed;
     MockReverseRecord public record;
 
-    function claim(address) external {
-        hasClaimed = true;
+    function claim(address claimant) external {
+        hasClaimed[claimant] = true;
     }
 
     function setNameForAddr(address addr, address owner, address resolver, string memory name)

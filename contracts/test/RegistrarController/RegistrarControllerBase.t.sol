@@ -16,7 +16,7 @@ import {MockUSDC} from "test/mocks/MockUSDC.sol";
 import {MockNameWrapper} from "test/mocks/MockNameWrapper.sol";
 import {MockPriceOracle} from "test/mocks/MockPriceOracle.sol";
 import {MockDiscountValidator} from "test/mocks/MockDiscountValidator.sol";
-
+import {MockPublicResolver} from "test/mocks/MockPublicResolver.sol";
 import {REVERSE_NODE} from "src/util/Constants.sol";
 
 import "forge-std/console.sol";
@@ -28,10 +28,10 @@ contract RegistrarControllerBase is Test {
     MockUSDC public usdc;
     MockPriceOracle public prices;
     Registry public registry;
+    MockPublicResolver public resolver; 
 
     address owner = makeAddr("owner");
     address user = makeAddr("user");
-    address resolver = makeAddr("resolver");
 
     string public name = "test";
     string public shortName = "t";
@@ -49,7 +49,9 @@ contract RegistrarControllerBase is Test {
         usdc = new MockUSDC();
         prices = new MockPriceOracle();
         registry = new Registry(owner);
+        resolver = new MockPublicResolver();
         validator = new MockDiscountValidator();
+
         _establishNamespace();
 
         vm.prank(owner);
@@ -66,32 +68,32 @@ contract RegistrarControllerBase is Test {
         assertEq(address(controller.prices()), address(prices));
         assertEq(address(controller.reverseRegistrar()), address(reverse));
         assertEq(address(controller.usdc()), address(usdc));
-        assertTrue(reverse.hasClaimed());
+        assertTrue(reverse.hasClaimed(owner));
         assertEq(controller.owner(), owner);
     }
 
     function _establishNamespace() internal virtual {}
 
     function _getDefaultDiscount() internal view returns (RegistrarController.DiscountDetails memory) {
-        return  RegistrarController.DiscountDetails({
+        return RegistrarController.DiscountDetails({
             active: true,
             discountValidator: address(validator),
             discount: discountAmount
         });
     }
 
-    function _getDefaultRegisterRequest() internal virtual view returns (RegistrarController.RegisterRequest memory) {
+    function _getDefaultRegisterRequest() internal view virtual returns (RegistrarController.RegisterRequest memory) {
         return RegistrarController.RegisterRequest({
-            name: name, 
+            name: name,
             owner: user,
             duration: duration,
-            resolver: resolver, 
+            resolver: address(resolver),
             data: _getDefaultRegisterData(),
-            reverseRecord: false
+            reverseRecord: true
         });
     }
 
-    function _getDefaultRegisterData() internal virtual view returns (bytes[] memory data) {
+    function _getDefaultRegisterData() internal view virtual returns (bytes[] memory data) {
         data = new bytes[](1);
         data[0] = bytes(name);
     }

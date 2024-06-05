@@ -11,6 +11,7 @@ contract MockPublicResolver is ExtendedResolver {
     mapping(bytes32 => mapping(string => string)) texts;
     address public constant ADDRESS = 0x000000000000000000000000000000000000dEaD;
     string public constant TEST_TEXT = "pass";
+    bytes public firstByte;
 
     constructor() {
         addrs[BASE_ETH_NODE] = ADDRESS;
@@ -23,6 +24,10 @@ contract MockPublicResolver is ExtendedResolver {
 
     function text(bytes32 node, string calldata key) external view returns (string memory) {
         return texts[node][key];
+    }
+
+    function multicallWithNodeCheck(bytes32, bytes[] memory data) external {
+        firstByte = data[0];
     }
 
     function supportsInterface(bytes4 interfaceID) public pure returns (bool) {

@@ -4,7 +4,6 @@ pragma solidity ^0.8.23;
 import {RegistrarControllerBase} from "./RegistrarControllerBase.t.sol";
 
 contract Valid is RegistrarControllerBase {
-
     function test_returnsTrue_whenValid() public view {
         assertTrue(controller.valid("abc"));
         assertTrue(controller.valid("abcdef"));

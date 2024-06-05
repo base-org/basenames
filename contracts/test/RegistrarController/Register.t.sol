@@ -5,7 +5,7 @@ import {RegistrarControllerBase} from "./RegistrarControllerBase.t.sol";
 import {RegistrarController} from "src/L2/RegistrarController.sol";
 import {IPriceOracle} from "src/L2/interface/IPriceOracle.sol";
 
-contract RegisterPrice is RegistrarControllerBase {
+contract Register is RegistrarControllerBase {
 
     function test_reverts_whenResolverRequiredAndNotSupplied() public {
         vm.deal(user, 1 ether);
@@ -36,5 +36,36 @@ contract RegisterPrice is RegistrarControllerBase {
         vm.expectRevert(abi.encodeWithSelector(RegistrarController.DurationTooShort.selector, shortDuration));
         vm.prank(user);
         controller.register{value: price}(shortDurationRequest);
+    }
+
+    function test_reverts_whenValueTooSmall() public {
+        vm.deal(user, 1 ether);
+        uint256 price = controller.registerPrice(name, duration);
+        base.setAvailable(uint256(nameLabel), true);
+        vm.expectRevert(RegistrarController.InsufficientValue.selector);
+        vm.prank(user);
+        controller.register{value: price-1}(_getDefaultRegisterRequest());
+    }
+
+    function test_registersSuccessfully() public {
+        vm.deal(user, 1 ether);
+        RegistrarController.RegisterRequest memory request = _getDefaultRegisterRequest();
+
+        uint256 price = controller.registerPrice(request.name, request.duration);
+        base.setAvailable(uint256(nameLabel), true);
+        uint256 expires =  block.timestamp + request.duration;
+        base.setNameExpires(uint256(nameLabel), expires);
+
+        vm.expectEmit(address(controller));
+        emit RegistrarController.ETHPaymentProcessed(user, price);
+        vm.expectEmit(address(controller));
+        emit RegistrarController.NameRegistered(request.name, nameLabel, user, expires);
+
+        vm.prank(user);
+        controller.register{value: price}(request);
+
+        bytes memory retByte = resolver.firstByte();
+        assertEq(keccak256(retByte), keccak256(request.data[0]));
+        assertTrue(reverse.hasClaimed(user));
     }
 }

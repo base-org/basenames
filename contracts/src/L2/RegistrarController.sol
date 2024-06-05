@@ -94,7 +94,7 @@ contract RegistrarController is Ownable {
         _;
     }
 
-    modifier validateDiscount(bytes32 discountKey, bytes calldata validationData) {
+    modifier validDiscount(bytes32 discountKey, bytes calldata validationData) {
         if (discountedRegistrants[msg.sender]) revert AlreadyClaimedWithDiscount(msg.sender);
         DiscountDetails memory details = discounts[discountKey];
 
@@ -198,7 +198,7 @@ contract RegistrarController is Ownable {
     function discountedRegister(RegisterRequest calldata request, bytes32 discountKey, bytes calldata validationData)
         public
         payable
-        validateDiscount(discountKey, validationData)
+        validDiscount(discountKey, validationData)
         validRegistration(request)
     {
         uint256 price = discountRentPrice(request.name, request.duration, discountKey);
@@ -235,7 +235,9 @@ contract RegistrarController is Ownable {
     }
 
     function _register(RegisterRequest calldata request) internal {
-        uint256 expires = base.registerWithRecord(uint256(keccak256(bytes(request.name))), request.owner, request.duration, request.resolver, 0);
+        uint256 expires = base.registerWithRecord(
+            uint256(keccak256(bytes(request.name))), request.owner, request.duration, request.resolver, 0
+        );
 
         if (request.data.length > 0) {
             _setRecords(request.resolver, keccak256(bytes(request.name)), request.data);

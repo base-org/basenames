@@ -6,7 +6,6 @@ import {RegistrarController} from "src/L2/RegistrarController.sol";
 import {Ownable} from "solady/auth/Ownable.sol";
 
 contract SetDiscountDetails is RegistrarControllerBase {
-
     function test_reverts_ifCalledByNonOwner(address caller) public {
         vm.assume(caller != owner);
         vm.expectRevert(Ownable.Unauthorized.selector);

@@ -20,4 +20,8 @@ contract MockBaseRegistrar {
     function nameExpires(uint256 label) external view returns (uint256) {
         return expiries[label];
     }
+
+    function registerWithRecord(uint256 label, address, uint256, address, uint64) external view returns (uint256) {
+        return expiries[label];
+    }
 }
