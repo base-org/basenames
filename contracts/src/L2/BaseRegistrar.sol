@@ -7,15 +7,14 @@ import {Ownable} from "solady/auth/Ownable.sol";
 
 import {GRACE_PERIOD} from "src/util/Constants.sol";
 
-
-/// @title Base Registrar 
+/// @title Base Registrar
 ///
 /// @notice The base-level tokenization contract for an ens domain. The Base Registrar implements ERC721 and, as the owner
 ///         of a 2LD, can mint and assign ownership rights to its subdomains. I.e. This contract owns "base.eth" and allows
 ///         users to mint subdomains like "vitalik.base.eth". Registration is delegated to "controller" contracts which have
 ///         rights to call `onlyController` protected methods.
 ///
-///         The implementation is heavily inspired by the original ENS BaseRegistrarImplementation contract: 
+///         The implementation is heavily inspired by the original ENS BaseRegistrarImplementation contract:
 ///         https://github.com/ensdomains/ens-contracts/blob/staging/contracts/ethregistrar/BaseRegistrarImplementation.sol
 ///
 /// @author Coinbase (https://github.com/base-org/usernames)
@@ -31,7 +30,6 @@ contract BaseRegistrar is ERC721, Ownable {
     bytes32 public baseNode;
     // A map of addresses that are authorised to register and renew names.
     mapping(address controller => bool isApproved) public controllers;
-
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                          CONSTANTS                         */
@@ -171,12 +169,12 @@ contract BaseRegistrar is ERC721, Ownable {
 
     /// @notice Allows holders of names can renew their ownerhsip and extend their expiry
     ///
-    /// @dev Renewal can be called while owning a subdomain or while the name is in the 
+    /// @dev Renewal can be called while owning a subdomain or while the name is in the
     /// @dev grace period. Can only be called by a controller.
-    /// 
+    ///
     /// @param id The Id to renew
-    /// @param duration The time that will be added to this name's expiry 
-    /// 
+    /// @param duration The time that will be added to this name's expiry
+    ///
     /// @return The new expiry date
     function renew(uint256 id, uint256 duration) external live onlyController returns (uint256) {
         if (expiries[id] + GRACE_PERIOD < block.timestamp) revert NotRegisteredOrInGrace(id);

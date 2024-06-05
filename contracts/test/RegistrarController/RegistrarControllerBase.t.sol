@@ -28,7 +28,7 @@ contract RegistrarControllerBase is Test {
     MockUSDC public usdc;
     MockPriceOracle public prices;
     Registry public registry;
-    MockPublicResolver public resolver; 
+    MockPublicResolver public resolver;
 
     address owner = makeAddr("owner");
     address user = makeAddr("user");

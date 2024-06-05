@@ -132,7 +132,6 @@ contract ReverseRegistrar is Ownable {
         return keccak256(abi.encodePacked(ADDR_REVERSE_NODE, Sha3.hexAddress(addr)));
     }
 
-
     function _ownsContract(address addr) internal view returns (bool) {
         // Determine if a contract exists at `addr` and return early if not
         if (!_isContract(addr)) {

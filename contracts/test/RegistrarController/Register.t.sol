@@ -6,7 +6,6 @@ import {RegistrarController} from "src/L2/RegistrarController.sol";
 import {IPriceOracle} from "src/L2/interface/IPriceOracle.sol";
 
 contract Register is RegistrarControllerBase {
-
     function test_reverts_whenResolverRequiredAndNotSupplied() public {
         vm.deal(user, 1 ether);
         uint256 price = controller.registerPrice(name, duration);
@@ -44,7 +43,7 @@ contract Register is RegistrarControllerBase {
         base.setAvailable(uint256(nameLabel), true);
         vm.expectRevert(RegistrarController.InsufficientValue.selector);
         vm.prank(user);
-        controller.register{value: price-1}(_getDefaultRegisterRequest());
+        controller.register{value: price - 1}(_getDefaultRegisterRequest());
     }
 
     function test_registersSuccessfully() public {
@@ -53,7 +52,7 @@ contract Register is RegistrarControllerBase {
 
         uint256 price = controller.registerPrice(request.name, request.duration);
         base.setAvailable(uint256(nameLabel), true);
-        uint256 expires =  block.timestamp + request.duration;
+        uint256 expires = block.timestamp + request.duration;
         base.setNameExpires(uint256(nameLabel), expires);
 
         vm.expectEmit(address(controller));
@@ -75,7 +74,7 @@ contract Register is RegistrarControllerBase {
 
         uint256 price = controller.registerPrice(request.name, request.duration);
         base.setAvailable(uint256(nameLabel), true);
-        uint256 expires =  block.timestamp + request.duration;
+        uint256 expires = block.timestamp + request.duration;
         base.setNameExpires(uint256(nameLabel), expires);
 
         vm.prank(user);

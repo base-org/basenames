@@ -20,8 +20,7 @@ contract RegistryBase is Test {
     function setUp() public {
         registry = new Registry(rootOwner);
         resolver = new MockPublicResolver();
-        address storedOwner = registry.owner(0x0);
-        console.log(storedOwner);
+        registry.owner(0x0);
         _ownershipSetup();
     }
 

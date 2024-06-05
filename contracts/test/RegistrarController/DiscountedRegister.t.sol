@@ -6,7 +6,6 @@ import {RegistrarController} from "src/L2/RegistrarController.sol";
 import {IPriceOracle} from "src/L2/interface/IPriceOracle.sol";
 
 contract DiscountedRegister is RegistrarControllerBase {
-
     function test_reverts_ifTheDiscountIsInactive() public {
         RegistrarController.DiscountDetails memory inactiveDiscount = _getDefaultDiscount();
         vm.deal(user, 1 ether);
@@ -49,7 +48,7 @@ contract DiscountedRegister is RegistrarControllerBase {
     function test_reverts_whenDurationTooShort() public {
         vm.deal(user, 1 ether);
         vm.prank(owner);
-        controller.setDiscountDetails(discountKey, _getDefaultDiscount());       
+        controller.setDiscountDetails(discountKey, _getDefaultDiscount());
         uint256 price = controller.discountRentPrice(name, duration, discountKey);
         validator.setReturnValue(true);
         base.setAvailable(uint256(nameLabel), true);
@@ -65,12 +64,12 @@ contract DiscountedRegister is RegistrarControllerBase {
     function test_reverts_whenValueTooSmall() public {
         vm.deal(user, 1 ether);
         vm.prank(owner);
-        controller.setDiscountDetails(discountKey, _getDefaultDiscount());       
+        controller.setDiscountDetails(discountKey, _getDefaultDiscount());
         prices.setPrice(name, IPriceOracle.Price({base: 1 ether, premium: 0}));
         uint256 price = controller.discountRentPrice(name, duration, discountKey);
         validator.setReturnValue(true);
         base.setAvailable(uint256(nameLabel), true);
-    
+
         vm.expectRevert(RegistrarController.InsufficientValue.selector);
         vm.prank(user);
         controller.discountedRegister{value: price - 1}(_getDefaultRegisterRequest(), discountKey, "");
@@ -79,12 +78,12 @@ contract DiscountedRegister is RegistrarControllerBase {
     function test_registersWithDiscountSuccessfully() public {
         vm.deal(user, 1 ether);
         vm.prank(owner);
-        controller.setDiscountDetails(discountKey, _getDefaultDiscount());       
+        controller.setDiscountDetails(discountKey, _getDefaultDiscount());
         uint256 price = controller.discountRentPrice(name, duration, discountKey);
         validator.setReturnValue(true);
         base.setAvailable(uint256(nameLabel), true);
         RegistrarController.RegisterRequest memory request = _getDefaultRegisterRequest();
-        uint256 expires =  block.timestamp + request.duration;
+        uint256 expires = block.timestamp + request.duration;
         base.setNameExpires(uint256(nameLabel), expires);
 
         vm.expectEmit(address(controller));
@@ -106,12 +105,12 @@ contract DiscountedRegister is RegistrarControllerBase {
     function test_sendsARefund_ifUserOverpayed() public {
         vm.deal(user, 1 ether);
         vm.prank(owner);
-        controller.setDiscountDetails(discountKey, _getDefaultDiscount());       
+        controller.setDiscountDetails(discountKey, _getDefaultDiscount());
         uint256 price = controller.discountRentPrice(name, duration, discountKey);
         validator.setReturnValue(true);
         base.setAvailable(uint256(nameLabel), true);
         RegistrarController.RegisterRequest memory request = _getDefaultRegisterRequest();
-        uint256 expires =  block.timestamp + request.duration;
+        uint256 expires = block.timestamp + request.duration;
         base.setNameExpires(uint256(nameLabel), expires);
 
         vm.prank(user);
