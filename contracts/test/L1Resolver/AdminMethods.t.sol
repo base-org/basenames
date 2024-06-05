@@ -24,11 +24,17 @@ contract AdminMethods is L1ResolverTestBase {
         vm.prank(makeAddr("0x2"));
         vm.expectRevert(abi.encodeWithSelector(Ownable.Unauthorized.selector));
         resolver.addSigners(_signers);
+        for (uint256 i; i < _signers.length; i++) {
+            assertFalse(resolver.signers(_signers[i]));
+        }
 
         vm.prank(owner);
         vm.expectEmit();
         emit L1Resolver.NewSigners(_signers);
         resolver.addSigners(_signers);
+        for (uint256 i; i < _signers.length; i++) {
+            assertTrue(resolver.signers(_signers[i]));
+        }
     }
 
     function test_removeSigner() public {

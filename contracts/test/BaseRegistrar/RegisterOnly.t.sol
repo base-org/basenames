@@ -39,7 +39,7 @@ contract RegisterOnly is BaseRegistrarBase {
     }
 
     function test_successfullyRegisters_afterExpiry(address newOwner) public {
-        vm.assume(newOwner != user && newOwner != address(0));
+        vm.assume(newOwner != user);
         _registrationSetup();
 
         vm.warp(blockTimestamp);

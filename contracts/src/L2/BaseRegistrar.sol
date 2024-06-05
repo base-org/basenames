@@ -7,14 +7,15 @@ import {Ownable} from "solady/auth/Ownable.sol";
 
 import {GRACE_PERIOD} from "src/util/Constants.sol";
 
-/// @title Base Registrar
+
+/// @title Base Registrar 
 ///
 /// @notice The base-level tokenization contract for an ens domain. The Base Registrar implements ERC721 and, as the owner
 ///         of a 2LD, can mint and assign ownership rights to its subdomains. I.e. This contract owns "base.eth" and allows
 ///         users to mint subdomains like "vitalik.base.eth". Registration is delegated to "controller" contracts which have
 ///         rights to call `onlyController` protected methods.
 ///
-///         The implementation is heavily inspired by the original ENS BaseRegistrarImplementation contract:
+///         The implementation is heavily inspired by the original ENS BaseRegistrarImplementation contract: 
 ///         https://github.com/ensdomains/ens-contracts/blob/staging/contracts/ethregistrar/BaseRegistrarImplementation.sol
 ///
 /// @author Coinbase (https://github.com/base-org/usernames)
@@ -30,6 +31,7 @@ contract BaseRegistrar is ERC721, Ownable {
     bytes32 public baseNode;
     // A map of addresses that are authorised to register and renew names.
     mapping(address controller => bool isApproved) public controllers;
+
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                          CONSTANTS                         */
@@ -61,9 +63,6 @@ contract BaseRegistrar is ERC721, Ownable {
     event ControllerRemoved(address indexed controller);
     event NameMigrated(uint256 indexed id, address indexed owner, uint256 expires);
     event NameRegistered(uint256 indexed id, address indexed owner, uint256 expires);
-    event NameRegisteredWithRecord(
-        uint256 indexed id, address indexed owner, uint256 expires, address resolver, uint64 ttl
-    );
     event NameRenewed(uint256 indexed id, uint256 expires);
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
@@ -148,6 +147,48 @@ contract BaseRegistrar is ERC721, Ownable {
      */
     function registerOnly(uint256 id, address owner, uint256 duration) external returns (uint256) {
         return _register(id, owner, duration, false);
+    }
+
+    /**
+     * @dev Gets the owner of the specified token ID. Names become unowned
+     *      when their registration expires.
+     * @param tokenId uint256 ID of the token to query the owner of
+     * @return address currently marked as the owner of the given token ID
+     */
+    function ownerOf(uint256 tokenId) public view override returns (address) {
+        if (expiries[tokenId] <= block.timestamp) revert Expired(tokenId);
+        return super.ownerOf(tokenId);
+    }
+
+    // Returns true iff the specified name is available for registration.
+    function available(uint256 id) public view returns (bool) {
+        // Not available if it's registered here or in its grace period.
+        return expiries[id] + GRACE_PERIOD < block.timestamp;
+    }
+
+    /// @notice Allows holders of names can renew their ownerhsip and extend their expiry
+    ///
+    /// @dev Renewal can be called while owning a subdomain or while the name is in the 
+    /// @dev grace period. Can only be called by a controller.
+    /// 
+    /// @param id The Id to renew
+    /// @param duration The time that will be added to this name's expiry 
+    /// 
+    /// @return The new expiry date
+    function renew(uint256 id, uint256 duration) external live onlyController returns (uint256) {
+        if (expiries[id] + GRACE_PERIOD < block.timestamp) revert NotRegisteredOrInGrace(id);
+
+        expiries[id] += duration;
+        emit NameRenewed(id, expiries[id]);
+        return expiries[id];
+    }
+
+    /**
+     * @dev Reclaim ownership of a name in ENS, if you own it in the registrar.
+     */
+    function reclaim(uint256 id, address owner) external live {
+        if (!_isApprovedOrOwner(msg.sender, id)) revert NotApprovedOwner(id, owner);
+        ens.setSubnodeOwner(baseNode, bytes32(id), owner);
     }
 
     /**
