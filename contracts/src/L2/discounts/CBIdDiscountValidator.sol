@@ -6,14 +6,13 @@ import {Ownable} from "solady/auth/Ownable.sol";
 
 import {IDiscountValidator} from "src/L2/interface/IDiscountValidator.sol";
 
-
-/// @title cb.id Discount Validator
+/// @title Discount Validator for: cb.id
 ///
-/// @author @coinbase
+/// @notice Implements a simple Merkle Proof validator checking that the claimant is in the stored merkle tree
 ///
-/// @notice Implements a simple Merkle Proof validator checking that the claimant is in the stored merkle tree 
+/// @author Coinbase
 contract CBIdDiscountValidator is Ownable, IDiscountValidator {
-    /// @dev merkle tree root 
+    /// @dev merkle tree root
     bytes32 public root;
 
     constructor(address owner_, bytes32 root_) {
@@ -28,12 +27,14 @@ contract CBIdDiscountValidator is Ownable, IDiscountValidator {
         root = root_;
     }
 
-    /// @notice Required implementation for compatibility with IDiscountValidator
+    /// @notice Required implementation for compatibility with IDiscountValidator.
     ///
-    /// @dev The proof data must be encoded as: `bytes calldata validationData = abi.encode(bytes32[] proof);`
+    /// @dev The proof data must be encoded as `abi.encode(bytes32[] proof)`.
     ///
-    /// @param sender  the discount claimer's address
-    /// @param validationData opaque bytes for performing the validation 
+    /// @param sender  the discount claimer's address.
+    /// @param validationData opaque bytes for performing the validation.
+    ///
+    /// @return `true` if the validation data provided is determined to be valid for the specified sender, else `false.
     function isValidDiscountRegistration(address sender, bytes calldata validationData) external view returns (bool) {
         (bytes32[] memory proof) = abi.decode(validationData, (bytes32[]));
         return MerkleProofLib.verify(proof, root, keccak256(abi.encodePacked(sender)));

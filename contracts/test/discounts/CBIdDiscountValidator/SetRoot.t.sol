@@ -5,7 +5,6 @@ import {Ownable} from "solady/auth/Ownable.sol";
 import {CBIdDiscountValidatorBase} from "./CBIdDiscountValidatorBase.t.sol";
 
 contract SetRoot is CBIdDiscountValidatorBase {
-    
     function test_reverts_ifCalledByNonowner(address caller) public {
         vm.assume(caller != address(0) && caller != owner);
         vm.expectRevert(Ownable.Unauthorized.selector);
