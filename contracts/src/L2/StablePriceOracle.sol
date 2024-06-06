@@ -43,7 +43,7 @@ contract StablePriceOracle is IPriceOracle {
 
         if (len >= 10) {
             basePrice = price10Letter * duration;
-        } else if (len >= 5 && len < 10) {
+        } else if (len >= 5) {
             basePrice = price5Letter * duration;
         } else if (len == 4) {
             basePrice = price4Letter * duration;
