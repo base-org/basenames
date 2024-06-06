@@ -141,7 +141,7 @@ contract RegistrarController is Ownable {
 
     function available(string memory name) public view returns (bool) {
         bytes32 label = keccak256(bytes(name));
-        return valid(name) && base.available(uint256(label));
+        return valid(name) && base.isAvailable(uint256(label));
     }
 
     function rentPrice(string memory name, uint256 duration) public view returns (IPriceOracle.Price memory price) {

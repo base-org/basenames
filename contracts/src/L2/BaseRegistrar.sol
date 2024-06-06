@@ -79,8 +79,8 @@ contract BaseRegistrar is ERC721, Ownable {
         _;
     }
 
-    modifier isAvailable(uint256 id) {
-        if (!available(id)) revert NotAvailable(id);
+    modifier onlyAvailable(uint256 id) {
+        if (!isAvailable(id)) revert NotAvailable(id);
         _;
     }
 
@@ -162,7 +162,7 @@ contract BaseRegistrar is ERC721, Ownable {
     }
 
     // Returns true iff the specified name is available for registration.
-    function available(uint256 id) public view returns (bool) {
+    function isAvailable(uint256 id) public view returns (bool) {
         // Not available if it's registered here or in its grace period.
         return expiries[id] + GRACE_PERIOD < block.timestamp;
     }
@@ -206,7 +206,7 @@ contract BaseRegistrar is ERC721, Ownable {
         internal
         live
         onlyController
-        isAvailable(id)
+        onlyAvailable(id)
         returns (uint256)
     {
         uint256 expiry = _internalRegister(id, owner, duration);
@@ -221,7 +221,7 @@ contract BaseRegistrar is ERC721, Ownable {
         internal
         live
         onlyController
-        isAvailable(id)
+        onlyAvailable(id)
         returns (uint256)
     {
         uint256 expiry = _internalRegister(id, owner, duration);

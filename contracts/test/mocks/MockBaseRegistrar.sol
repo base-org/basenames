@@ -9,7 +9,7 @@ contract MockBaseRegistrar {
         availability[label] = available_;
     }
 
-    function available(uint256 label) external view returns (bool) {
+    function isAvailable(uint256 label) external view returns (bool) {
         return availability[label];
     }
 
