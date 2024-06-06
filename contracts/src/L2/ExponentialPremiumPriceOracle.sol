@@ -41,8 +41,8 @@ contract ExponentialPremiumPriceOracle is StablePriceOracle {
         }
 
         uint256 elapsed = block.timestamp - expires;
-        uint256 premium = decayedPremium(startPremium, elapsed);
-        if (premium >= endValue) {
+        uint256 premium = decayedPremium(elapsed);
+        if (premium > endValue) {
             return premium - endValue;
         }
         return 0;
@@ -50,13 +50,12 @@ contract ExponentialPremiumPriceOracle is StablePriceOracle {
 
     /**
      * @dev Returns the premium price at current time elapsed
-     * @param startPremium_ starting price
      * @param elapsed time past since expiry
      */
-    function decayedPremium(uint256 startPremium_, uint256 elapsed) public pure returns (uint256) {
+    function decayedPremium(uint256 elapsed) public view returns (uint256) {
         uint256 daysPast = (elapsed * PRECISION) / 1 days;
         uint256 intDays = daysPast / PRECISION;
-        uint256 premium = startPremium_ >> intDays;
+        uint256 premium = startPremium >> intDays;
         uint256 partDay = (daysPast - intDays * PRECISION);
         uint256 fraction = (partDay * (2 ** 16)) / PRECISION;
         uint256 totalPremium = _addFractionalPremium(fraction, premium);

@@ -192,16 +192,6 @@ contract BaseRegistrar is ERC721, Ownable {
         ens.setSubnodeOwner(baseNode, bytes32(id), owner);
     }
 
-    function _internalRegister(uint256 id, address owner, uint256 duration) internal returns (uint256 expiry) {
-        expiry = block.timestamp + duration;
-        expiries[id] = expiry;
-        if (_exists(id)) {
-            // Name was previously owned, and expired
-            _burn(id);
-        }
-        _mint(owner, id);
-    }
-
     function _register(uint256 id, address owner, uint256 duration, bool updateRegistry)
         internal
         live
@@ -209,7 +199,7 @@ contract BaseRegistrar is ERC721, Ownable {
         onlyAvailable(id)
         returns (uint256)
     {
-        uint256 expiry = _internalRegister(id, owner, duration);
+        uint256 expiry = _localRegister(id, owner, duration);
         if (updateRegistry) {
             ens.setSubnodeOwner(baseNode, bytes32(id), owner);
         }
@@ -224,10 +214,20 @@ contract BaseRegistrar is ERC721, Ownable {
         onlyAvailable(id)
         returns (uint256)
     {
-        uint256 expiry = _internalRegister(id, owner, duration);
+        uint256 expiry = _localRegister(id, owner, duration);
         ens.setSubnodeRecord(baseNode, bytes32(id), owner, resolver, ttl);
         emit NameRegisteredWithRecord(id, owner, expiry, resolver, ttl);
         return expiry;
+    }
+
+    function _localRegister(uint256 id, address owner, uint256 duration) internal returns (uint256 expiry) {
+        expiry = block.timestamp + duration;
+        expiries[id] = expiry;
+        if (_exists(id)) {
+            // Name was previously owned, and expired
+            _burn(id);
+        }
+        _mint(owner, id);
     }
 
     /**

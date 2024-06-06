@@ -52,7 +52,7 @@ contract RegistrarController is Ownable {
     /*                          CONSTANTS                         */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
     uint256 public constant MIN_REGISTRATION_DURATION = 28 days;
-    uint256 private constant MIN_NAME_LENGTH = 3;
+    uint256 public constant MIN_NAME_LENGTH = 3;
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                          ERRORS                            */
