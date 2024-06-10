@@ -5,13 +5,13 @@ import {ABIResolver} from "ens-contracts/resolvers/profiles/ABIResolver.sol";
 import {AddrResolver} from "ens-contracts/resolvers/profiles/AddrResolver.sol";
 import {ContentHashResolver} from "ens-contracts/resolvers/profiles/ContentHashResolver.sol";
 import {DNSResolver} from "ens-contracts/resolvers/profiles/DNSResolver.sol";
+import {ENS} from "ens-contracts/registry/ENS.sol";
+import {ExtendedResolver} from "ens-contracts/resolvers/profiles/ExtendedResolver.sol";
 import {InterfaceResolver} from "ens-contracts/resolvers/profiles/InterfaceResolver.sol";
+import {Multicallable} from "ens-contracts/resolvers/Multicallable.sol";
 import {NameResolver} from "ens-contracts/resolvers/profiles/NameResolver.sol";
 import {PubkeyResolver} from "ens-contracts/resolvers/profiles/PubkeyResolver.sol";
 import {TextResolver} from "ens-contracts/resolvers/profiles/TextResolver.sol";
-import {Multicallable} from "ens-contracts/resolvers/Multicallable.sol";
-import {ExtendedResolver} from "ens-contracts/resolvers/profiles/ExtendedResolver.sol";
-import {ENS} from "ens-contracts/registry/ENS.sol";
 
 contract L2Resolver is     
     Multicallable,
