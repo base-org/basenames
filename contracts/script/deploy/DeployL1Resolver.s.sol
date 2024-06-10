@@ -11,7 +11,7 @@ contract DeployL1Resolver is Script {
         vm.startBroadcast(deployerPrivateKey);
 
         /// L1 Resolver constructor data
-        string memory url = "https://api-entry-gateway-development.cbhq.net/api/v1/subdomain/resolver/resolveDomain/{sender}/{data}"; //
+        string memory url = "http://localhost:8000/api/v1/domain/resolver/resolveDomain/{sender}/{data}"; //
         address[] memory signers = new address[](1);
         signers[0] = 0xa412c16ECd2198A6aBce8235651E105684Fb77ed; // DEV signer
         address owner = deployerAddresss;

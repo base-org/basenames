@@ -13,7 +13,7 @@ import {NameResolver} from "ens-contracts/resolvers/profiles/NameResolver.sol";
 import {PubkeyResolver} from "ens-contracts/resolvers/profiles/PubkeyResolver.sol";
 import {TextResolver} from "ens-contracts/resolvers/profiles/TextResolver.sol";
 
-contract L2Resolver is     
+contract L2Resolver is
     Multicallable,
     ABIResolver,
     AddrResolver,
@@ -23,8 +23,8 @@ contract L2Resolver is
     NameResolver,
     PubkeyResolver,
     TextResolver,
-    ExtendedResolver {
-    
+    ExtendedResolver
+{
     /**
      * A mapping of operators. An address that is authorised for an address
      * may make any changes to the name that the owner could, but may not update
@@ -39,34 +39,19 @@ contract L2Resolver is
      * the set of token approvals.
      * (owner, name, delegate) => approved
      */
-    mapping(address => mapping(bytes32 => mapping(address => bool)))
-        private _tokenApprovals;
+    mapping(address => mapping(bytes32 => mapping(address => bool))) private _tokenApprovals;
 
     // Logged when an operator is added or removed.
-    event ApprovalForAll(
-        address indexed owner,
-        address indexed operator,
-        bool approved
-    );
+    event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
 
     // Logged when a delegate is approved or  an approval is revoked.
-    event Approved(
-        address owner,
-        bytes32 indexed node,
-        address indexed delegate,
-        bool indexed approved
-    );
+    event Approved(address owner, bytes32 indexed node, address indexed delegate, bool indexed approved);
 
     ENS immutable ens;
     address immutable trustedETHController;
     address immutable trustedReverseRegistrar;
 
-
-    constructor(
-        ENS _ens,
-        address _trustedETHController,
-        address _trustedReverseRegistrar
-    ) {
+    constructor(ENS _ens, address _trustedETHController, address _trustedReverseRegistrar) {
         ens = _ens;
         trustedETHController = _trustedETHController;
         trustedReverseRegistrar = _trustedReverseRegistrar;
@@ -76,10 +61,7 @@ contract L2Resolver is
      * @dev See {IERC1155-setApprovalForAll}.
      */
     function setApprovalForAll(address operator, bool approved) external {
-        require(
-            msg.sender != operator,
-            "ERC1155: setting approval status for self"
-        );
+        require(msg.sender != operator, "ERC1155: setting approval status for self");
 
         _operatorApprovals[msg.sender][operator] = approved;
         emit ApprovalForAll(msg.sender, operator, approved);
@@ -88,10 +70,7 @@ contract L2Resolver is
     /**
      * @dev See {IERC1155-isApprovedForAll}.
      */
-    function isApprovedForAll(
-        address account,
-        address operator
-    ) public view returns (bool) {
+    function isApprovedForAll(address account, address operator) public view returns (bool) {
         return _operatorApprovals[account][operator];
     }
 
@@ -108,31 +87,19 @@ contract L2Resolver is
     /**
      * @dev Check to see if the delegate has been approved by the owner for the node.
      */
-    function isApprovedFor(
-        address owner,
-        bytes32 node,
-        address delegate
-    ) public view returns (bool) {
+    function isApprovedFor(address owner, bytes32 node, address delegate) public view returns (bool) {
         return _tokenApprovals[owner][node][delegate];
     }
 
     function isAuthorised(bytes32 node) internal view override returns (bool) {
-        if (
-            msg.sender == trustedETHController ||
-            msg.sender == trustedReverseRegistrar
-        ) {
+        if (msg.sender == trustedETHController || msg.sender == trustedReverseRegistrar) {
             return true;
         }
         address owner = ens.owner(node);
-        return
-            owner == msg.sender ||
-            isApprovedForAll(owner, msg.sender) ||
-            isApprovedFor(owner, node, msg.sender);
+        return owner == msg.sender || isApprovedForAll(owner, msg.sender) || isApprovedFor(owner, node, msg.sender);
     }
 
-    function supportsInterface(
-        bytes4 interfaceID
-    )
+    function supportsInterface(bytes4 interfaceID)
         public
         view
         override(
