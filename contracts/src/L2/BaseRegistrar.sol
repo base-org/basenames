@@ -135,9 +135,15 @@ contract BaseRegistrar is ERC721, Ownable {
      */
     function registerWithRecord(uint256 id, address owner, uint256 duration, address resolver, uint64 ttl)
         external
+        live
+        onlyController
+        onlyAvailable(id)
         returns (uint256)
     {
-        return _registerWithRecord(id, owner, duration, resolver, ttl);
+        uint256 expiry = _localRegister(id, owner, duration);
+        ens.setSubnodeRecord(baseNode, bytes32(id), owner, resolver, ttl);
+        emit NameRegisteredWithRecord(id, owner, expiry, resolver, ttl);
+        return expiry;
     }
 
     /**
@@ -204,19 +210,6 @@ contract BaseRegistrar is ERC721, Ownable {
             ens.setSubnodeOwner(baseNode, bytes32(id), owner);
         }
         emit NameRegistered(id, owner, expiry);
-        return expiry;
-    }
-
-    function _registerWithRecord(uint256 id, address owner, uint256 duration, address resolver, uint64 ttl)
-        internal
-        live
-        onlyController
-        onlyAvailable(id)
-        returns (uint256)
-    {
-        uint256 expiry = _localRegister(id, owner, duration);
-        ens.setSubnodeRecord(baseNode, bytes32(id), owner, resolver, ttl);
-        emit NameRegisteredWithRecord(id, owner, expiry, resolver, ttl);
         return expiry;
     }
 
