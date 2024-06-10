@@ -15,9 +15,9 @@ contract DeployL2Resolver is Script {
         vm.startBroadcast(deployerPrivateKey);
 
         /// L2 Resolver constructor data
-        address ensAddress = 0x1d3C6Cf6737921c798f07Cd6469A72f173166657; // deployer-owned registry
-        address controller = 0xa30403e032237CF0106286b9E863Bc1b56f1Ff35; // let deployer manage names
-        address reverse = 0x6864841F1cD70349F23126982C140676268612F9; // deployer-owned rev registrar
+        address ensAddress = vm.envAddress("REGISTRY_ADDR");
+        address controller = vm.envAddress("REGISTRAR_CONTROLLER_ADDR"); // controller can set data on deployment
+        address reverse = vm.envAddress("REVERSE_REGISTRAR_ADDR");
 
         L2Resolver l2 = new L2Resolver(Registry(ensAddress), controller, reverse);
 

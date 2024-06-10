@@ -6,7 +6,7 @@ import {ENS} from "ens-contracts/registry/ENS.sol";
 
 import {BASE_ETH_NODE} from "src/util/Constants.sol";
 import {BaseRegistrar} from "src/L2/BaseRegistrar.sol";
-
+import {NameEncoder} from "ens-contracts/utils/NameEncoder.sol";
 
 contract DeployBaseRegistrar is Script {
     function run() external {
@@ -15,9 +15,10 @@ contract DeployBaseRegistrar is Script {
         vm.startBroadcast(deployerPrivateKey);
 
         /// L2 Resolver constructor data
-        address ensAddress = 0x1d3C6Cf6737921c798f07Cd6469A72f173166657; // deployer-owned registry
+        address ensAddress = vm.envAddress("REGISTRY_ADDR"); // deployer-owned registry
+        (,bytes32 node) = NameEncoder.dnsEncodeName("basetest.eth");
 
-        BaseRegistrar base = new BaseRegistrar(ENS(ensAddress), deployerAddress, BASE_ETH_NODE);
+        BaseRegistrar base = new BaseRegistrar(ENS(ensAddress), deployerAddress, node);
 
         console.log("Base Registrar deployed to:");
         console.log(address(base));

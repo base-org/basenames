@@ -12,13 +12,12 @@ contract DeployPriceOracle is Script {
         vm.startBroadcast(deployerPrivateKey);
 
         uint256[] memory prices = new uint256[](6);
-        prices[0] = 1e19;
-        prices[1] = 1e18;
-        prices[2] = 1e17;
-        prices[3] = 1e16;
-        prices[4] = 1e15;
-        prices[5] = 1e14;
-
+        prices[0] = 317_097_919_837;
+        prices[1] = 31_709_791_983;
+        prices[2] = 3_170_979_198;
+        prices[3] = 317_097_919;
+        prices[4] = 31_709_791;
+        prices[5] = 3_170_979; //3,170,979.1983764587 = 1e14 / (365 * 24 * 3600) 
         uint256 premiumStart = 500 ether;
         uint256 totalDays = 28 days;
 

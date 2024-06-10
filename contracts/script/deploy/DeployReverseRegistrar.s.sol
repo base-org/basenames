@@ -13,7 +13,7 @@ contract DeployReverseRegistrar is Script {
         address deployerAddress = vm.addr(deployerPrivateKey);
         vm.startBroadcast(deployerPrivateKey);
 
-        address ensAddress = 0x1d3C6Cf6737921c798f07Cd6469A72f173166657; // deployer-owned registry
+        address ensAddress = vm.envAddress("REGISTRY_ADDR"); // deployer-owned registry
         Registry registry = Registry(ensAddress);
 
         ReverseRegistrar revRegstrar = new ReverseRegistrar(

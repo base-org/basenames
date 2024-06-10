@@ -12,12 +12,11 @@ import {ENS} from "ens-contracts/registry/ENS.sol";
 
 import {MockBaseRegistrar} from "test/mocks/MockBaseRegistrar.sol";
 import {MockReverseRegistrar} from "test/mocks/MockReverseRegistrar.sol";
-import {MockUSDC} from "test/mocks/MockUSDC.sol";
 import {MockNameWrapper} from "test/mocks/MockNameWrapper.sol";
 import {MockPriceOracle} from "test/mocks/MockPriceOracle.sol";
 import {MockDiscountValidator} from "test/mocks/MockDiscountValidator.sol";
 import {MockPublicResolver} from "test/mocks/MockPublicResolver.sol";
-import {REVERSE_NODE} from "src/util/Constants.sol";
+import {BASE_ETH_NODE, REVERSE_NODE} from "src/util/Constants.sol";
 
 import "forge-std/console.sol";
 
@@ -25,7 +24,6 @@ contract RegistrarControllerBase is Test {
     RegistrarController public controller;
     MockBaseRegistrar public base;
     MockReverseRegistrar public reverse;
-    MockUSDC public usdc;
     MockPriceOracle public prices;
     Registry public registry;
     MockPublicResolver public resolver;
@@ -33,6 +31,8 @@ contract RegistrarControllerBase is Test {
     address owner = makeAddr("owner");
     address user = makeAddr("user");
 
+    bytes32 public rootNode = BASE_ETH_NODE;
+    string public rootName = ".base.eth";
     string public name = "test";
     string public shortName = "t";
     bytes32 public nameLabel = keccak256(bytes(name));
@@ -46,7 +46,6 @@ contract RegistrarControllerBase is Test {
     function setUp() public {
         base = new MockBaseRegistrar();
         reverse = new MockReverseRegistrar();
-        usdc = new MockUSDC();
         prices = new MockPriceOracle();
         registry = new Registry(owner);
         resolver = new MockPublicResolver();
@@ -58,18 +57,20 @@ contract RegistrarControllerBase is Test {
         controller = new RegistrarController(
             BaseRegistrar(address(base)),
             IPriceOracle(address(prices)),
-            IERC20(address(usdc)),
             IReverseRegistrar(address(reverse)),
-            owner
+            owner,
+            rootNode, 
+            rootName
         );
     }
 
     function test_controller_constructor() public view {
         assertEq(address(controller.prices()), address(prices));
         assertEq(address(controller.reverseRegistrar()), address(reverse));
-        assertEq(address(controller.usdc()), address(usdc));
         assertTrue(reverse.hasClaimed(owner));
         assertEq(controller.owner(), owner);
+        assertEq(controller.rootNode(), rootNode);
+        assertEq(keccak256(bytes(controller.rootName())), keccak256(bytes(rootName)));
     }
 
     function _establishNamespace() internal virtual {}

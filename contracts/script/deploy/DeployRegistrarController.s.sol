@@ -20,9 +20,9 @@ contract DeployL2Resolver is Script {
         vm.startBroadcast(deployerPrivateKey);
 
         /// L2 Resolver constructor data
-        address oracle = 0x12e26f301185336A2BEc9cB8f2b87C7451ee7E95;
-        address reverse = 0x5F15c3B5949F5767F5Ca9013a8E4Ca4D97a053eD; // deployer-owned rev registrar
-        address base = 0x0Cff05B4e1DF41fB5423448d4fDC81eB9Bef21df; 
+        address oracle = vm.envAddress("PRICE_ORACLE_ADDR");
+        address reverse = vm.envAddress("REVERSE_REGISTRAR_ADDR"); // deployer-owned rev registrar
+        address base = vm.envAddress("BASE_REGISTRAR_ADDR"); 
         (,bytes32 rootNode) = NameEncoder.dnsEncodeName("basetest.eth");
         string memory rootName = ".basetest.eth";
 
