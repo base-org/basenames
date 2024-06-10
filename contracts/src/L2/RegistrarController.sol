@@ -44,6 +44,8 @@ contract RegistrarController is Ownable {
     IPriceOracle public immutable prices;
     IReverseRegistrar public immutable reverseRegistrar;
     EnumerableSetLib.Bytes32Set internal activeDiscounts;
+    bytes32 public immutable rootNode;
+    string public rootName;
     mapping(bytes32 => DiscountDetails) public discounts;
     mapping(address => bool) public discountedRegistrants;
 
@@ -113,11 +115,15 @@ contract RegistrarController is Ownable {
         BaseRegistrar base_,
         IPriceOracle prices_,
         IReverseRegistrar reverseRegistrar_,
-        address owner_
+        address owner_,
+        bytes32 rootNode_,
+        string memory rootName_
     ) {
         base = base_;
         prices = prices_;
         reverseRegistrar = reverseRegistrar_;
+        rootNode = rootNode_;
+        rootName = rootName_;
         _initializeOwner(owner_);
         // Assign ownership of this contract's reverse record to this contract's owner
         reverseRegistrar.claim(owner_);
@@ -255,14 +261,13 @@ contract RegistrarController is Ownable {
     }
 
     function _setRecords(address resolverAddress, bytes32 label, bytes[] calldata data) internal {
-        // use hardcoded base.eth namehash
-        bytes32 nodehash = keccak256(abi.encodePacked(BASE_ETH_NODE, label));
+        bytes32 nodehash = keccak256(abi.encodePacked(rootNode, label));
         L2Resolver resolver = L2Resolver(resolverAddress);
         resolver.multicallWithNodeCheck(nodehash, data);
     }
 
     function _setReverseRecord(string memory name, address resolver, address owner) internal {
-        reverseRegistrar.setNameForAddr(msg.sender, owner, resolver, string.concat(name, ".base.eth"));
+        reverseRegistrar.setNameForAddr(msg.sender, owner, resolver, string.concat(name, rootName));
     }
 
     function withdrawETH() public {

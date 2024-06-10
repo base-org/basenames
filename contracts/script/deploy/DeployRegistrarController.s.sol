@@ -9,6 +9,7 @@ import {Registry} from "src/L2/Registry.sol";
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import {IReverseRegistrar} from "src/L2/interface/IReverseRegistrar.sol";
 import {RegistrarController} from "src/L2/RegistrarController.sol";
+import {NameEncoder} from "ens-contracts/utils/NameEncoder.sol";
 
 import "src/util/Constants.sol";
 
@@ -22,12 +23,16 @@ contract DeployL2Resolver is Script {
         address oracle = 0x12e26f301185336A2BEc9cB8f2b87C7451ee7E95;
         address reverse = 0x5F15c3B5949F5767F5Ca9013a8E4Ca4D97a053eD; // deployer-owned rev registrar
         address base = 0x0Cff05B4e1DF41fB5423448d4fDC81eB9Bef21df; 
+        (,bytes32 rootNode) = NameEncoder.dnsEncodeName("basetest.eth");
+        string memory rootName = ".basetest.eth";
 
         RegistrarController controller = new RegistrarController(
             BaseRegistrar(base), 
             IPriceOracle(oracle), 
             IReverseRegistrar(reverse), 
-            deployerAddress
+            deployerAddress,
+            rootNode,
+            rootName
         );
 
         console.log("RegistrarController deployed to:");

@@ -16,7 +16,7 @@ contract DeployL2Resolver is Script {
 
         /// L2 Resolver constructor data
         address ensAddress = 0x1d3C6Cf6737921c798f07Cd6469A72f173166657; // deployer-owned registry
-        address controller = 0x915b28fC104b09E3Cc8363bdAa31E6862c39f7FE; // let deployer manage names
+        address controller = 0xa30403e032237CF0106286b9E863Bc1b56f1Ff35; // let deployer manage names
         address reverse = 0x6864841F1cD70349F23126982C140676268612F9; // deployer-owned rev registrar
 
         L2Resolver l2 = new L2Resolver(Registry(ensAddress), controller, reverse);
