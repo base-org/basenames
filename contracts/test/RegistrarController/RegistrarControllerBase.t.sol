@@ -16,7 +16,7 @@ import {MockNameWrapper} from "test/mocks/MockNameWrapper.sol";
 import {MockPriceOracle} from "test/mocks/MockPriceOracle.sol";
 import {MockDiscountValidator} from "test/mocks/MockDiscountValidator.sol";
 import {MockPublicResolver} from "test/mocks/MockPublicResolver.sol";
-import {REVERSE_NODE} from "src/util/Constants.sol";
+import {BASE_ETH_NODE, REVERSE_NODE} from "src/util/Constants.sol";
 
 import "forge-std/console.sol";
 
@@ -31,6 +31,8 @@ contract RegistrarControllerBase is Test {
     address owner = makeAddr("owner");
     address user = makeAddr("user");
 
+    bytes32 public rootNode = BASE_ETH_NODE;
+    string public rootName = ".base.eth";
     string public name = "test";
     string public shortName = "t";
     bytes32 public nameLabel = keccak256(bytes(name));
@@ -56,7 +58,9 @@ contract RegistrarControllerBase is Test {
             BaseRegistrar(address(base)),
             IPriceOracle(address(prices)),
             IReverseRegistrar(address(reverse)),
-            owner
+            owner,
+            rootNode, 
+            rootName
         );
     }
 
@@ -65,6 +69,8 @@ contract RegistrarControllerBase is Test {
         assertEq(address(controller.reverseRegistrar()), address(reverse));
         assertTrue(reverse.hasClaimed(owner));
         assertEq(controller.owner(), owner);
+        assertEq(controller.rootNode(), rootNode);
+        assertEq(keccak256(bytes(controller.rootName())), keccak256(bytes(rootName)));
     }
 
     function _establishNamespace() internal virtual {}
