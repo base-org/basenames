@@ -12,7 +12,7 @@ library Sha3 {
      * @return ret The SHA3 hash of the lower-case hexadecimal encoding of the
      *         input address.
      */
-    function hexAddress(address addr) public pure returns (bytes32 ret) {
+    function hexAddress(address addr) internal pure returns (bytes32 ret) {
         assembly {
             for { let i := 40 } gt(i, 0) {} {
                 i := sub(i, 1)
