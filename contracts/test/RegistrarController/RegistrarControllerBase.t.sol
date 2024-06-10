@@ -12,7 +12,6 @@ import {ENS} from "ens-contracts/registry/ENS.sol";
 
 import {MockBaseRegistrar} from "test/mocks/MockBaseRegistrar.sol";
 import {MockReverseRegistrar} from "test/mocks/MockReverseRegistrar.sol";
-import {MockUSDC} from "test/mocks/MockUSDC.sol";
 import {MockNameWrapper} from "test/mocks/MockNameWrapper.sol";
 import {MockPriceOracle} from "test/mocks/MockPriceOracle.sol";
 import {MockDiscountValidator} from "test/mocks/MockDiscountValidator.sol";
@@ -25,7 +24,6 @@ contract RegistrarControllerBase is Test {
     RegistrarController public controller;
     MockBaseRegistrar public base;
     MockReverseRegistrar public reverse;
-    MockUSDC public usdc;
     MockPriceOracle public prices;
     Registry public registry;
     MockPublicResolver public resolver;
@@ -46,7 +44,6 @@ contract RegistrarControllerBase is Test {
     function setUp() public {
         base = new MockBaseRegistrar();
         reverse = new MockReverseRegistrar();
-        usdc = new MockUSDC();
         prices = new MockPriceOracle();
         registry = new Registry(owner);
         resolver = new MockPublicResolver();
@@ -58,7 +55,6 @@ contract RegistrarControllerBase is Test {
         controller = new RegistrarController(
             BaseRegistrar(address(base)),
             IPriceOracle(address(prices)),
-            IERC20(address(usdc)),
             IReverseRegistrar(address(reverse)),
             owner
         );
@@ -67,7 +63,6 @@ contract RegistrarControllerBase is Test {
     function test_controller_constructor() public view {
         assertEq(address(controller.prices()), address(prices));
         assertEq(address(controller.reverseRegistrar()), address(reverse));
-        assertEq(address(controller.usdc()), address(usdc));
         assertTrue(reverse.hasClaimed(owner));
         assertEq(controller.owner(), owner);
     }
