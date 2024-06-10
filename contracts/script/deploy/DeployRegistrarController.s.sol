@@ -18,7 +18,7 @@ contract DeployL2Resolver is Script {
         vm.startBroadcast(deployerPrivateKey);
 
         /// L2 Resolver constructor data
-        address oracle = ;
+        address oracle = 0x12e26f301185336a2bec9cb8f2b87c7451ee7e95;
         address reverse = 0x5F15c3B5949F5767F5Ca9013a8E4Ca4D97a053eD; // deployer-owned rev registrar
         address usdc = ;
         address base = ;
