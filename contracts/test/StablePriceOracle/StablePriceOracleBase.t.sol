@@ -17,12 +17,12 @@ contract StablePriceOracleBase is Test {
     function setUp() public {
         uint256[] memory rentPrices = new uint256[](6);
 
-        rent1 = 1e19;
-        rent2 = 1e18;
-        rent3 = 1e17;
-        rent4 = 1e16;
-        rent5 = 1e15;
-        rent10 = 1e14;
+        rent1 = 317_097_919_837;
+        rent2 = 31_709_791_983;
+        rent3 = 3_170_979_198;
+        rent4 = 317_097_919;
+        rent5 = 31_709_791;
+        rent10 = 3_170_979; //3,170,979.1983764587 = 1e14 / (365 * 24 * 3600) 
 
         rentPrices[0] = rent1;
         rentPrices[1] = rent2;
