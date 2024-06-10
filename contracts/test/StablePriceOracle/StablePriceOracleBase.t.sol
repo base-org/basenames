@@ -22,7 +22,7 @@ contract StablePriceOracleBase is Test {
         rent3 = 3_170_979_198;
         rent4 = 317_097_919;
         rent5 = 31_709_791;
-        rent10 = 3_170_979; //3,170,979.1983764587 = 1e14 / (365 * 24 * 3600) 
+        rent10 = 3_170_979; //3,170,979.1983764587 = 1e14 / (365 * 24 * 3600)
 
         rentPrices[0] = rent1;
         rentPrices[1] = rent2;

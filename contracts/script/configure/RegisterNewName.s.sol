@@ -14,7 +14,6 @@ interface AddrResolver {
 }
 
 contract RegisterNewName is Script {
-
     // NAME AND RECORD DEFS /////////////////////////////
     string NAME = "steve";
     uint256 duration = 365 days;
@@ -28,36 +27,36 @@ contract RegisterNewName is Script {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
-        address controllerAddr = vm.envAddress("REGISTRAR_CONTROLLER_ADDR"); 
+        address controllerAddr = vm.envAddress("REGISTRAR_CONTROLLER_ADDR");
         RegistrarController controller = RegistrarController(controllerAddr);
         address resolverAddr = vm.envAddress("L2_RESOLVER_ADDR"); // l2 resolver
 
         console.log(controller.discountRentPrice(NAME, duration, discountKey));
-        
+
         RegistrarController.RegisterRequest memory request = RegistrarController.RegisterRequest({
             name: NAME,
             owner: RESOLVED_ADDR,
-            duration: duration, 
+            duration: duration,
             resolver: resolverAddr,
             data: _packResolverData(),
             reverseRecord: false
         });
 
         controller.discountedRegister(request, discountKey, "");
-        
+
         vm.stopBroadcast();
     }
 
     function _packResolverData() internal view returns (bytes[] memory) {
-        (,bytes32 rootNode) = NameEncoder.dnsEncodeName("basetest.eth");
+        (, bytes32 rootNode) = NameEncoder.dnsEncodeName("basetest.eth");
         bytes32 label = keccak256(bytes(NAME));
         bytes32 nodehash = keccak256(abi.encodePacked(rootNode, label));
 
-        bytes memory addrData = abi.encodeWithSelector(AddrResolver.setAddr.selector, nodehash, RESOLVED_ADDR); 
+        bytes memory addrData = abi.encodeWithSelector(AddrResolver.setAddr.selector, nodehash, RESOLVED_ADDR);
         bytes memory textData = abi.encodeWithSelector(TextResolver.setText.selector, nodehash, textKey, textValue);
         bytes[] memory data = new bytes[](2);
         data[0] = addrData;
         data[1] = textData;
         return data;
-    }   
+    }
 }

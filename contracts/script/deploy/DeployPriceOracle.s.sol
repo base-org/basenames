@@ -17,7 +17,7 @@ contract DeployPriceOracle is Script {
         prices[2] = 3_170_979_198;
         prices[3] = 317_097_919;
         prices[4] = 31_709_791;
-        prices[5] = 3_170_979; //3,170,979.1983764587 = 1e14 / (365 * 24 * 3600) 
+        prices[5] = 3_170_979; //3,170,979.1983764587 = 1e14 / (365 * 24 * 3600)
         uint256 premiumStart = 500 ether;
         uint256 totalDays = 28 days;
 

@@ -22,17 +22,12 @@ contract DeployL2Resolver is Script {
         /// L2 Resolver constructor data
         address oracle = vm.envAddress("PRICE_ORACLE_ADDR");
         address reverse = vm.envAddress("REVERSE_REGISTRAR_ADDR"); // deployer-owned rev registrar
-        address base = vm.envAddress("BASE_REGISTRAR_ADDR"); 
-        (,bytes32 rootNode) = NameEncoder.dnsEncodeName("basetest.eth");
+        address base = vm.envAddress("BASE_REGISTRAR_ADDR");
+        (, bytes32 rootNode) = NameEncoder.dnsEncodeName("basetest.eth");
         string memory rootName = ".basetest.eth";
 
         RegistrarController controller = new RegistrarController(
-            BaseRegistrar(base), 
-            IPriceOracle(oracle), 
-            IReverseRegistrar(reverse), 
-            deployerAddress,
-            rootNode,
-            rootName
+            BaseRegistrar(base), IPriceOracle(oracle), IReverseRegistrar(reverse), deployerAddress, rootNode, rootName
         );
 
         console.log("RegistrarController deployed to:");

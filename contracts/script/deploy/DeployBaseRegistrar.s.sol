@@ -16,7 +16,7 @@ contract DeployBaseRegistrar is Script {
 
         /// L2 Resolver constructor data
         address ensAddress = vm.envAddress("REGISTRY_ADDR"); // deployer-owned registry
-        (,bytes32 node) = NameEncoder.dnsEncodeName("basetest.eth");
+        (, bytes32 node) = NameEncoder.dnsEncodeName("basetest.eth");
 
         BaseRegistrar base = new BaseRegistrar(ENS(ensAddress), deployerAddress, node);
 

@@ -6,7 +6,6 @@ import {TestnetDiscountValidator} from "test/mocks/TestnetDiscountValidator.sol"
 
 contract DeployRegistry is Script {
     function run() external {
-
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
