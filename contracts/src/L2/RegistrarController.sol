@@ -43,7 +43,6 @@ contract RegistrarController is Ownable {
     BaseRegistrar immutable base;
     IPriceOracle public immutable prices;
     IReverseRegistrar public immutable reverseRegistrar;
-    IERC20 public immutable usdc;
     EnumerableSetLib.Bytes32Set internal activeDiscounts;
     mapping(bytes32 => DiscountDetails) public discounts;
     mapping(address => bool) public discountedRegistrants;
@@ -113,13 +112,11 @@ contract RegistrarController is Ownable {
     constructor(
         BaseRegistrar base_,
         IPriceOracle prices_,
-        IERC20 usdc_,
         IReverseRegistrar reverseRegistrar_,
         address owner_
     ) {
         base = base_;
         prices = prices_;
-        usdc = usdc_;
         reverseRegistrar = reverseRegistrar_;
         _initializeOwner(owner_);
         // Assign ownership of this contract's reverse record to this contract's owner

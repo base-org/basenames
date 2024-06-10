@@ -12,13 +12,12 @@ import "src/util/Constants.sol";
 contract DeployL2Resolver is Script {
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-        address deployerAddress = vm.addr(deployerPrivateKey);
         vm.startBroadcast(deployerPrivateKey);
 
         /// L2 Resolver constructor data
-        address ensAddress = 0xBD69dd64b94fe7435157F4851e4b4Aa3A0988c90; // deployer-owned registry
-        address controller = 0x0; // let deployer manage names
-        address reverse = 0x5F15c3B5949F5767F5Ca9013a8E4Ca4D97a053eD; // deployer-owned rev registrar
+        address ensAddress = 0x1d3C6Cf6737921c798f07Cd6469A72f173166657; // deployer-owned registry
+        address controller = 0x915b28fC104b09E3Cc8363bdAa31E6862c39f7FE; // let deployer manage names
+        address reverse = 0x6864841F1cD70349F23126982C140676268612F9; // deployer-owned rev registrar
 
         L2Resolver l2 = new L2Resolver(Registry(ensAddress), controller, reverse);
 
