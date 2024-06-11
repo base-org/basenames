@@ -59,7 +59,7 @@ contract RegistrarControllerBase is Test {
             IPriceOracle(address(prices)),
             IReverseRegistrar(address(reverse)),
             owner,
-            rootNode, 
+            rootNode,
             rootName
         );
     }

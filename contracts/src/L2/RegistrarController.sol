@@ -157,6 +157,16 @@ contract RegistrarController is Ownable {
         return price.base + price.premium;
     }
 
+    function discountedRegisterPrice(string memory name, uint256 duration, bytes32 discountKey)
+        public
+        view
+        returns (uint256 price)
+    {
+        DiscountDetails memory discount = discounts[discountKey];
+        price = registerPrice(name, duration);
+        price = (price >= discount.discount) ? price - discount.discount : 0;
+    }
+
     function getActiveDiscounts() external view returns (DiscountDetails[] memory) {
         bytes32[] memory activeDiscountKeys = activeDiscounts.values();
         DiscountDetails[] memory activeDiscountDetails = new DiscountDetails[](activeDiscountKeys.length);
@@ -172,22 +182,6 @@ contract RegistrarController is Ownable {
         discounts[key] = details;
         _updateActiveDiscounts(key, details.active);
         emit DiscountUpdated(key, details);
-    }
-
-    // move
-    function _updateActiveDiscounts(bytes32 key, bool active) internal {
-        active ? activeDiscounts.add(key) : activeDiscounts.remove(key);
-    }
-
-    // naming 
-    function discountRegisterPrice(string memory name, uint256 duration, bytes32 discountKey)
-        public
-        view
-        returns (uint256 price)
-    {
-        DiscountDetails memory discount = discounts[discountKey];
-        price = registerPrice(name, duration);
-        price = (price >= discount.discount) ? price - discount.discount : 0;
     }
 
     function register(RegisterRequest calldata request) public payable validRegistration(request) {
@@ -206,7 +200,7 @@ contract RegistrarController is Ownable {
         validDiscount(discountKey, validationData)
         validRegistration(request)
     {
-        uint256 price = discountRegisterPrice(request.name, request.duration, discountKey);
+        uint256 price = discountedRegisterPrice(request.name, request.duration, discountKey);
 
         _validatePayment(price);
 
@@ -270,6 +264,10 @@ contract RegistrarController is Ownable {
 
     function _setReverseRecord(string memory name, address resolver, address owner) internal {
         reverseRegistrar.setNameForAddr(msg.sender, owner, resolver, string.concat(name, rootName));
+    }
+
+    function _updateActiveDiscounts(bytes32 key, bool active) internal {
+        active ? activeDiscounts.add(key) : activeDiscounts.remove(key);
     }
 
     function withdrawETH() public {
