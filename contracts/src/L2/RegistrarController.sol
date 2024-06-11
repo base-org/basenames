@@ -174,11 +174,13 @@ contract RegistrarController is Ownable {
         emit DiscountUpdated(key, details);
     }
 
+    // move
     function _updateActiveDiscounts(bytes32 key, bool active) internal {
         active ? activeDiscounts.add(key) : activeDiscounts.remove(key);
     }
 
-    function discountRentPrice(string memory name, uint256 duration, bytes32 discountKey)
+    // naming 
+    function discountRegisterPrice(string memory name, uint256 duration, bytes32 discountKey)
         public
         view
         returns (uint256 price)
@@ -204,7 +206,7 @@ contract RegistrarController is Ownable {
         validDiscount(discountKey, validationData)
         validRegistration(request)
     {
-        uint256 price = discountRentPrice(request.name, request.duration, discountKey);
+        uint256 price = discountRegisterPrice(request.name, request.duration, discountKey);
 
         _validatePayment(price);
 
