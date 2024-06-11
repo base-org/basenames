@@ -13,9 +13,9 @@ interface IDiscountValidator {
     ///     a meaningul validation. Implementations must describe here how to pack relevant `validationData`.
     ///     Ex: `bytes validationData = abi.encode(bytes32 key, bytes32[] proof)`
     ///
-    /// @param sender the discount claimer's address.
+    /// @param claimer the discount claimer's address.
     /// @param validationData opaque bytes for performing the validation.
     ///
-    /// @return `true` if the validation data provided is determined to be valid for the specified sender, else `false`.
-    function isValidDiscountRegistration(address sender, bytes calldata validationData) external returns (bool);
+    /// @return `true` if the validation data provided is determined to be valid for the specified claimer, else `false`.
+    function isValidDiscountRegistration(address claimer, bytes calldata validationData) external returns (bool);
 }
