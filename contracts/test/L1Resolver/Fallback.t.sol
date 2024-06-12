@@ -14,7 +14,6 @@ import {NameEncoder} from "ens-contracts/utils/NameEncoder.sol";
 import {MockPublicResolver} from "test/mocks/MockPublicResolver.sol";
 
 contract Fallback is L1ResolverTestBase {
-
     function test_forwardsAddrCall_whenResolvingRootName() public {
         bytes memory data = abi.encodeWithSelector(IAddrResolver.addr.selector, BASE_ETH_NODE);
         (, bytes memory response) = address(resolver).call{value: 0}(data);

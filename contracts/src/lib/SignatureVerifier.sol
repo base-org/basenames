@@ -4,7 +4,6 @@ pragma solidity 0.8.23;
 import {ECDSA} from "solady/utils/ECDSA.sol";
 
 library SignatureVerifier {
-
     error SignatureExpired();
 
     /**
@@ -32,7 +31,7 @@ library SignatureVerifier {
     function verify(bytes calldata request, bytes calldata response) internal view returns (address, bytes memory) {
         (bytes memory result, uint64 expires, bytes memory sig) = abi.decode(response, (bytes, uint64, bytes));
         address signer = ECDSA.recover(makeSignatureHash(address(this), expires, request, result), sig);
-        if(expires < block.timestamp) revert SignatureExpired();
+        if (expires < block.timestamp) revert SignatureExpired();
         return (signer, result);
     }
 }

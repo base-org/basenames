@@ -10,11 +10,14 @@ import {ETH_NODE, BASE_ETH_NODE} from "src/util/Constants.sol";
 contract BaseRegistrarBase is Test {
     Registry public registry;
     BaseRegistrar public baseRegistrar;
-    address public owner = makeAddr("0x1");
-    address public user = makeAddr("0x2");
-    address public controller = makeAddr("0x3");
+    address public owner = makeAddr("owner");
+    address public user = makeAddr("user");
+    address public controller = makeAddr("controller");
+    address public resolver = makeAddr("resolver");
+    uint64 public ttl = 0;
     bytes32 public label = keccak256("test");
     uint256 public id = uint256(label);
+    bytes32 public node = keccak256(abi.encodePacked(BASE_ETH_NODE, label));
     uint256 public duration = 365 days;
     uint256 public blockTimestamp = 1716496498; // May 23, 2024
 

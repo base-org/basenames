@@ -11,7 +11,7 @@ contract Renew is BaseRegistrarBase {
     function test_reverts_whenCalledByNonController(address caller) public {
         vm.assume(caller != controller);
         vm.prank(caller);
-        
+
         vm.expectRevert(BaseRegistrar.OnlyController.selector);
 
         baseRegistrar.renew(id, duration);
@@ -20,7 +20,7 @@ contract Renew is BaseRegistrarBase {
     function test_reverts_whenNotLive() public {
         vm.prank(address(baseRegistrar));
         registry.setOwner(BASE_ETH_NODE, makeAddr("0xdead"));
-        
+
         vm.expectRevert(BaseRegistrar.RegistrarNotLive.selector);
 
         baseRegistrar.renew(id, duration);
