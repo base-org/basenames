@@ -92,7 +92,7 @@ contract L1Resolver is IExtendedResolver, ERC165, Ownable {
      */
     function resolveWithProof(bytes calldata response, bytes calldata extraData) external view returns (bytes memory) {
         (address signer, bytes memory result) = SignatureVerifier.verify(extraData, response);
-        if(!signers[signer]) revert InvalidSigner();
+        if (!signers[signer]) revert InvalidSigner();
         return result;
     }
 
@@ -102,10 +102,11 @@ contract L1Resolver is IExtendedResolver, ERC165, Ownable {
     /// https://eips.ethereum.org/EIPS/eip-165#how-interfaces-are-identified[EIP section]
     ///
     /// @param interfaceID the ERC165 iface id being checked for compliance
-    /// 
+    ///
     /// @return bool Whether this contract supports the provided interfaceID
     function supportsInterface(bytes4 interfaceID) public view override returns (bool) {
-        return interfaceID == type(IExtendedResolver).interfaceId || super.supportsInterface(interfaceID) || ERC165(rootResolver).supportsInterface(interfaceID);
+        return interfaceID == type(IExtendedResolver).interfaceId || super.supportsInterface(interfaceID)
+            || ERC165(rootResolver).supportsInterface(interfaceID);
     }
 
     // Handler for arbitrary resolver calls
@@ -126,12 +127,8 @@ contract L1Resolver is IExtendedResolver, ERC165, Ownable {
 
             switch result
             // delegatecall returns 0 on error.
-            case 0 {
-                revert(0, returndatasize())
-            }
-            default {
-                return(0, returndatasize())
-            }
+            case 0 { revert(0, returndatasize()) }
+            default { return(0, returndatasize()) }
         }
     }
 }

@@ -7,15 +7,14 @@ import {Ownable} from "solady/auth/Ownable.sol";
 
 import {GRACE_PERIOD} from "src/util/Constants.sol";
 
-
-/// @title Base Registrar 
+/// @title Base Registrar
 ///
 /// @notice The base-level tokenization contract for an ens domain. The Base Registrar implements ERC721 and, as the owner
 ///         of a 2LD, can mint and assign ownership rights to its subdomains. I.e. This contract owns "base.eth" and allows
 ///         users to mint subdomains like "vitalik.base.eth". Registration is delegated to "controller" contracts which have
 ///         rights to call `onlyController` protected methods.
 ///
-///         The implementation is heavily inspired by the original ENS BaseRegistrarImplementation contract: 
+///         The implementation is heavily inspired by the original ENS BaseRegistrarImplementation contract:
 ///         https://github.com/ensdomains/ens-contracts/blob/staging/contracts/ethregistrar/BaseRegistrarImplementation.sol
 ///
 /// @author Coinbase (https://github.com/base-org/usernames)
@@ -31,7 +30,6 @@ contract BaseRegistrar is ERC721, Ownable {
     bytes32 public baseNode;
     // A map of addresses that are authorised to register and renew names.
     mapping(address controller => bool isApproved) public controllers;
-
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                          CONSTANTS                         */
@@ -64,6 +62,9 @@ contract BaseRegistrar is ERC721, Ownable {
     event NameMigrated(uint256 indexed id, address indexed owner, uint256 expires);
     event NameRegistered(uint256 indexed id, address indexed owner, uint256 expires);
     event NameRenewed(uint256 indexed id, uint256 expires);
+    event NameRegisteredWithRecord(
+        uint256 indexed id, address indexed owner, uint256 expires, address resolver, uint64 ttl
+    );
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                          MODIFIERS                         */
@@ -75,6 +76,11 @@ contract BaseRegistrar is ERC721, Ownable {
 
     modifier onlyController() {
         if (!controllers[msg.sender]) revert OnlyController();
+        _;
+    }
+
+    modifier onlyAvailable(uint256 id) {
+        if (!isAvailable(id)) revert NotAvailable(id);
         _;
     }
 
@@ -120,6 +126,27 @@ contract BaseRegistrar is ERC721, Ownable {
     }
 
     /**
+     * @dev Register a name and add details to the record in the Registry.
+     * @param id The token ID (keccak256 of the label).
+     * @param owner The address that should own the registration.
+     * @param duration Duration in seconds for the registration.
+     * @param resolver Address of the resolver for the name
+     * @param ttl time-to-live for the name
+     */
+    function registerWithRecord(uint256 id, address owner, uint256 duration, address resolver, uint64 ttl)
+        external
+        live
+        onlyController
+        onlyAvailable(id)
+        returns (uint256)
+    {
+        uint256 expiry = _localRegister(id, owner, duration);
+        ens.setSubnodeRecord(baseNode, bytes32(id), owner, resolver, ttl);
+        emit NameRegisteredWithRecord(id, owner, expiry, resolver, ttl);
+        return expiry;
+    }
+
+    /**
      * @dev Register a name, without modifying the registry.
      * @param id The token ID (keccak256 of the label).
      * @param owner The address that should own the registration.
@@ -141,19 +168,19 @@ contract BaseRegistrar is ERC721, Ownable {
     }
 
     // Returns true iff the specified name is available for registration.
-    function available(uint256 id) public view returns (bool) {
+    function isAvailable(uint256 id) public view returns (bool) {
         // Not available if it's registered here or in its grace period.
         return expiries[id] + GRACE_PERIOD < block.timestamp;
     }
 
     /// @notice Allows holders of names can renew their ownerhsip and extend their expiry
     ///
-    /// @dev Renewal can be called while owning a subdomain or while the name is in the 
+    /// @dev Renewal can be called while owning a subdomain or while the name is in the
     /// @dev grace period. Can only be called by a controller.
-    /// 
+    ///
     /// @param id The Id to renew
-    /// @param duration The time that will be added to this name's expiry 
-    /// 
+    /// @param duration The time that will be added to this name's expiry
+    ///
     /// @return The new expiry date
     function renew(uint256 id, uint256 duration) external live onlyController returns (uint256) {
         if (expiries[id] + GRACE_PERIOD < block.timestamp) revert NotRegisteredOrInGrace(id);
@@ -175,23 +202,25 @@ contract BaseRegistrar is ERC721, Ownable {
         internal
         live
         onlyController
+        onlyAvailable(id)
         returns (uint256)
     {
-        if (!available(id)) revert NotAvailable(id);
+        uint256 expiry = _localRegister(id, owner, duration);
+        if (updateRegistry) {
+            ens.setSubnodeOwner(baseNode, bytes32(id), owner);
+        }
+        emit NameRegistered(id, owner, expiry);
+        return expiry;
+    }
 
-        expiries[id] = block.timestamp + duration;
+    function _localRegister(uint256 id, address owner, uint256 duration) internal returns (uint256 expiry) {
+        expiry = block.timestamp + duration;
+        expiries[id] = expiry;
         if (_exists(id)) {
             // Name was previously owned, and expired
             _burn(id);
         }
         _mint(owner, id);
-        if (updateRegistry) {
-            ens.setSubnodeOwner(baseNode, bytes32(id), owner);
-        }
-
-        emit NameRegistered(id, owner, block.timestamp + duration);
-
-        return block.timestamp + duration;
     }
 
     /**
