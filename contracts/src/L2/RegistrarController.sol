@@ -34,6 +34,7 @@ contract RegistrarController is Ownable {
     struct DiscountDetails {
         bool active;
         address discountValidator;
+        bytes32 key;
         uint256 discount; // denom in wei
     }
 
@@ -41,8 +42,8 @@ contract RegistrarController is Ownable {
     /*                          STORAGE                           */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
     BaseRegistrar immutable base;
-    IPriceOracle public immutable prices;
-    IReverseRegistrar public immutable reverseRegistrar;
+    IPriceOracle public prices;
+    IReverseRegistrar public reverseRegistrar;
     EnumerableSetLib.Bytes32Set internal activeDiscounts;
     bytes32 public immutable rootNode;
     string public rootName;
@@ -61,6 +62,7 @@ contract RegistrarController is Ownable {
     error AlreadyClaimedWithDiscount(address sender);
     error NameNotAvailable(string name);
     error DurationTooShort(uint256 duration);
+    error DiscountKeyMismatch(bytes32 key, bytes32 detailsKey);
     error ResolverRequiredWhenDataSupplied();
     error InactiveDiscount(bytes32 key);
     error InsufficientValue();
@@ -73,11 +75,13 @@ contract RegistrarController is Ownable {
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                          EVENTS                            */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+    event DiscountUpdated(bytes32 indexed discountKey, DiscountDetails details);
     event ETHPaymentProcessed(address indexed payee, uint256 price);
-    event RegisteredWithDiscount(address indexed registrant, bytes32 indexed discountKey);
     event NameRegistered(string name, bytes32 indexed label, address indexed owner, uint256 expires);
     event NameRenewed(string name, bytes32 indexed label, uint256 expires);
-    event DiscountUpdated(bytes32 indexed discountKey, DiscountDetails details);
+    event PriceOracleUpdated(address indexed newPrices);
+    event RegisteredWithDiscount(address indexed registrant, bytes32 indexed discountKey);
+    event ReverseRegistrarUpdated(address indexed newReverseRegistrar);
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                          MODIFIERS                         */
@@ -129,6 +133,25 @@ contract RegistrarController is Ownable {
         reverseRegistrar.claim(owner_);
     }
 
+    function setDiscountDetails(bytes32 key, DiscountDetails memory details) external onlyOwner {
+        if (details.discount == 0) revert InvalidDiscountAmount(key, details.discount);
+        if (details.key != key) revert DiscountKeyMismatch(key, details.key);
+        if (details.discountValidator == address(0)) revert InvalidValidator(key, details.discountValidator);
+        discounts[key] = details;
+        _updateActiveDiscounts(key, details.active);
+        emit DiscountUpdated(key, details);
+    }
+
+    function setPriceOracle(IPriceOracle prices_) external onlyOwner {
+        prices = prices_;
+        emit PriceOracleUpdated(address(prices_));
+    }
+
+    function setReverseRegistrar(IReverseRegistrar reverse_) external onlyOwner {
+        reverseRegistrar = reverse_;
+        emit ReverseRegistrarUpdated(address(reverse_));
+    }
+
     function hasRegisteredWithDiscount(address[] memory addresses) public view returns (bool) {
         for (uint256 i; i < addresses.length; i++) {
             if (discountedRegistrants[addresses[i]]) {
@@ -174,14 +197,6 @@ contract RegistrarController is Ownable {
             activeDiscountDetails[i] = discounts[activeDiscountKeys[i]];
         }
         return activeDiscountDetails;
-    }
-
-    function setDiscountDetails(bytes32 key, DiscountDetails memory details) external onlyOwner {
-        if (details.discount == 0) revert InvalidDiscountAmount(key, details.discount);
-        if (details.discountValidator == address(0)) revert InvalidValidator(key, details.discountValidator);
-        discounts[key] = details;
-        _updateActiveDiscounts(key, details.active);
-        emit DiscountUpdated(key, details);
     }
 
     function register(RegisterRequest calldata request) public payable validRegistration(request) {
