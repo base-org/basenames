@@ -21,6 +21,15 @@ contract SetDiscountDetails is RegistrarControllerBase {
         controller.setDiscountDetails(discountKey, noDiscount);
     }
 
+    function test_reverts_ifTheDiscountKeysMismatch() public {
+        RegistrarController.DiscountDetails memory badKeyDetails = _getDefaultDiscount();
+        bytes32 badKey = bytes32(0);
+        badKeyDetails.key = badKey;
+        vm.expectRevert(abi.encodeWithSelector(RegistrarController.DiscountKeyMismatch.selector, discountKey, badKey));
+        vm.prank(owner);
+        controller.setDiscountDetails(discountKey, badKeyDetails);
+    }
+
     function test_reverts_ifTheDiscounValidatorIsInvalid() public {
         RegistrarController.DiscountDetails memory noValidator = _getDefaultDiscount();
         noValidator.discountValidator = address(0);
@@ -34,9 +43,10 @@ contract SetDiscountDetails is RegistrarControllerBase {
         emit RegistrarController.DiscountUpdated(discountKey, _getDefaultDiscount());
         vm.prank(owner);
         controller.setDiscountDetails(discountKey, _getDefaultDiscount());
-        (bool retActive, address retValidator, uint256 retDiscount) = controller.discounts(discountKey);
+        (bool retActive, address retValidator, bytes32 retKey, uint256 retDiscount) = controller.discounts(discountKey);
         assertTrue(retActive);
         assertEq(retValidator, address(validator));
+        assertEq(retKey, discountKey);
         assertEq(retDiscount, discountAmount);
     }
 
@@ -49,6 +59,7 @@ contract SetDiscountDetails is RegistrarControllerBase {
         assertEq(activeDiscountsWithActive.length, 1);
         assertTrue(activeDiscountsWithActive[0].active);
         assertEq(activeDiscountsWithActive[0].discountValidator, address(validator));
+        assertEq(activeDiscountsWithActive[0].key, discountKey);
         assertEq(activeDiscountsWithActive[0].discount, discountAmount);
 
         discountDetails.active = false;
