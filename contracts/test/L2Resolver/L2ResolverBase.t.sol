@@ -9,7 +9,6 @@ import {ETH_NODE, REVERSE_NODE} from "src/util/Constants.sol";
 import {NameEncoder} from "ens-contracts/utils/NameEncoder.sol";
 
 contract L2ResolverBase is Test {
-
     L2Resolver public resolver;
     Registry public registry;
     address reverse = makeAddr("reverse");
@@ -18,12 +17,12 @@ contract L2ResolverBase is Test {
     address user = makeAddr("user");
     string name = "test.base.eth";
     bytes32 label = keccak256("test");
-    bytes32 node; 
+    bytes32 node;
 
     function setUp() public {
         registry = new Registry(owner);
         resolver = new L2Resolver(ENS(address(registry)), controller, reverse, owner);
-        (,node) = NameEncoder.dnsEncodeName(name);
+        (, node) = NameEncoder.dnsEncodeName(name);
         _establishNamespace();
     }
 

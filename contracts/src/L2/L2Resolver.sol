@@ -14,7 +14,6 @@ import {NameResolver} from "ens-contracts/resolvers/profiles/NameResolver.sol";
 import {PubkeyResolver} from "ens-contracts/resolvers/profiles/PubkeyResolver.sol";
 import {TextResolver} from "ens-contracts/resolvers/profiles/TextResolver.sol";
 
-
 contract L2Resolver is
     Multicallable,
     ABIResolver,
@@ -31,6 +30,9 @@ contract L2Resolver is
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                          STORAGE                           */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+    ENS public immutable ens;
+    address public registrarController;
+    address public reverseRegistrar;
     /**
      * A mapping of operators. An address that is authorised for an address
      * may make any changes to the name that the owner could, but may not update
@@ -46,10 +48,6 @@ contract L2Resolver is
      * (owner, name, delegate) => approved
      */
     mapping(address => mapping(bytes32 => mapping(address => bool))) private _tokenApprovals;
-
-    ENS public immutable ens;
-    address public registrarController;
-    address public reverseRegistrar;
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                          ERRORS                            */
@@ -91,7 +89,7 @@ contract L2Resolver is
      * @dev See {IERC1155-setApprovalForAll}.
      */
     function setApprovalForAll(address operator, bool approved) external {
-        if(msg.sender == operator) revert CantSetSelfAsOperator();
+        if (msg.sender == operator) revert CantSetSelfAsOperator();
 
         _operatorApprovals[msg.sender][operator] = approved;
         emit ApprovalForAll(msg.sender, operator, approved);
@@ -108,7 +106,7 @@ contract L2Resolver is
      * @dev Approve a delegate to be able to updated records on a node.
      */
     function approve(bytes32 node, address delegate, bool approved) external {
-        if(msg.sender == delegate) revert CantSetSelfAsDelegate();
+        if (msg.sender == delegate) revert CantSetSelfAsDelegate();
 
         _tokenApprovals[msg.sender][node][delegate] = approved;
         emit Approved(msg.sender, node, delegate, approved);
