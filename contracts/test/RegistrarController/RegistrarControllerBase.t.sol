@@ -79,6 +79,7 @@ contract RegistrarControllerBase is Test {
         return RegistrarController.DiscountDetails({
             active: true,
             discountValidator: address(validator),
+            key: discountKey,
             discount: discountAmount
         });
     }
