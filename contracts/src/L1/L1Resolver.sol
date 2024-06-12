@@ -5,8 +5,8 @@ import {IExtendedResolver} from "ens-contracts/resolvers/profiles/IExtendedResol
 import {ERC165} from "lib/openzeppelin-contracts/contracts/utils/introspection/ERC165.sol";
 import {Ownable} from "solady/auth/Ownable.sol";
 
-import {SignatureVerifier} from "src/lib/SignatureVerifier.sol";
 import {BASE_ETH_NAME} from "src/util/Constants.sol";
+import {SignatureVerifier} from "src/lib/SignatureVerifier.sol";
 
 /// @title L1 Resolver
 ///
@@ -19,8 +19,7 @@ import {BASE_ETH_NAME} from "src/util/Constants.sol";
 ///         Inspired by ENS's `OffchainResolver`:
 ///         https://github.com/ensdomains/offchain-resolver/blob/main/packages/contracts/contracts/OffchainResolver.sol
 ///
-/// @author Coinbase
-///         https://github.com/base-org/usernames
+/// @author Coinbase (https://github.com/base-org/usernames)
 contract L1Resolver is IExtendedResolver, ERC165, Ownable {
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                          STORAGE                           */
