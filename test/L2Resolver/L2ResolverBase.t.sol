@@ -26,6 +26,13 @@ contract L2ResolverBase is Test {
         _establishNamespace();
     }
 
+    function test_constructor() public view {
+        assertEq(address(resolver.ens()), address(registry));
+        assertEq(resolver.registrarController(), controller);
+        assertEq(resolver.reverseRegistrar(), reverse);
+        assertEq(resolver.owner(), owner);
+    }
+
     function _establishNamespace() internal virtual {
         // establish the base.eth namespace
         bytes32 ethLabel = keccak256("eth");
@@ -40,12 +47,5 @@ contract L2ResolverBase is Test {
         registry.setSubnodeOwner(0x0, keccak256("reverse"), owner);
         vm.prank(owner);
         registry.setSubnodeOwner(REVERSE_NODE, keccak256("addr"), address(reverse));
-    }
-
-    function test_constructor() public view {
-        assertEq(address(resolver.ens()), address(registry));
-        assertEq(resolver.registrarController(), controller);
-        assertEq(resolver.reverseRegistrar(), reverse);
-        assertEq(resolver.owner(), owner);
     }
 }
