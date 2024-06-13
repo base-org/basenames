@@ -14,6 +14,7 @@ contract AddDiscountValidator is Script {
         RegistrarController.DiscountDetails memory details = RegistrarController.DiscountDetails({
             active: true,
             discountValidator: vm.envAddress("DISCOUNT_VALIDATOR"),
+            key: key,
             discount: 10 ether
         });
         ////////////////////////////////////////////////

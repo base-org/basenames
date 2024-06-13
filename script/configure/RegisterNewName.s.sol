@@ -31,7 +31,7 @@ contract RegisterNewName is Script {
         RegistrarController controller = RegistrarController(controllerAddr);
         address resolverAddr = vm.envAddress("L2_RESOLVER_ADDR"); // l2 resolver
 
-        console.log(controller.discountRentPrice(NAME, duration, discountKey));
+        console.log(controller.discountedRegisterPrice(NAME, duration, discountKey));
 
         RegistrarController.RegisterRequest memory request = RegistrarController.RegisterRequest({
             name: NAME,
