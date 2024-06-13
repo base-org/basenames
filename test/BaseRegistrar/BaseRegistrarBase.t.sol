@@ -28,6 +28,12 @@ contract BaseRegistrarBase is Test {
         _ensSetup();
     }
 
+    function test_constructor() public view {
+        assertEq(baseRegistrar.owner(), owner);
+        assertEq(address(baseRegistrar.ens()), address(registry));
+        assertEq(baseRegistrar.baseNode(), BASE_ETH_NODE);
+    }
+
     function _ensSetup() public virtual {
         // establish the base.eth namespace and set the baseRegistrar as the owner of "base.eth"
         bytes32 ethLabel = keccak256("eth");
