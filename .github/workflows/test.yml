@@ -40,5 +40,5 @@ jobs:
 
       - name: Check snapshot
         run: |
-          forge snapshot --check --tolerance 1
+          forge snapshot --check
         id: snapshot
