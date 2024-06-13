@@ -13,7 +13,7 @@ contract DiscountedRegister is RegistrarControllerBase {
         inactiveDiscount.active = false;
         vm.prank(owner);
         controller.setDiscountDetails(discountKey, inactiveDiscount);
-        uint256 price = controller.discountRentPrice(name, duration, discountKey);
+        uint256 price = controller.discountedRegisterPrice(name, duration, discountKey);
 
         vm.expectRevert(abi.encodeWithSelector(RegistrarController.InactiveDiscount.selector, discountKey));
         vm.prank(user);
@@ -25,7 +25,7 @@ contract DiscountedRegister is RegistrarControllerBase {
         vm.prank(owner);
         controller.setDiscountDetails(discountKey, _getDefaultDiscount());
         validator.setReturnValue(false);
-        uint256 price = controller.discountRentPrice(name, duration, discountKey);
+        uint256 price = controller.discountedRegisterPrice(name, duration, discountKey);
 
         vm.expectRevert(abi.encodeWithSelector(RegistrarController.InvalidDiscount.selector, discountKey, ""));
         vm.prank(user);
@@ -36,7 +36,7 @@ contract DiscountedRegister is RegistrarControllerBase {
         vm.deal(user, 1 ether);
         vm.prank(owner);
         controller.setDiscountDetails(discountKey, _getDefaultDiscount());
-        uint256 price = controller.discountRentPrice(name, duration, discountKey);
+        uint256 price = controller.discountedRegisterPrice(name, duration, discountKey);
         validator.setReturnValue(true);
         base.setAvailable(uint256(nameLabel), false);
 
@@ -49,7 +49,7 @@ contract DiscountedRegister is RegistrarControllerBase {
         vm.deal(user, 1 ether);
         vm.prank(owner);
         controller.setDiscountDetails(discountKey, _getDefaultDiscount());
-        uint256 price = controller.discountRentPrice(name, duration, discountKey);
+        uint256 price = controller.discountedRegisterPrice(name, duration, discountKey);
         validator.setReturnValue(true);
         base.setAvailable(uint256(nameLabel), true);
 
@@ -66,7 +66,7 @@ contract DiscountedRegister is RegistrarControllerBase {
         vm.prank(owner);
         controller.setDiscountDetails(discountKey, _getDefaultDiscount());
         prices.setPrice(name, IPriceOracle.Price({base: 1 ether, premium: 0}));
-        uint256 price = controller.discountRentPrice(name, duration, discountKey);
+        uint256 price = controller.discountedRegisterPrice(name, duration, discountKey);
         validator.setReturnValue(true);
         base.setAvailable(uint256(nameLabel), true);
 
@@ -79,7 +79,7 @@ contract DiscountedRegister is RegistrarControllerBase {
         vm.deal(user, 1 ether);
         vm.prank(owner);
         controller.setDiscountDetails(discountKey, _getDefaultDiscount());
-        uint256 price = controller.discountRentPrice(name, duration, discountKey);
+        uint256 price = controller.discountedRegisterPrice(name, duration, discountKey);
         validator.setReturnValue(true);
         base.setAvailable(uint256(nameLabel), true);
         RegistrarController.RegisterRequest memory request = _getDefaultRegisterRequest();
@@ -106,7 +106,7 @@ contract DiscountedRegister is RegistrarControllerBase {
         vm.deal(user, 1 ether);
         vm.prank(owner);
         controller.setDiscountDetails(discountKey, _getDefaultDiscount());
-        uint256 price = controller.discountRentPrice(name, duration, discountKey);
+        uint256 price = controller.discountedRegisterPrice(name, duration, discountKey);
         validator.setReturnValue(true);
         base.setAvailable(uint256(nameLabel), true);
         RegistrarController.RegisterRequest memory request = _getDefaultRegisterRequest();

@@ -9,7 +9,7 @@ import {IPriceOracle} from "src/L2/interface/IPriceOracle.sol";
 contract StablePriceOracle is IPriceOracle {
     using StringUtils for *;
 
-    // Rent in wei by length per second
+    // Rent in wei by length
     uint256 public immutable price1Letter;
     uint256 public immutable price2Letter;
     uint256 public immutable price3Letter;

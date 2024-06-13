@@ -9,11 +9,12 @@ import {ENS} from "ens-contracts/registry/ENS.sol";
 import {ExtendedResolver} from "ens-contracts/resolvers/profiles/ExtendedResolver.sol";
 import {InterfaceResolver} from "ens-contracts/resolvers/profiles/InterfaceResolver.sol";
 import {Multicallable} from "ens-contracts/resolvers/Multicallable.sol";
+import {Ownable} from "solady/auth/Ownable.sol";
 import {NameResolver} from "ens-contracts/resolvers/profiles/NameResolver.sol";
 import {PubkeyResolver} from "ens-contracts/resolvers/profiles/PubkeyResolver.sol";
 import {TextResolver} from "ens-contracts/resolvers/profiles/TextResolver.sol";
 
-contract L2Resolver is     
+contract L2Resolver is
     Multicallable,
     ABIResolver,
     AddrResolver,
@@ -23,8 +24,15 @@ contract L2Resolver is
     NameResolver,
     PubkeyResolver,
     TextResolver,
-    ExtendedResolver {
-    
+    ExtendedResolver,
+    Ownable
+{
+    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+    /*                          STORAGE                           */
+    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+    ENS public immutable ens;
+    address public registrarController;
+    address public reverseRegistrar;
     /**
      * A mapping of operators. An address that is authorised for an address
      * may make any changes to the name that the owner could, but may not update
@@ -39,47 +47,49 @@ contract L2Resolver is
      * the set of token approvals.
      * (owner, name, delegate) => approved
      */
-    mapping(address => mapping(bytes32 => mapping(address => bool)))
-        private _tokenApprovals;
+    mapping(address => mapping(bytes32 => mapping(address => bool))) private _tokenApprovals;
 
+    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+    /*                          ERRORS                            */
+    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+    error CantSetSelfAsOperator();
+    error CantSetSelfAsDelegate();
+
+    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+    /*                          EVENTS                            */
+    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
     // Logged when an operator is added or removed.
-    event ApprovalForAll(
-        address indexed owner,
-        address indexed operator,
-        bool approved
-    );
-
+    event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
     // Logged when a delegate is approved or  an approval is revoked.
-    event Approved(
-        address owner,
-        bytes32 indexed node,
-        address indexed delegate,
-        bool indexed approved
-    );
+    event Approved(address owner, bytes32 indexed node, address indexed delegate, bool indexed approved);
+    event RegistrarControllerUpdated(address indexed newRegistrarController);
+    event ReverseRegistrarUpdated(address indexed newReverseRegistrar);
 
-    ENS immutable ens;
-    address immutable trustedETHController;
-    address immutable trustedReverseRegistrar;
+    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+    /*                        IMPLEMENTATION                      */
+    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+    constructor(ENS ens_, address registrarController_, address reverseRegistrar_, address owner_) {
+        ens = ens_;
+        registrarController = registrarController_;
+        reverseRegistrar = reverseRegistrar_;
+        _initializeOwner(owner_);
+    }
 
+    function setRegistrarController(address registrarController_) external onlyOwner {
+        registrarController = registrarController_;
+        emit RegistrarControllerUpdated(registrarController_);
+    }
 
-    constructor(
-        ENS _ens,
-        address _trustedETHController,
-        address _trustedReverseRegistrar
-    ) {
-        ens = _ens;
-        trustedETHController = _trustedETHController;
-        trustedReverseRegistrar = _trustedReverseRegistrar;
+    function setReverseRegistrar(address reverseRegistrar_) external onlyOwner {
+        reverseRegistrar = reverseRegistrar_;
+        emit ReverseRegistrarUpdated(reverseRegistrar_);
     }
 
     /**
      * @dev See {IERC1155-setApprovalForAll}.
      */
     function setApprovalForAll(address operator, bool approved) external {
-        require(
-            msg.sender != operator,
-            "ERC1155: setting approval status for self"
-        );
+        if (msg.sender == operator) revert CantSetSelfAsOperator();
 
         _operatorApprovals[msg.sender][operator] = approved;
         emit ApprovalForAll(msg.sender, operator, approved);
@@ -88,10 +98,7 @@ contract L2Resolver is
     /**
      * @dev See {IERC1155-isApprovedForAll}.
      */
-    function isApprovedForAll(
-        address account,
-        address operator
-    ) public view returns (bool) {
+    function isApprovedForAll(address account, address operator) public view returns (bool) {
         return _operatorApprovals[account][operator];
     }
 
@@ -99,7 +106,7 @@ contract L2Resolver is
      * @dev Approve a delegate to be able to updated records on a node.
      */
     function approve(bytes32 node, address delegate, bool approved) external {
-        require(msg.sender != delegate, "Setting delegate status for self");
+        if (msg.sender == delegate) revert CantSetSelfAsDelegate();
 
         _tokenApprovals[msg.sender][node][delegate] = approved;
         emit Approved(msg.sender, node, delegate, approved);
@@ -108,31 +115,19 @@ contract L2Resolver is
     /**
      * @dev Check to see if the delegate has been approved by the owner for the node.
      */
-    function isApprovedFor(
-        address owner,
-        bytes32 node,
-        address delegate
-    ) public view returns (bool) {
+    function isApprovedFor(address owner, bytes32 node, address delegate) public view returns (bool) {
         return _tokenApprovals[owner][node][delegate];
     }
 
     function isAuthorised(bytes32 node) internal view override returns (bool) {
-        if (
-            msg.sender == trustedETHController ||
-            msg.sender == trustedReverseRegistrar
-        ) {
+        if (msg.sender == registrarController || msg.sender == reverseRegistrar) {
             return true;
         }
         address owner = ens.owner(node);
-        return
-            owner == msg.sender ||
-            isApprovedForAll(owner, msg.sender) ||
-            isApprovedFor(owner, node, msg.sender);
+        return owner == msg.sender || isApprovedForAll(owner, msg.sender) || isApprovedFor(owner, node, msg.sender);
     }
 
-    function supportsInterface(
-        bytes4 interfaceID
-    )
+    function supportsInterface(bytes4 interfaceID)
         public
         view
         override(
