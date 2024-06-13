@@ -381,7 +381,7 @@ contract BaseRegistrar is ERC721, Ownable {
 
     /// @notice ERC165 compliant signal for interface support.
     ///
-    /// @dev Checks interface support for reclaim OR IERC721 OR ERC165
+    /// @dev Checks interface support for reclaim OR IERC721 OR ERC165.
     ///     https://eips.ethereum.org/EIPS/eip-165#how-interfaces-are-identified[EIP section]
     ///
     /// @param interfaceID the ERC165 iface id being checked for compliance
