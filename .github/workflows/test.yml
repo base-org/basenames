@@ -1,6 +1,9 @@
 name: test
 
-on: workflow_dispatch
+on:
+  pull_request:
+    branches:
+      - master
 
 env:
   FOUNDRY_PROFILE: ci
