@@ -1,16 +1,16 @@
 name: test
 
-on: workflow_dispatch
+on:
+  pull_request:
+    branches:
+      - main
 
 env:
   FOUNDRY_PROFILE: ci
 
 jobs:
-  check:
-    strategy:
-      fail-fast: true
-
-    name: Foundry project
+  forge-test:
+    name: Run Forge Tests and Checks 
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -32,3 +32,8 @@ jobs:
         run: |
           forge test -vvv
         id: test
+
+      - name: Check formatting
+        run: |
+          forge fmt --check
+        id: fmt
