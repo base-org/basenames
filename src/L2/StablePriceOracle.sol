@@ -19,11 +19,11 @@ contract StablePriceOracle is IPriceOracle {
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                          STORAGE                           */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
-    
+
     /// @notice The price for a 1 letter name per second.
     uint256 public immutable price1Letter;
 
-    /// @notice The price for a 2 letter name per second. 
+    /// @notice The price for a 2 letter name per second.
     uint256 public immutable price2Letter;
 
     /// @notice The price for a 3 letter name per second.
@@ -39,8 +39,8 @@ contract StablePriceOracle is IPriceOracle {
     uint256 public immutable price10Letter;
 
     /// @notice Price Oracle constructor which sets the immutably stored prices.
-    /// 
-    /// @param _rentPrices An array of prices orderd in increasing length. 
+    ///
+    /// @param _rentPrices An array of prices orderd in increasing length.
     constructor(uint256[] memory _rentPrices) {
         price1Letter = _rentPrices[0];
         price2Letter = _rentPrices[1];
