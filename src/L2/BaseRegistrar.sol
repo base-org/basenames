@@ -23,13 +23,13 @@ contract BaseRegistrar is ERC721, Ownable {
     /*                          STORAGE                           */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
-    /// @notice A map of expiry times
+    /// @notice A map of expiry times to name ids.
     mapping(uint256 id => uint256 expiry) expiries;
 
-    /// @notice The ENS registry
+    /// @notice The ENS registry.
     ENS public ens;
 
-    /// @notice The namehash of the TLD this registrar owns (eg, base.eth)
+    /// @notice The namehash of the TLD this registrar owns (eg, base.eth).
     bytes32 public baseNode;
 
     /// @notice A map of addresses that are authorised to register and renew names.
@@ -151,7 +151,7 @@ contract BaseRegistrar is ERC721, Ownable {
     /*                        IMPLEMENTATION                      */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
-    /// @notice BaseRegistrar construcotr used to initialize the configuration of the implementation.
+    /// @notice BaseRegistrar constructor used to initialize the configuration of the implementation.
     ///
     /// @param ens_ The Registry contract.
     /// @param owner_ The permissioned address initialized as the `owner` in the `Ownable` context.

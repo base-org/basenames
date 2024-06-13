@@ -24,7 +24,7 @@ contract L1Resolver is IExtendedResolver, ERC165, Ownable {
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                          STORAGE                           */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
-    /// @notice The url endpoint for the ccip gateway service.
+    /// @notice The url endpoint for the CCIP gateway service.
     string public url;
     /// @notice Storage of approved signers.
     mapping(address => bool) public signers;
