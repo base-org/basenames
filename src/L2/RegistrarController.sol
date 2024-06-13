@@ -18,12 +18,12 @@ import {IReverseRegistrar} from "./interface/IReverseRegistrar.sol";
 ///
 /// @notice A permissioned controller for managing registering and renewing names against the `base` registrar.
 ///         This contract enables a `discountedRegister` flow which is validated by calling external implementations
-///         of the `IDiscountValidator` interface. Pricing, denominated in wei, is determined by calling out to a 
+///         of the `IDiscountValidator` interface. Pricing, denominated in wei, is determined by calling out to a
 ///         contract that implements `IPriceOracle`.
-/// 
+///
 ///         Inspired by the ENS ETHRegistrarController:
 ///         https://github.com/ensdomains/ens-contracts/blob/staging/contracts/ethregistrar/ETHRegistrarController.sol
-/// 
+///
 /// @author Coinbase (https://github.com/base-org/usernames)
 contract RegistrarController is Ownable {
     using StringUtils for *;
@@ -34,7 +34,7 @@ contract RegistrarController is Ownable {
     struct RegisterRequest {
         /// @dev The name being registered.
         string name;
-        /// @dev The address of the owner for the name. 
+        /// @dev The address of the owner for the name.
         address owner;
         /// @dev The duration of the registration in seconds.
         uint256 duration;
@@ -46,7 +46,7 @@ contract RegistrarController is Ownable {
         bool reverseRecord;
     }
 
-    /// @notice The details of a discount tier. 
+    /// @notice The details of a discount tier.
     struct DiscountDetails {
         /// @dev Bool which declares whether the discount is active or not.
         bool active;
@@ -61,14 +61,14 @@ contract RegistrarController is Ownable {
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                          STORAGE                           */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
-    
+
     /// @notice The implementation of the `BaseRegistrar`.
     BaseRegistrar immutable base;
 
     /// @notice The implementation of the pricing oracle.
     IPriceOracle public prices;
 
-    /// @notice The implementation of the Reverse Registrar contract. 
+    /// @notice The implementation of the Reverse Registrar contract.
     IReverseRegistrar public reverseRegistrar;
 
     /// @notice An enumerable set for tracking which discounts are currently active.
@@ -89,7 +89,7 @@ contract RegistrarController is Ownable {
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                          CONSTANTS                         */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
-    
+
     /// @notice The minimum registration duration, specified in seconds.
     uint256 public constant MIN_REGISTRATION_DURATION = 28 days;
 
@@ -139,7 +139,7 @@ contract RegistrarController is Ownable {
     error InvalidDiscount(bytes32 key, bytes data);
 
     /// @notice Thrown when the discount amount is 0.
-    /// 
+    ///
     /// @param key The discount being set.
     /// @param amount The discount amount being set.
     error InvalidDiscountAmount(bytes32 key, uint256 amount);
@@ -147,7 +147,7 @@ contract RegistrarController is Ownable {
     /// @notice Thrown when the discount validator is being set to address(0).
     ///
     /// @param key The discount being set.
-    /// @param validator The address of the validator being set. 
+    /// @param validator The address of the validator being set.
     error InvalidValidator(bytes32 key, address validator);
 
     /// @notice Thrown when a refund transfer is unsuccessful.
@@ -158,19 +158,19 @@ contract RegistrarController is Ownable {
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
     /// @notice Emitted when a discount is set or updated.
-    /// 
+    ///
     /// @param discountKey The unique identifier key for the discount.
     /// @param details The DiscountDetails struct stored for this key.
     event DiscountUpdated(bytes32 indexed discountKey, DiscountDetails details);
 
     /// @notice Emitted when an ETH payment was processed successfully.
-    /// 
+    ///
     /// @param payee Address that sent the ETH.
     /// @param price Value that was paid.
     event ETHPaymentProcessed(address indexed payee, uint256 price);
 
     /// @notice Emitted when a name was registered.
-    /// 
+    ///
     /// @param name The name that was registered.
     /// @param label The hashed label of the name.
     /// @param owner The owner of the name that was registered.
@@ -178,7 +178,7 @@ contract RegistrarController is Ownable {
     event NameRegistered(string name, bytes32 indexed label, address indexed owner, uint256 expires);
 
     /// @notice Emitted when a name is renewed.
-    /// 
+    ///
     /// @param name The name that was renewed.
     /// @param label The hashed label of the name.
     /// @param expires The date that the renewed name expires.
@@ -186,17 +186,17 @@ contract RegistrarController is Ownable {
 
     /// @notice Emitted when the price oracle is updated.
     ///
-    /// @param newPrices The address of the new price oracle. 
+    /// @param newPrices The address of the new price oracle.
     event PriceOracleUpdated(address newPrices);
 
     /// @notice Emitted when a name is registered with a discount.
-    /// 
+    ///
     /// @param registrant The address of the registrant.
-    /// @param discountKey The discount key that was used to register. 
+    /// @param discountKey The discount key that was used to register.
     event RegisteredWithDiscount(address indexed registrant, bytes32 indexed discountKey);
 
     /// @notice Emitted when the reverse registrar is updated.
-    /// 
+    ///
     /// @param newReverseRegistrar The address of the new reverse registrar.
     event ReverseRegistrarUpdated(address newReverseRegistrar);
 
@@ -205,7 +205,7 @@ contract RegistrarController is Ownable {
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
     /// @notice Decorator for validating registration requests.
-    /// 
+    ///
     /// @dev Validates that:
     ///     1. There is a `resolver` specified` when `data` is set
     ///     2. That the name is `available()`
@@ -231,9 +231,9 @@ contract RegistrarController is Ownable {
     ///     1. That the registrant has not already registered with a discount
     ///     2. That the discount is `active`
     ///     3. That the associated `discountValidator` returns true when `isValidDiscountRegistration` is called.
-    /// 
-    /// @param discountKey The uuid of the discount. 
-    /// @param validationData The associated validation data for this discount registration.  
+    ///
+    /// @param discountKey The uuid of the discount.
+    /// @param validationData The associated validation data for this discount registration.
     modifier validDiscount(bytes32 discountKey, bytes calldata validationData) {
         if (discountedRegistrants[msg.sender]) revert AlreadyRegisteredWithDiscount(msg.sender);
         DiscountDetails memory details = discounts[discountKey];
@@ -254,11 +254,11 @@ contract RegistrarController is Ownable {
     /// @notice Registrar Controller construction sets all of the requisite external contracts.
     ///
     /// @dev Assigns ownership of this contract's reverse record to the `owner_`.
-    /// 
+    ///
     /// @param base_ The base registrar contract.
-    /// @param prices_ The pricing oracle contract. 
+    /// @param prices_ The pricing oracle contract.
     /// @param reverseRegistrar_ The reverse registrar contract.
-    /// @param owner_ The permissioned address initialized as the `owner` in the `Ownable` context. 
+    /// @param owner_ The permissioned address initialized as the `owner` in the `Ownable` context.
     /// @param rootNode_ The node for which this registrar manages registrations.
     /// @param rootName_ The name of the root node which this registrar manages.
     constructor(
@@ -277,15 +277,15 @@ contract RegistrarController is Ownable {
         _initializeOwner(owner_);
         reverseRegistrar.claim(owner_);
     }
-    
+
     /// @notice Allows the `owner` to set discount details for a specified `key`.
-    /// 
+    ///
     /// @dev Validates that:
-    ///     1. The discount `amount` is nonzero 
+    ///     1. The discount `amount` is nonzero
     ///     2. The uuid `key` matches the one set in the details
     ///     3. That the address of the `discountValidator` is not the zero address
     ///     Updates the `ActiveDiscounts` enumerable set then emits `DiscountUpdated` event.
-    ///     
+    ///
     /// @param key The uuid for the discount, i.e. keccak256("test.discount.validator").
     /// @param details The DiscountDetails for this discount key.
     function setDiscountDetails(bytes32 key, DiscountDetails memory details) external onlyOwner {
@@ -298,10 +298,10 @@ contract RegistrarController is Ownable {
     }
 
     /// @notice Allows the `owner` to set the pricing oracle contract.
-    /// 
+    ///
     /// @dev Emits `PriceOracleUpdated` after setting the `prices` contract.
-    /// 
-    /// @param prices_ The new pricing oracle. 
+    ///
+    /// @param prices_ The new pricing oracle.
     function setPriceOracle(IPriceOracle prices_) external onlyOwner {
         prices = prices_;
         emit PriceOracleUpdated(address(prices_));
@@ -310,7 +310,7 @@ contract RegistrarController is Ownable {
     /// @notice Allows the `owner` to set the reverse registrar contract.
     ///
     /// @dev Emits `ReverseRegistrarUpdated` after setting the `reverseRegistrar` contract.
-    /// 
+    ///
     /// @param reverse_ The new reverse registrar contract.
     function setReverseRegistrar(IReverseRegistrar reverse_) external onlyOwner {
         reverseRegistrar = reverse_;
@@ -321,7 +321,7 @@ contract RegistrarController is Ownable {
     ///
     /// @param addresses The array of addresses to check for discount registration.
     ///
-    /// @return `true` if any of the addresses have already registered with a discount, else `false`. 
+    /// @return `true` if any of the addresses have already registered with a discount, else `false`.
     function hasRegisteredWithDiscount(address[] memory addresses) public view returns (bool) {
         for (uint256 i; i < addresses.length; i++) {
             if (discountedRegistrants[addresses[i]]) {
@@ -332,7 +332,7 @@ contract RegistrarController is Ownable {
     }
 
     /// @notice Checks whether the provided `name` is long enough.
-    /// 
+    ///
     /// @param name The name to check the length of.
     ///
     /// @return `true` if the name is equal to or longer than MIN_NAME_LENGTH, else `false`.
@@ -344,17 +344,17 @@ contract RegistrarController is Ownable {
     ///
     /// @param name The name to check the availability of.
     ///
-    /// @return `true` if the name is `valid` and available on the `base` registrar, else `false`. 
+    /// @return `true` if the name is `valid` and available on the `base` registrar, else `false`.
     function available(string memory name) public view returns (bool) {
         bytes32 label = keccak256(bytes(name));
         return valid(name) && base.isAvailable(uint256(label));
     }
 
     /// @notice Checks the rent price for a provided `name` and `duration`.
-    /// 
-    /// @param name The name to check the rent price of. 
+    ///
+    /// @param name The name to check the rent price of.
     /// @param duration The time that the name would be rented.
-    /// 
+    ///
     /// @return price The `Price` tuple containing the base and premium prices respectively, denominated in wei.
     function rentPrice(string memory name, uint256 duration) public view returns (IPriceOracle.Price memory price) {
         bytes32 label = keccak256(bytes(name));
@@ -366,22 +366,22 @@ contract RegistrarController is Ownable {
     /// @param name The name to check the register price of.
     /// @param duration The time that the name would be registered.
     ///
-    /// @return The all-in price for the name registration, denominated in wei.  
+    /// @return The all-in price for the name registration, denominated in wei.
     function registerPrice(string memory name, uint256 duration) public view returns (uint256) {
         IPriceOracle.Price memory price = rentPrice(name, duration);
         return price.base + price.premium;
     }
 
     /// @notice Checks the discounted register price for a provided `name`, `duration` and `discountKey`.
-    /// 
+    ///
     /// @dev The associated `DiscountDetails.discount` is subtracted from the price returned by calling `registerPrice()`.
-    /// 
+    ///
     /// @param name The name to check the discounted register price of.
     /// @param duration The time that the name would be registered.
     /// @param discountKey The uuid of the discount to apply.
-    /// 
-    /// @return price The all-ing price for the discounted name registration, denominated in wei. Returns 0 
-    ///         if the price of the discount exceeds the nominal registration fee. 
+    ///
+    /// @return price The all-ing price for the discounted name registration, denominated in wei. Returns 0
+    ///         if the price of the discount exceeds the nominal registration fee.
     function discountedRegisterPrice(string memory name, uint256 duration, bytes32 discountKey)
         public
         view
@@ -393,7 +393,7 @@ contract RegistrarController is Ownable {
     }
 
     /// @notice Check which discounts are currently set to `active`.
-    /// 
+    ///
     /// @return An array of `DiscountDetails` that are all currently marked as `active`.
     function getActiveDiscounts() external view returns (DiscountDetails[] memory) {
         bytes32[] memory activeDiscountKeys = activeDiscounts.values();
@@ -405,11 +405,11 @@ contract RegistrarController is Ownable {
     }
 
     /// @notice Enables a caller to register a name.
-    /// 
+    ///
     /// @dev Validates the registration details via the `validRegistration` modifier.
     ///     This `payable` method must receive appropriate `msg.value` to pass `_validatePayment()`.
     ///
-    /// @param request The `RegisterRequest` struct containing the details for the registration. 
+    /// @param request The `RegisterRequest` struct containing the details for the registration.
     function register(RegisterRequest calldata request) public payable validRegistration(request) {
         uint256 price = registerPrice(request.name, request.duration);
 
@@ -423,13 +423,13 @@ contract RegistrarController is Ownable {
     /// @notice Enables a caller to register a name and apply a discount.
     ///
     /// @dev In addition to the validation performed for in a `register` request, this method additionally validates
-    ///     that msg.sender is eligible for the specified `discountKey` given the provided `validationData`. 
-    ///     The specific encoding of `validationData` is specified in the implementation of the `discountValidator` 
-    ///     that is being called.  
+    ///     that msg.sender is eligible for the specified `discountKey` given the provided `validationData`.
+    ///     The specific encoding of `validationData` is specified in the implementation of the `discountValidator`
+    ///     that is being called.
     ///     Emits `RegisteredWithDiscount` upon successful registration.
     ///
     /// @param request The `RegisterRequest` struct containing the details for the registration.
-    /// @param discountKey The uuid of the discount being accessed. 
+    /// @param discountKey The uuid of the discount being accessed.
     /// @param validationData Data necessary to perform the associated discount validation.
     function discountedRegister(RegisterRequest calldata request, bytes32 discountKey, bytes calldata validationData)
         public
@@ -450,12 +450,12 @@ contract RegistrarController is Ownable {
     }
 
     /// @notice Allows a caller to renew a name for a specified duration.
-    /// 
-    /// @dev This `payable` method must receive appropriate `msg.value` to pass `_validatePayment()`. 
-    ///     The price for renewal never incorporates pricing `premium`. Use the `base` price returned by the `rentPrice`
-    ///     tuple to determine the price for calling this method. 
     ///
-    /// @param name The name that is being renewed. 
+    /// @dev This `payable` method must receive appropriate `msg.value` to pass `_validatePayment()`.
+    ///     The price for renewal never incorporates pricing `premium`. Use the `base` price returned by the `rentPrice`
+    ///     tuple to determine the price for calling this method.
+    ///
+    /// @param name The name that is being renewed.
     /// @param duration The duration to extend the expiry, in seconds.
     function renew(string calldata name, uint256 duration) external payable {
         bytes32 labelhash = keccak256(bytes(name));
@@ -472,10 +472,10 @@ contract RegistrarController is Ownable {
     }
 
     /// @notice Internal helper for validating ETH payments
-    /// 
+    ///
     /// @dev Emits `ETHPaymentProcessed` after validating the payment.
     ///
-    /// @param price The expected value. 
+    /// @param price The expected value.
     function _validatePayment(uint256 price) internal {
         if (msg.value < price) {
             revert InsufficientValue();
@@ -488,8 +488,8 @@ contract RegistrarController is Ownable {
     /// @dev Will set records in the specified resolver if the resolver address is non zero and there is `data` in the `request`.
     ///     Will set the reverse record's owner as msg.sender if `reverseRecord` is `true`.
     ///     Emits `NameRegistered` upon successful registration.
-    /// 
-    /// @param request The `RegisterRequest` struct containing the details for the registration. 
+    ///
+    /// @param request The `RegisterRequest` struct containing the details for the registration.
     function _register(RegisterRequest calldata request) internal {
         uint256 expires = base.registerWithRecord(
             uint256(keccak256(bytes(request.name))), request.owner, request.duration, request.resolver, 0
@@ -507,7 +507,7 @@ contract RegistrarController is Ownable {
     }
 
     /// @notice Refunds any remaining `msg.value` after processing a registration or renewal given`price`.
-    /// 
+    ///
     /// @param price The total value to be retained, denominated in wei.
     function _refundExcessEth(uint256 price) internal {
         if (msg.value > price) {
@@ -519,10 +519,10 @@ contract RegistrarController is Ownable {
     /// @notice Uses Multicallable to iteratively set records on a specified resolver.
     ///
     /// @dev `multicallWithNodeCheck` ensures that each record being set is for the specified `label`.
-    /// 
+    ///
     /// @param resolverAddress The address of the resolver to set records on.
-    /// @param label The keccak256 namehash for the specified name. 
-    /// @param data  The abi encoded calldata records that will be used in the multicallable resolver.  
+    /// @param label The keccak256 namehash for the specified name.
+    /// @param data  The abi encoded calldata records that will be used in the multicallable resolver.
     function _setRecords(address resolverAddress, bytes32 label, bytes[] calldata data) internal {
         bytes32 nodehash = keccak256(abi.encodePacked(rootNode, label));
         L2Resolver resolver = L2Resolver(resolverAddress);
@@ -530,7 +530,7 @@ contract RegistrarController is Ownable {
     }
 
     /// @notice Sets the reverse record to `owner` for a specified `name` on the specified `resolver.
-    /// 
+    ///
     /// @param name The specified name.
     /// @param resolver The resolver to set the reverse record on.
     /// @param owner  The owner of the reverse record.
@@ -539,9 +539,9 @@ contract RegistrarController is Ownable {
     }
 
     /// @notice Helper method for updating the `activeDiscounts` enumerable set.
-    /// 
+    ///
     /// @dev Adds the discount `key` to the set if it is active or removes if it is inactive.
-    /// 
+    ///
     /// @param key The uuid of the discount.
     /// @param active Whether the specified discount is active or not.
     function _updateActiveDiscounts(bytes32 key, bool active) internal {
