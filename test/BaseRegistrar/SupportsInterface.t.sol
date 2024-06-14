@@ -7,11 +7,10 @@ import {IERC721} from "openzeppelin-contracts/contracts/token/ERC721/IERC721.sol
 import {IERC165} from "openzeppelin-contracts/contracts/utils/introspection/ERC165.sol";
 
 interface Reclaim {
-    function reclaim(uint256,address) external;
+    function reclaim(uint256, address) external;
 }
 
 contract SupportsInterface is BaseRegistrarBase {
-
     function test_supportsMetaInterfaceId() public view {
         assertTrue(baseRegistrar.supportsInterface(type(IERC165).interfaceId));
     }
@@ -25,7 +24,10 @@ contract SupportsInterface is BaseRegistrarBase {
     }
 
     function test_doesNotSupportArbitraryInterfaceIds(bytes4 ifaceId) public view {
-        vm.assume(ifaceId != type(IERC165).interfaceId && ifaceId != type(IERC721).interfaceId && ifaceId != type(Reclaim).interfaceId);
+        vm.assume(
+            ifaceId != type(IERC165).interfaceId && ifaceId != type(IERC721).interfaceId
+                && ifaceId != type(Reclaim).interfaceId
+        );
         assertFalse(baseRegistrar.supportsInterface(ifaceId));
     }
 }

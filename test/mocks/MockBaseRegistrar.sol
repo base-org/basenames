@@ -25,7 +25,7 @@ contract MockBaseRegistrar {
         return expiries[label];
     }
 
-    function renew(uint256 label, uint256 duration) external returns (uint256){
-        return expiries[label]+=duration;
+    function renew(uint256 label, uint256 duration) external returns (uint256) {
+        return expiries[label] += duration;
     }
 }

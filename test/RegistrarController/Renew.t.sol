@@ -23,9 +23,9 @@ contract Renew is RegistrarControllerBase {
 
     function test_refundsExcessETH_onOverpaidRenewal() public {
         vm.deal(user, 1 ether);
-        (,uint256 registerPrice) = _register();
+        (, uint256 registerPrice) = _register();
         IPriceOracle.Price memory price = controller.rentPrice(name, duration);
-        
+
         vm.prank(user);
         controller.renew{value: (price.base + 1)}(name, duration);
 

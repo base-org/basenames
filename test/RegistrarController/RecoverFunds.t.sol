@@ -17,12 +17,12 @@ contract RecoverFunds is RegistrarControllerBase {
         vm.prank(caller);
         controller.recoverFunds(address(usdc), caller, amount);
     }
-    
+
     function test_allowsTheOwnerToRecoverFunds(uint256 amount) public {
         vm.assume(amount > 0 && amount < type(uint128).max);
         _setupTokenAndAssignBalanceToController(amount);
         assertEq(usdc.balanceOf(owner), 0);
-        
+
         vm.prank(owner);
         controller.recoverFunds(address(usdc), owner, amount);
         assertEq(usdc.balanceOf(owner), amount);
