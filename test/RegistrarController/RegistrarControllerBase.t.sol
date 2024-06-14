@@ -7,7 +7,6 @@ import {IPriceOracle} from "src/L2/interface/IPriceOracle.sol";
 import {BaseRegistrar} from "src/L2/BaseRegistrar.sol";
 import {Registry} from "src/L2/Registry.sol";
 import {IReverseRegistrar} from "src/L2/interface/IReverseRegistrar.sol";
-import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import {ENS} from "ens-contracts/registry/ENS.sol";
 
 import {MockBaseRegistrar} from "test/mocks/MockBaseRegistrar.sol";
