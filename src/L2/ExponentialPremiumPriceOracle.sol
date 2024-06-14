@@ -3,15 +3,17 @@ pragma solidity ~0.8.17;
 import "./StablePriceOracle.sol";
 import {GRACE_PERIOD} from "src/util/Constants.sol";
 import {EDAPrice} from "src/lib/EDAPrice.sol";
-import {FixedPointMathLib} from "src/lib/FixedPointMathLib.sol";
+import "solady/utils/FixedPointMathLib.sol";
+import {Test, console} from "forge-std/Test.sol";
+
 
 contract ExponentialPremiumPriceOracle is StablePriceOracle {
-    uint256 immutable startPremium;
-    uint256 immutable endValue;
+    uint256 public immutable startPremium;
+    uint256 public immutable endValue;
 
-    constructor(uint256[] memory rentPrices, uint256 startPremium, uint256 totalDays) StablePriceOracle(rentPrices) {
-        startPremium = startPremium;
-        endValue = startPremium_ >> totalDays;
+    constructor(uint256[] memory rentPrices, uint256 startPremium_, uint256 totalDays) StablePriceOracle(rentPrices) {
+        startPremium = startPremium_;
+        endValue = startPremium >> totalDays;
     }
 
     uint256 constant PRECISION = 1e18;
