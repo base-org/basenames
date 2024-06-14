@@ -34,18 +34,18 @@ The core functionality of Base Usernames should look familiar to anyone that's l
 
 In addition to replicating the base behavior of the ENS protocol, we are offering a series of promotional discounts associcated with various Coinbase product integrations. As such, the Base Usernames ETH Registrar Controller allows users to perform discounted registrations while passing along integration-specific `validationData`.
 
-### Functional Diagrams
+## Functional Diagrams
 
-#### Premium Pricing Chart
+### Premium Pricing Chart
 
 To visualize the pricing decay for premium prices, you can run the Python script located in the py directory. The script generates a pricing chart based on user input.
 
-#### Prerequisites 
+### Prerequisites 
 
 * Python 3.x
 * matplotlib library
 
-#### Running the Script
+### Running the Script
 
 1. Navigate to the py directory
 
