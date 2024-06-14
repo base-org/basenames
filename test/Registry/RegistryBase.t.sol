@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import "forge-std/Test.sol";
+import {Test} from "forge-std/Test.sol";
 import {Registry} from "src/L2/Registry.sol";
 import {ETH_NODE} from "src/util/Constants.sol";
 
@@ -28,7 +28,7 @@ contract RegistryBase is Test {
         assertTrue(registry.owner(bytes32(0)) == rootOwner);
     }
 
-    function _ownershipSetup() public virtual {
+    function _ownershipSetup() internal virtual {
         // establish the base.eth namespace
         bytes32 ethLabel = keccak256("eth");
         bytes32 baseLabel = keccak256("base");
