@@ -3,6 +3,8 @@ pragma solidity ^0.8.23;
 
 import {ENS} from "ens-contracts/registry/ENS.sol";
 import {ERC721} from "lib/solady/src/tokens/ERC721.sol";
+import {IERC721} from "openzeppelin-contracts/contracts/token/ERC721/IERC721.sol";
+import {IERC165} from "openzeppelin-contracts/contracts/utils/introspection/ERC165.sol";
 import {Ownable} from "solady/auth/Ownable.sol";
 
 import {GRACE_PERIOD} from "src/util/Constants.sol";
@@ -24,13 +26,13 @@ contract BaseRegistrar is ERC721, Ownable {
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
     /// @notice A map of expiry times to name ids.
-    mapping(uint256 id => uint256 expiry) expiries;
+    mapping(uint256 id => uint256 expiry) public nameExpires;
 
-    /// @notice The ENS registry.
-    ENS public ens;
+    /// @notice The Registry contract.
+    ENS public registry;
 
     /// @notice The namehash of the TLD this registrar owns (eg, base.eth).
-    bytes32 public baseNode;
+    bytes32 public immutable baseNode;
 
     /// @notice A map of addresses that are authorised to register and renew names.
     mapping(address controller => bool isApproved) public controllers;
@@ -38,18 +40,6 @@ contract BaseRegistrar is ERC721, Ownable {
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                          CONSTANTS                         */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
-
-    /// @notice InterfaceId for the meta `supportsInterface` method
-    bytes4 private constant INTERFACE_META_ID = bytes4(keccak256("supportsInterface(bytes4)"));
-
-    /// @notice InterfaceId for IERC721
-    bytes4 private constant ERC721_ID = bytes4(
-        keccak256("balanceOf(address)") ^ keccak256("ownerOf(uint256)") ^ keccak256("approve(address,uint256)")
-            ^ keccak256("getApproved(uint256)") ^ keccak256("setApprovalForAll(address,bool)")
-            ^ keccak256("isApprovedForAll(address,address)") ^ keccak256("transferFrom(address,address,uint256)")
-            ^ keccak256("safeTransferFrom(address,address,uint256)")
-            ^ keccak256("safeTransferFrom(address,address,uint256,bytes)")
-    );
 
     /// @notice InterfaceId for the Reclaim interface
     bytes4 private constant RECLAIM_ID = bytes4(keccak256("reclaim(uint256,address)"));
@@ -129,7 +119,7 @@ contract BaseRegistrar is ERC721, Ownable {
 
     /// @notice Decorator for determining if the contract is actively managing registrations for its `baseNode`.
     modifier live() {
-        if (ens.owner(baseNode) != address(this)) revert RegistrarNotLive();
+        if (registry.owner(baseNode) != address(this)) revert RegistrarNotLive();
         _;
     }
 
@@ -153,12 +143,12 @@ contract BaseRegistrar is ERC721, Ownable {
 
     /// @notice BaseRegistrar constructor used to initialize the configuration of the implementation.
     ///
-    /// @param ens_ The Registry contract.
+    /// @param registry_ The Registry contract.
     /// @param owner_ The permissioned address initialized as the `owner` in the `Ownable` context.
     /// @param baseNode_ The node that this contract manages registrations for.
-    constructor(ENS ens_, address owner_, bytes32 baseNode_) {
+    constructor(ENS registry_, address owner_, bytes32 baseNode_) {
         _initializeOwner(owner_);
-        ens = ens_;
+        registry = registry_;
         baseNode = baseNode_;
     }
 
@@ -186,14 +176,7 @@ contract BaseRegistrar is ERC721, Ownable {
     ///
     /// @param resolver The address of the new resolver contract.
     function setResolver(address resolver) external onlyOwner {
-        ens.setResolver(baseNode, resolver);
-    }
-
-    /// @notice Returns the expiration timestamp of the specified id.
-    ///
-    /// @param id The id of the name being checked.
-    function nameExpires(uint256 id) external view returns (uint256) {
-        return expiries[id];
+        registry.setResolver(baseNode, resolver);
     }
 
     /// @notice Register a name.
@@ -239,7 +222,7 @@ contract BaseRegistrar is ERC721, Ownable {
         returns (uint256)
     {
         uint256 expiry = _localRegister(id, owner, duration);
-        ens.setSubnodeRecord(baseNode, bytes32(id), owner, resolver, ttl);
+        registry.setSubnodeRecord(baseNode, bytes32(id), owner, resolver, ttl);
         emit NameRegisteredWithRecord(id, owner, expiry, resolver, ttl);
         return expiry;
     }
@@ -252,7 +235,7 @@ contract BaseRegistrar is ERC721, Ownable {
     ///
     /// @return address The address currently marked as the owner of the given token ID.
     function ownerOf(uint256 tokenId) public view override returns (address) {
-        if (expiries[tokenId] <= block.timestamp) revert Expired(tokenId);
+        if (nameExpires[tokenId] <= block.timestamp) revert Expired(tokenId);
         return super.ownerOf(tokenId);
     }
 
@@ -263,7 +246,7 @@ contract BaseRegistrar is ERC721, Ownable {
     /// @return `true` if the name is available, else `false`.
     function isAvailable(uint256 id) public view returns (bool) {
         // Not available if it's registered here or in its grace period.
-        return expiries[id] + GRACE_PERIOD < block.timestamp;
+        return nameExpires[id] + GRACE_PERIOD < block.timestamp;
     }
 
     /// @notice Allows holders of names to renew their ownerhsip and extend their expiry.
@@ -277,11 +260,11 @@ contract BaseRegistrar is ERC721, Ownable {
     ///
     /// @return The new expiry date.
     function renew(uint256 id, uint256 duration) external live onlyController returns (uint256) {
-        if (expiries[id] + GRACE_PERIOD < block.timestamp) revert NotRegisteredOrInGrace(id);
+        if (nameExpires[id] + GRACE_PERIOD < block.timestamp) revert NotRegisteredOrInGrace(id);
 
-        expiries[id] += duration;
-        emit NameRenewed(id, expiries[id]);
-        return expiries[id];
+        nameExpires[id] += duration;
+        emit NameRenewed(id, nameExpires[id]);
+        return nameExpires[id];
     }
 
     /// @notice Reclaim ownership of a name in ENS, if you own it in the registrar.
@@ -294,8 +277,44 @@ contract BaseRegistrar is ERC721, Ownable {
     /// @param owner The address of the owner that will be set in the Registry.
     function reclaim(uint256 id, address owner) external live {
         if (!_isApprovedOrOwner(msg.sender, id)) revert NotApprovedOwner(id, owner);
-        ens.setSubnodeOwner(baseNode, bytes32(id), owner);
+        registry.setSubnodeOwner(baseNode, bytes32(id), owner);
     }
+
+    /// @notice ERC165 compliant signal for interface support.
+    ///
+    /// @dev Checks interface support for reclaim OR IERC721 OR ERC165.
+    ///     https://eips.ethereum.org/EIPS/eip-165#how-interfaces-are-identified[EIP section]
+    ///
+    /// @param interfaceID the ERC165 iface id being checked for compliance
+    ///
+    /// @return bool Whether this contract supports the provided interfaceID
+    function supportsInterface(bytes4 interfaceID) public pure override(ERC721) returns (bool) {
+        return interfaceID == type(IERC165).interfaceId || interfaceID == type(IERC721).interfaceId
+            || interfaceID == RECLAIM_ID;
+    }
+
+    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+    /*                      ERC721 METADATA                       */
+    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+
+    /// @dev Returns the token collection name.
+    function name() public pure override returns (string memory) {
+        return "";
+    }
+
+    /// @dev Returns the token collection symbol.
+    function symbol() public pure override returns (string memory) {
+        return "";
+    }
+
+    /// @dev Returns the Uniform Resource Identifier (URI) for token `id`.
+    function tokenURI(uint256) public pure override returns (string memory) {
+        return "";
+    }
+
+    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+    /*                      INTERNAL METHODS                      */
+    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
     /// @notice Register a name and possibly update the Registry.
     ///
@@ -320,7 +339,7 @@ contract BaseRegistrar is ERC721, Ownable {
     {
         uint256 expiry = _localRegister(id, owner, duration);
         if (updateRegistry) {
-            ens.setSubnodeOwner(baseNode, bytes32(id), owner);
+            registry.setSubnodeOwner(baseNode, bytes32(id), owner);
         }
         emit NameRegistered(id, owner, expiry);
         return expiry;
@@ -337,7 +356,7 @@ contract BaseRegistrar is ERC721, Ownable {
     /// @return expiry The expiry date of the registered name.
     function _localRegister(uint256 id, address owner, uint256 duration) internal returns (uint256 expiry) {
         expiry = block.timestamp + duration;
-        expiries[id] = expiry;
+        nameExpires[id] = expiry;
         if (_exists(id)) {
             // Name was previously owned, and expired
             _burn(id);
@@ -358,36 +377,5 @@ contract BaseRegistrar is ERC721, Ownable {
     function _isApprovedOrOwner(address spender, uint256 tokenId) internal view override returns (bool) {
         address owner = ownerOf(tokenId);
         return (spender == owner || getApproved(tokenId) == spender || isApprovedForAll(owner, spender));
-    }
-
-    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
-    /*                      ERC721 METADATA                       */
-    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
-
-    /// @dev Returns the token collection name.
-    function name() public pure override returns (string memory) {
-        return "";
-    }
-
-    /// @dev Returns the token collection symbol.
-    function symbol() public pure override returns (string memory) {
-        return "";
-    }
-
-    /// @dev Returns the Uniform Resource Identifier (URI) for token `id`.
-    function tokenURI(uint256) public pure override returns (string memory) {
-        return "";
-    }
-
-    /// @notice ERC165 compliant signal for interface support.
-    ///
-    /// @dev Checks interface support for reclaim OR IERC721 OR ERC165.
-    ///     https://eips.ethereum.org/EIPS/eip-165#how-interfaces-are-identified[EIP section]
-    ///
-    /// @param interfaceID the ERC165 iface id being checked for compliance
-    ///
-    /// @return bool Whether this contract supports the provided interfaceID
-    function supportsInterface(bytes4 interfaceID) public pure override(ERC721) returns (bool) {
-        return interfaceID == INTERFACE_META_ID || interfaceID == ERC721_ID || interfaceID == RECLAIM_ID;
     }
 }

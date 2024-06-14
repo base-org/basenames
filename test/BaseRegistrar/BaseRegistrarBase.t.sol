@@ -30,7 +30,7 @@ contract BaseRegistrarBase is Test {
 
     function test_constructor() public view {
         assertEq(baseRegistrar.owner(), owner);
-        assertEq(address(baseRegistrar.ens()), address(registry));
+        assertEq(address(baseRegistrar.registry()), address(registry));
         assertEq(baseRegistrar.baseNode(), BASE_ETH_NODE);
     }
 
