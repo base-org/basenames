@@ -24,10 +24,13 @@ contract L1Resolver is IExtendedResolver, ERC165, Ownable {
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                          STORAGE                           */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+
     /// @notice The url endpoint for the CCIP gateway service.
     string public url;
+
     /// @notice Storage of approved signers.
-    mapping(address => bool) public signers;
+    mapping(address signer => bool isApproved) public signers;
+
     /// @notice address of the rootResolver for `base.eth`.
     address public rootResolver;
 
@@ -46,19 +49,19 @@ contract L1Resolver is IExtendedResolver, ERC165, Ownable {
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
     /// @notice Emitted when new signers were added to the approved `signers` mapping.
-    event NewSigners(address[] signers);
+    event AddedSigners(address[] signers);
 
     /// @notice Emitted when a new gateway url was stored for `url`.
     ///
     /// @param newUrl the new url being stored.
-    event NewUrl(string newUrl);
+    event UrlChanged(string newUrl);
 
     /// @notice Emitted when a new root resolver is set as the `rootResolver`.
     ///
     /// @param resolver The address of the new root resolver.
-    event NewRootResolver(address resolver);
+    event RootResolverChanged(address resolver);
 
-    ///@notice Emitted when a signer has been removed from the approved `signers` mapping.
+    /// @notice Emitted when a signer has been removed from the approved `signers` mapping.
     ///
     /// @param signer The signer that was removed from the mapping.
     event RemovedSigner(address signer);
@@ -69,7 +72,7 @@ contract L1Resolver is IExtendedResolver, ERC165, Ownable {
 
     /// @notice Resolver constructor
     ///
-    /// @dev Emits `NewSigners(signers_)` after setting the mapping for each signer in the `signers_` arg.
+    /// @dev Emits `AddedSigners(signers_)` after setting the mapping for each signer in the `signers_` arg.
     ///
     /// @param url_  The gateway url stored as `url`.
     /// @param signers_  The approved signers array, each stored as approved in the `signers` mapping.
@@ -83,29 +86,29 @@ contract L1Resolver is IExtendedResolver, ERC165, Ownable {
         for (uint256 i = 0; i < signers_.length; i++) {
             signers[signers_[i]] = true;
         }
-        emit NewSigners(signers_);
+        emit AddedSigners(signers_);
     }
 
     /// @notice Permissioned method letting the owner set the gateway url.
     ///
-    /// @dev Emits `NewUrl(url_)` after storing the new url as `url`.
+    /// @dev Emits `UrlChanged(url_)` after storing the new url as `url`.
     ///
     /// @param url_ The gateway url stored as `url`.
     function setUrl(string calldata url_) external onlyOwner {
         url = url_;
-        emit NewUrl(url_);
+        emit UrlChanged(url_);
     }
 
     /// @notice Permissioned method letting the owner add approved signers.
     ///
     /// @dev Emits `NewSigners(signers_)` after setting the mapping for each signer in the `signers_` arg.
     ///
-    /// @param _signers Array of signers to set as approved signers in the `signers` mapping.
-    function addSigners(address[] calldata _signers) external onlyOwner {
-        for (uint256 i; i < _signers.length; i++) {
-            signers[_signers[i]] = true;
+    /// @param signers_ Array of signers to set as approved signers in the `signers` mapping.
+    function addSigners(address[] calldata signers_) external onlyOwner {
+        for (uint256 i; i < signers_.length; i++) {
+            signers[signers_[i]] = true;
         }
-        emit NewSigners(_signers);
+        emit AddedSigners(signers_);
     }
 
     /// @notice Permissioned method letting the owner remove a signer from the approved `signers` mapping.
@@ -122,12 +125,12 @@ contract L1Resolver is IExtendedResolver, ERC165, Ownable {
 
     /// @notice Permissioned method letting the owner set the address of the root resolver.
     ///
-    /// @dev Emits `NewRootResolver(rootResolver_)` after setting the `rootResolver` address.
+    /// @dev Emits `RootResolverChanged(rootResolver_)` after setting the `rootResolver` address.
     ///
     /// @param rootResolver_ Address of the new `rootResolver`
     function setRootResolver(address rootResolver_) external onlyOwner {
         rootResolver = rootResolver_;
-        emit NewRootResolver(rootResolver_);
+        emit RootResolverChanged(rootResolver_);
     }
 
     /// @notice Hook into the SignatureVerifier lib `makeSignatureHash` method
@@ -174,7 +177,7 @@ contract L1Resolver is IExtendedResolver, ERC165, Ownable {
     ///
     /// @dev The response data must be encoded per the following format:
     ///         response = abi.encode(bytes memory result, uint64 expires, bytes memory sig), where:
-    ///         `result` is the resolver repsonse to the resolution request.
+    ///         `result` is the resolver response to the resolution request.
     ///         `expires` is the signature expiry.
     ///         `sig` is the signature data used for validating that the gateway signed the response.
     ///     Per ENSIP-10, the `extraData` arg must match exectly the `extraData` field from the `OffchainLookup` which initiated
