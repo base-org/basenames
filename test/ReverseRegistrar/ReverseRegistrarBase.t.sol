@@ -38,6 +38,6 @@ contract ReverseRegistrarBase is Test {
 
     function test_constructor() public view {
         assertTrue(reverse.owner() == owner);
-        assertTrue(address(reverse.ens()) == address(registry));
+        assertTrue(address(reverse.registry()) == address(registry));
     }
 }
