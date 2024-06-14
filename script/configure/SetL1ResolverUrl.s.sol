@@ -10,7 +10,8 @@ contract SetL1ResolverUrl is Script {
         address resolverAddress = vm.envAddress("L1_RESOLVER_ADDR");
         vm.startBroadcast(deployerPrivateKey);
 
-        string memory NEW_URL = "https://api-entry-gateway-development.cbhq.net/api/v1/domain/resolver/resolveDomain/{sender}/{data}";
+        string memory NEW_URL =
+            "https://api-entry-gateway-development.cbhq.net/api/v1/domain/resolver/resolveDomain/{sender}/{data}";
 
         L1Resolver resolver = L1Resolver(resolverAddress);
         resolver.setUrl(NEW_URL);
