@@ -22,7 +22,7 @@ contract AddDiscountValidator is Script {
         address controllerAddr = vm.envAddress("REGISTRAR_CONTROLLER_ADDR");
         RegistrarController controller = RegistrarController(controllerAddr);
 
-        controller.setDiscountDetails(key, details);
+        controller.setDiscountDetails(details);
 
         vm.stopBroadcast();
     }

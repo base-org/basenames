@@ -10,7 +10,7 @@ contract DiscountedRegisterPrice is RegistrarControllerBase {
         vm.assume(price > discountAmount);
         prices.setPrice(name, IPriceOracle.Price({base: price, premium: 0}));
         vm.prank(owner);
-        controller.setDiscountDetails(discountKey, _getDefaultDiscount());
+        controller.setDiscountDetails(_getDefaultDiscount());
 
         uint256 expectedPrice = price - discountAmount;
         uint256 retPrice = controller.discountedRegisterPrice(name, duration, discountKey);
@@ -21,7 +21,7 @@ contract DiscountedRegisterPrice is RegistrarControllerBase {
         vm.assume(price <= discountAmount);
         prices.setPrice(name, IPriceOracle.Price({base: price, premium: 0}));
         vm.prank(owner);
-        controller.setDiscountDetails(discountKey, _getDefaultDiscount());
+        controller.setDiscountDetails(_getDefaultDiscount());
 
         uint256 retPrice = controller.discountedRegisterPrice(name, duration, discountKey);
         assertEq(retPrice, 0);
