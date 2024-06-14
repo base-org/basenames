@@ -119,4 +119,23 @@ contract DiscountedRegister is RegistrarControllerBase {
         uint256 expectedBalance = 1 ether - price;
         assertEq(user.balance, expectedBalance);
     }
+
+    function test_reverts_ifTheRegistrantHasAlreadyRegisteredWithDiscount() public {
+        vm.deal(user, 1 ether);
+        vm.prank(owner);
+        controller.setDiscountDetails(discountKey, _getDefaultDiscount());
+        uint256 price = controller.discountedRegisterPrice(name, duration, discountKey);
+        validator.setReturnValue(true);
+        base.setAvailable(uint256(nameLabel), true);
+        RegistrarController.RegisterRequest memory request = _getDefaultRegisterRequest();
+        uint256 expires = block.timestamp + request.duration;
+        base.setNameExpires(uint256(nameLabel), expires);
+        vm.prank(user);
+        controller.discountedRegister{value: price}(request, discountKey, "");
+
+        vm.expectRevert(abi.encodeWithSelector(RegistrarController.AlreadyRegisteredWithDiscount.selector, user));
+        request.name = "newname";
+        vm.prank(user);
+        controller.discountedRegister{value: price}(request, discountKey, "");
+    }
 }
