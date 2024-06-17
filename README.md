@@ -34,38 +34,14 @@ The core functionality of Base Usernames should look familiar to anyone that's l
 
 In addition to replicating the base behavior of the ENS protocol, we are offering a series of promotional discounts associcated with various Coinbase product integrations. As such, the Base Usernames ETH Registrar Controller allows users to perform discounted registrations while passing along integration-specific `validationData`.
 
-## Functional Diagrams
+## Functional Diagram
 
-### Premium Pricing Chart
+The system architecture can be functionally organized into three categories:
+1. An L1 resolver enabling cross-chain resolution for the `base.eth` 2LD.
+2. An ENS-like registry/registrar/resolver system deployed on Base enabling `*.base.eth` subdomains to be registered and managed.
+3. An off-chain gateway for serving CCIP requests required to comply with [ENSIP-10](https://docs.ens.domains/ensip/10). 
 
-To visualize the pricing decay for premium prices, you can run the Python script located in the py directory. The script generates a pricing chart based on user input.
-
-### Prerequisites 
-
-* Python 3.x
-* matplotlib library
-
-### Running the Script
-
-1. Navigate to the py directory
-
-```shell
-$ cd py
-```
-
-2. Run the Python script
-
-```shell
-$ python3 Price.py
-```
-
-3. Follow the prompts to input the required values:
-
-* Start Premium: The initial premium price
-* Total days: The number of days it takes for the price to reach its end value
-* Number of days: The number of days over which price should decay
-
-The script will generate and display the pricing chart based on the provided inputs.
+![Screenshot 2024-06-16 at 8 51 55 PM](https://github.com/base-org/usernames/assets/84420280/3689dd40-2be0-4a7d-8454-155741a1add0)
 
 ## Usage
 
