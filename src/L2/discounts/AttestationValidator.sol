@@ -1,17 +1,22 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
+import {Attestation} from "eas-contracts/IEAS.sol";
+import {AttestationVerifier} from "verifications/libraries/AttestationVerifier.sol";
 import {ECDSA} from "solady/utils/ECDSA.sol";
 import {Ownable} from "solady/auth/Ownable.sol";
 
 import {IDiscountValidator} from "src/L2/interface/IDiscountValidator.sol";
 
-/// @title Discount Validator for: Coinbase supported EAS
+/// @title Discount Validator for: Coinbase Verified Wallets
 ///
-/// @notice Implements signature verification to valiate signatures from the Coinbase attestation sybil resistance service.  
+/// @notice Implements a two step validation schema for Coinbase Verified Wallets
+///         1. Verify that the wallet has an active Coinbase Verified Account attestation with EAS
+///         2. Signature verification to valiate signatures from the Coinbase sybil resistance service.
+///         https://github.com/coinbase/verifications  
 ///
-/// @author Coinbase
-contract AttestationValidator is Ownable, IDiscountValidator {
+/// @author Coinbase (https://github.com/base-org/usernames)
+contract VerifiedWalletValidator is Ownable, IDiscountValidator {
     /// @dev The attestation service signer. 
     address signer;
 
@@ -22,7 +27,7 @@ contract AttestationValidator is Ownable, IDiscountValidator {
     /// @param claimer The address that is calling the discounted registration.
     error ClaimerAddressMismatch(address expectedClaimer, address claimer);
 
-    /// @notice Thrown when the signature expiry date > block.timestamp.
+    /// @notice Thrown when the signature expiry date >= block.timestamp.
     error SignatureExpired();
 
     constructor(address owner_, address signer_) {
