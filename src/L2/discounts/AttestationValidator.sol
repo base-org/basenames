@@ -1,9 +1,10 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import {Attestation} from "eas-contracts/IEAS.sol";
+import {AttestationAccessControl} from "verifications/abstracts/AttestationAccessControl.sol";
 import {AttestationVerifier} from "verifications/libraries/AttestationVerifier.sol";
 import {ECDSA} from "solady/utils/ECDSA.sol";
+import {IAttestationIndexer} from "verifications/interfaces/IAttestationIndexer.sol";
 import {Ownable} from "solady/auth/Ownable.sol";
 
 import {IDiscountValidator} from "src/L2/interface/IDiscountValidator.sol";
@@ -16,9 +17,12 @@ import {IDiscountValidator} from "src/L2/interface/IDiscountValidator.sol";
 ///         https://github.com/coinbase/verifications  
 ///
 /// @author Coinbase (https://github.com/base-org/usernames)
-contract VerifiedWalletValidator is Ownable, IDiscountValidator {
+contract VerifiedAccountValidator is Ownable, AttestationAccessControl, IDiscountValidator {
     /// @dev The attestation service signer. 
     address signer;
+
+    /// @dev The EAS schema id for Coinbase Verified Wallets.
+    bytes32 schemaID;
 
     /// @notice Thrown when the address for the claimer recovered from `validationData` does not match the address passed
     ///         to the validator. 
@@ -30,9 +34,17 @@ contract VerifiedWalletValidator is Ownable, IDiscountValidator {
     /// @notice Thrown when the signature expiry date >= block.timestamp.
     error SignatureExpired();
 
-    constructor(address owner_, address signer_) {
+    /// @notice Verified Account Validator constructor
+    ///
+    /// @param owner_ The permissioned `owner` in the `Ownable` context.
+    /// @param signer_ The off-chain signer of the Coinbase sybil resistance service.
+    /// @param schemaID_ The EAS schema id associated with verified accounts.
+    /// @param indexer_ The address of the Coinbase attestation indexer. 
+    constructor(address owner_, address signer_, bytes32 schemaID_, address indexer_) {
         _initializeOwner(owner_);
         signer = signer_;
+        schemaID = schemaID_;
+        _setIndexer(IAttestationIndexer(indexer_));
     }
 
     /// @notice Allows the owner to update the expected signer.
@@ -44,18 +56,21 @@ contract VerifiedWalletValidator is Ownable, IDiscountValidator {
 
     /// @notice Required implementation for compatibility with IDiscountValidator.
     ///
-    /// @dev The proof data must be encoded as `abi.encode(discountClaimerAddress, expiry, signature_bytes)`.
+    /// @dev The data must be encoded as `abi.encode(discountClaimerAddress, expiry, signature_bytes)`.
     ///
     /// @param claimer the discount claimer's address.
     /// @param validationData opaque bytes for performing the validation.
     ///
     /// @return `true` if the validation data provided is determined to be valid for the specified claimer, else `false`.
     function isValidDiscountRegistration(address claimer, bytes calldata validationData) external view returns (bool) {
+
+        AttestationVerifier.verifyAttestation(_getAttestation(claimer, schemaID));
+
         (address expectedClaimer, uint64 expires, bytes memory sig) = abi.decode(validationData, (address, uint64, bytes));
         if (expectedClaimer != claimer) revert ClaimerAddressMismatch(expectedClaimer, claimer);
         if (expires < block.timestamp) revert SignatureExpired();
         
-        address recoveredSigner = ECDSA.recover(makeSignatureHash(claimer, expires), sig);
+        address recoveredSigner = ECDSA.recover(_makeSignatureHash(claimer, expires), sig);
         return (recoveredSigner == signer);
     }
 
@@ -65,7 +80,7 @@ contract VerifiedWalletValidator is Ownable, IDiscountValidator {
     ///
     /// @param claimer The address of the claimer.
     /// @param expires The date of signature expiry.
-    function makeSignatureHash(address claimer, uint64 expires)
+    function _makeSignatureHash(address claimer, uint64 expires)
         internal
         view
         returns (bytes32)
