@@ -5,12 +5,9 @@ import {Test, console} from "forge-std/Test.sol";
 import {L1ResolverTestBase} from "./L1ResolverBase.t.sol";
 
 import {L1Resolver} from "src/L1/L1Resolver.sol";
-import {Ownable} from "solady/auth/Ownable.sol";
-import {SignatureVerifier} from "src/lib/SignatureVerifier.sol";
-import {BASE_ETH_NAME, BASE_ETH_NODE} from "src/util/Constants.sol";
+import {BASE_ETH_NODE} from "src/util/Constants.sol";
 import {IAddrResolver} from "ens-contracts/resolvers/profiles/IAddrResolver.sol";
 import {ITextResolver} from "ens-contracts/resolvers/profiles/ITextResolver.sol";
-import {NameEncoder} from "ens-contracts/utils/NameEncoder.sol";
 import {MockPublicResolver} from "test/mocks/MockPublicResolver.sol";
 
 contract Fallback is L1ResolverTestBase {

@@ -15,7 +15,7 @@ contract AdminMethods is L1ResolverTestBase {
 
         vm.prank(owner);
         vm.expectEmit();
-        emit L1Resolver.NewUrl(newUrl);
+        emit L1Resolver.UrlChanged(newUrl);
         resolver.setUrl(newUrl);
     }
 
@@ -31,7 +31,7 @@ contract AdminMethods is L1ResolverTestBase {
 
         vm.prank(owner);
         vm.expectEmit();
-        emit L1Resolver.NewSigners(_signers);
+        emit L1Resolver.AddedSigners(_signers);
         resolver.addSigners(_signers);
         for (uint256 i; i < _signers.length; i++) {
             assertTrue(resolver.signers(_signers[i]));
@@ -58,7 +58,7 @@ contract AdminMethods is L1ResolverTestBase {
 
         vm.prank(owner);
         vm.expectEmit();
-        emit L1Resolver.NewRootResolver(newResolver);
+        emit L1Resolver.RootResolverChanged(newResolver);
         resolver.setRootResolver(newResolver);
     }
 }

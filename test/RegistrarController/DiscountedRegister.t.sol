@@ -12,7 +12,7 @@ contract DiscountedRegister is RegistrarControllerBase {
 
         inactiveDiscount.active = false;
         vm.prank(owner);
-        controller.setDiscountDetails(discountKey, inactiveDiscount);
+        controller.setDiscountDetails(inactiveDiscount);
         uint256 price = controller.discountedRegisterPrice(name, duration, discountKey);
 
         vm.expectRevert(abi.encodeWithSelector(RegistrarController.InactiveDiscount.selector, discountKey));
@@ -23,7 +23,7 @@ contract DiscountedRegister is RegistrarControllerBase {
     function test_reverts_whenInvalidDiscountRegistration() public {
         vm.deal(user, 1 ether);
         vm.prank(owner);
-        controller.setDiscountDetails(discountKey, _getDefaultDiscount());
+        controller.setDiscountDetails(_getDefaultDiscount());
         validator.setReturnValue(false);
         uint256 price = controller.discountedRegisterPrice(name, duration, discountKey);
 
@@ -35,7 +35,7 @@ contract DiscountedRegister is RegistrarControllerBase {
     function test_reverts_whenNameNotAvailble() public {
         vm.deal(user, 1 ether);
         vm.prank(owner);
-        controller.setDiscountDetails(discountKey, _getDefaultDiscount());
+        controller.setDiscountDetails(_getDefaultDiscount());
         uint256 price = controller.discountedRegisterPrice(name, duration, discountKey);
         validator.setReturnValue(true);
         base.setAvailable(uint256(nameLabel), false);
@@ -48,7 +48,7 @@ contract DiscountedRegister is RegistrarControllerBase {
     function test_reverts_whenDurationTooShort() public {
         vm.deal(user, 1 ether);
         vm.prank(owner);
-        controller.setDiscountDetails(discountKey, _getDefaultDiscount());
+        controller.setDiscountDetails(_getDefaultDiscount());
         uint256 price = controller.discountedRegisterPrice(name, duration, discountKey);
         validator.setReturnValue(true);
         base.setAvailable(uint256(nameLabel), true);
@@ -64,7 +64,7 @@ contract DiscountedRegister is RegistrarControllerBase {
     function test_reverts_whenValueTooSmall() public {
         vm.deal(user, 1 ether);
         vm.prank(owner);
-        controller.setDiscountDetails(discountKey, _getDefaultDiscount());
+        controller.setDiscountDetails(_getDefaultDiscount());
         prices.setPrice(name, IPriceOracle.Price({base: 1 ether, premium: 0}));
         uint256 price = controller.discountedRegisterPrice(name, duration, discountKey);
         validator.setReturnValue(true);
@@ -78,7 +78,7 @@ contract DiscountedRegister is RegistrarControllerBase {
     function test_registersWithDiscountSuccessfully() public {
         vm.deal(user, 1 ether);
         vm.prank(owner);
-        controller.setDiscountDetails(discountKey, _getDefaultDiscount());
+        controller.setDiscountDetails(_getDefaultDiscount());
         uint256 price = controller.discountedRegisterPrice(name, duration, discountKey);
         validator.setReturnValue(true);
         base.setAvailable(uint256(nameLabel), true);
@@ -90,6 +90,8 @@ contract DiscountedRegister is RegistrarControllerBase {
         emit RegistrarController.ETHPaymentProcessed(user, price);
         vm.expectEmit(address(controller));
         emit RegistrarController.NameRegistered(request.name, nameLabel, user, expires);
+        vm.expectEmit(address(controller));
+        emit RegistrarController.DiscountApplied(user, discountKey);
 
         vm.prank(user);
         controller.discountedRegister{value: price}(request, discountKey, "");
@@ -105,7 +107,7 @@ contract DiscountedRegister is RegistrarControllerBase {
     function test_sendsARefund_ifUserOverpayed() public {
         vm.deal(user, 1 ether);
         vm.prank(owner);
-        controller.setDiscountDetails(discountKey, _getDefaultDiscount());
+        controller.setDiscountDetails(_getDefaultDiscount());
         uint256 price = controller.discountedRegisterPrice(name, duration, discountKey);
         validator.setReturnValue(true);
         base.setAvailable(uint256(nameLabel), true);
@@ -123,7 +125,7 @@ contract DiscountedRegister is RegistrarControllerBase {
     function test_reverts_ifTheRegistrantHasAlreadyRegisteredWithDiscount() public {
         vm.deal(user, 1 ether);
         vm.prank(owner);
-        controller.setDiscountDetails(discountKey, _getDefaultDiscount());
+        controller.setDiscountDetails(_getDefaultDiscount());
         uint256 price = controller.discountedRegisterPrice(name, duration, discountKey);
         validator.setReturnValue(true);
         base.setAvailable(uint256(nameLabel), true);

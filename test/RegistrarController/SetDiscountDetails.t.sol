@@ -10,24 +10,15 @@ contract SetDiscountDetails is RegistrarControllerBase {
         vm.assume(caller != owner);
         vm.expectRevert(Ownable.Unauthorized.selector);
         vm.prank(caller);
-        controller.setDiscountDetails(discountKey, _getDefaultDiscount());
+        controller.setDiscountDetails(_getDefaultDiscount());
     }
 
     function test_reverts_ifTheDiscountIsZero() public {
         RegistrarController.DiscountDetails memory noDiscount = _getDefaultDiscount();
         noDiscount.discount = 0;
-        vm.expectRevert(abi.encodeWithSelector(RegistrarController.InvalidDiscountAmount.selector, discountKey, 0));
+        vm.expectRevert(abi.encodeWithSelector(RegistrarController.InvalidDiscountAmount.selector, discountKey));
         vm.prank(owner);
-        controller.setDiscountDetails(discountKey, noDiscount);
-    }
-
-    function test_reverts_ifTheDiscountKeysMismatch() public {
-        RegistrarController.DiscountDetails memory badKeyDetails = _getDefaultDiscount();
-        bytes32 badKey = bytes32(0);
-        badKeyDetails.key = badKey;
-        vm.expectRevert(abi.encodeWithSelector(RegistrarController.DiscountKeyMismatch.selector, discountKey, badKey));
-        vm.prank(owner);
-        controller.setDiscountDetails(discountKey, badKeyDetails);
+        controller.setDiscountDetails(noDiscount);
     }
 
     function test_reverts_ifTheDiscounValidatorIsInvalid() public {
@@ -35,14 +26,14 @@ contract SetDiscountDetails is RegistrarControllerBase {
         noValidator.discountValidator = address(0);
         vm.expectRevert(abi.encodeWithSelector(RegistrarController.InvalidValidator.selector, discountKey, address(0)));
         vm.prank(owner);
-        controller.setDiscountDetails(discountKey, noValidator);
+        controller.setDiscountDetails(noValidator);
     }
 
     function test_setsTheDetailsAccordingly() public {
         vm.expectEmit(address(controller));
         emit RegistrarController.DiscountUpdated(discountKey, _getDefaultDiscount());
         vm.prank(owner);
-        controller.setDiscountDetails(discountKey, _getDefaultDiscount());
+        controller.setDiscountDetails(_getDefaultDiscount());
         (bool retActive, address retValidator, bytes32 retKey, uint256 retDiscount) = controller.discounts(discountKey);
         assertTrue(retActive);
         assertEq(retValidator, address(validator));
@@ -54,7 +45,7 @@ contract SetDiscountDetails is RegistrarControllerBase {
         RegistrarController.DiscountDetails memory discountDetails = _getDefaultDiscount();
 
         vm.prank(owner);
-        controller.setDiscountDetails(discountKey, discountDetails);
+        controller.setDiscountDetails(discountDetails);
         RegistrarController.DiscountDetails[] memory activeDiscountsWithActive = controller.getActiveDiscounts();
         assertEq(activeDiscountsWithActive.length, 1);
         assertTrue(activeDiscountsWithActive[0].active);
@@ -64,7 +55,7 @@ contract SetDiscountDetails is RegistrarControllerBase {
 
         discountDetails.active = false;
         vm.prank(owner);
-        controller.setDiscountDetails(discountKey, discountDetails);
+        controller.setDiscountDetails(discountDetails);
         RegistrarController.DiscountDetails[] memory activeDiscountsNoneActive = controller.getActiveDiscounts();
         assertEq(activeDiscountsNoneActive.length, 0);
     }

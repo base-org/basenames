@@ -21,8 +21,8 @@ contract ReverseRegistrar is Ownable {
     /*                          STORAGE                           */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
-    /// @notice The ENS registry.
-    ENS public immutable ens;
+    /// @notice The Registry contract.
+    ENS public immutable registry;
 
     /// @notice The default resolver for setting Name resolution records.
     NameResolver public defaultResolver;
@@ -68,7 +68,7 @@ contract ReverseRegistrar is Ownable {
     ///
     /// @param addr The `addr` that is being modified.
     modifier authorized(address addr) {
-        if (addr != msg.sender && !ens.isApprovedForAll(addr, msg.sender) && !_ownsContract(addr)) {
+        if (addr != msg.sender && !registry.isApprovedForAll(addr, msg.sender) && !_ownsContract(addr)) {
             revert NotAuthorized(addr, msg.sender);
         }
         _;
@@ -80,11 +80,11 @@ contract ReverseRegistrar is Ownable {
 
     /// @notice ReverseRegistrar construction.
     ///
-    /// @param ens_ The ENS registry, will be stored as `ens`.
+    /// @param registry_ The ENS registry, will be stored as `registry`.
     /// @param owner_ The permissioned address initialized as the `owner` in the `Ownable` context.
-    constructor(ENS ens_, address owner_) {
+    constructor(ENS registry_, address owner_) {
         _initializeOwner(owner_);
-        ens = ens_;
+        registry = registry_;
     }
 
     /// @notice Allows the owner to change the address of the default resolver.
@@ -122,7 +122,7 @@ contract ReverseRegistrar is Ownable {
         bytes32 labelHash = Sha3.hexAddress(addr);
         bytes32 reverseNode = keccak256(abi.encodePacked(ADDR_REVERSE_NODE, labelHash));
         emit ReverseClaimed(addr, reverseNode);
-        ens.setSubnodeRecord(ADDR_REVERSE_NODE, labelHash, owner, resolver, 0);
+        registry.setSubnodeRecord(ADDR_REVERSE_NODE, labelHash, owner, resolver, 0);
         return reverseNode;
     }
 

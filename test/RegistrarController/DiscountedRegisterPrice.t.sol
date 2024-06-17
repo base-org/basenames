@@ -5,12 +5,12 @@ import {RegistrarControllerBase} from "./RegistrarControllerBase.t.sol";
 import {RegistrarController} from "src/L2/RegistrarController.sol";
 import {IPriceOracle} from "src/L2/interface/IPriceOracle.sol";
 
-contract discountedRegisterPrice is RegistrarControllerBase {
+contract DiscountedRegisterPrice is RegistrarControllerBase {
     function test_returnsADiscountedPrice_whenThePriceIsGreaterThanTheDiscount(uint256 price) public {
         vm.assume(price > discountAmount);
         prices.setPrice(name, IPriceOracle.Price({base: price, premium: 0}));
         vm.prank(owner);
-        controller.setDiscountDetails(discountKey, _getDefaultDiscount());
+        controller.setDiscountDetails(_getDefaultDiscount());
 
         uint256 expectedPrice = price - discountAmount;
         uint256 retPrice = controller.discountedRegisterPrice(name, duration, discountKey);
@@ -21,7 +21,7 @@ contract discountedRegisterPrice is RegistrarControllerBase {
         vm.assume(price <= discountAmount);
         prices.setPrice(name, IPriceOracle.Price({base: price, premium: 0}));
         vm.prank(owner);
-        controller.setDiscountDetails(discountKey, _getDefaultDiscount());
+        controller.setDiscountDetails(_getDefaultDiscount());
 
         uint256 retPrice = controller.discountedRegisterPrice(name, duration, discountKey);
         assertEq(retPrice, 0);

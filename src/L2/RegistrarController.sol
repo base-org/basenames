@@ -115,12 +115,6 @@ contract RegistrarController is Ownable {
     /// @param duration The duration that was too short.
     error DurationTooShort(uint256 duration);
 
-    /// @notice Thrown when the discount key does not match the specified details key.
-    ///
-    /// @param key The discount key that was to be used for the `discounts` mapping.
-    /// @param detailsKey The discount key that was going to be stored in the DiscountDetails.
-    error DiscountKeyMismatch(bytes32 key, bytes32 detailsKey);
-
     /// @notice Thrown when Multicallable resolver data was specified but not resolver address was provided.
     error ResolverRequiredWhenDataSupplied();
 
@@ -141,8 +135,7 @@ contract RegistrarController is Ownable {
     /// @notice Thrown when the discount amount is 0.
     ///
     /// @param key The discount being set.
-    /// @param amount The discount amount being set.
-    error InvalidDiscountAmount(bytes32 key, uint256 amount);
+    error InvalidDiscountAmount(bytes32 key);
 
     /// @notice Thrown when the discount validator is being set to address(0).
     ///
@@ -193,7 +186,7 @@ contract RegistrarController is Ownable {
     ///
     /// @param registrant The address of the registrant.
     /// @param discountKey The discount key that was used to register.
-    event RegisteredWithDiscount(address indexed registrant, bytes32 indexed discountKey);
+    event DiscountApplied(address indexed registrant, bytes32 indexed discountKey);
 
     /// @notice Emitted when the reverse registrar is updated.
     ///
@@ -286,15 +279,13 @@ contract RegistrarController is Ownable {
     ///     3. That the address of the `discountValidator` is not the zero address
     ///     Updates the `ActiveDiscounts` enumerable set then emits `DiscountUpdated` event.
     ///
-    /// @param key The uuid for the discount, i.e. keccak256("test.discount.validator").
     /// @param details The DiscountDetails for this discount key.
-    function setDiscountDetails(bytes32 key, DiscountDetails memory details) external onlyOwner {
-        if (details.discount == 0) revert InvalidDiscountAmount(key, details.discount);
-        if (details.key != key) revert DiscountKeyMismatch(key, details.key);
-        if (details.discountValidator == address(0)) revert InvalidValidator(key, details.discountValidator);
-        discounts[key] = details;
-        _updateActiveDiscounts(key, details.active);
-        emit DiscountUpdated(key, details);
+    function setDiscountDetails(DiscountDetails memory details) external onlyOwner {
+        if (details.discount == 0) revert InvalidDiscountAmount(details.key);
+        if (details.discountValidator == address(0)) revert InvalidValidator(details.key, details.discountValidator);
+        discounts[details.key] = details;
+        _updateActiveDiscounts(details.key, details.active);
+        emit DiscountUpdated(details.key, details);
     }
 
     /// @notice Allows the `owner` to set the pricing oracle contract.
@@ -322,7 +313,7 @@ contract RegistrarController is Ownable {
     /// @param addresses The array of addresses to check for discount registration.
     ///
     /// @return `true` if any of the addresses have already registered with a discount, else `false`.
-    function hasRegisteredWithDiscount(address[] memory addresses) public view returns (bool) {
+    function hasRegisteredWithDiscount(address[] memory addresses) external view returns (bool) {
         for (uint256 i; i < addresses.length; i++) {
             if (discountedRegistrants[addresses[i]]) {
                 return true;
@@ -446,7 +437,7 @@ contract RegistrarController is Ownable {
 
         _refundExcessEth(price);
 
-        emit RegisteredWithDiscount(msg.sender, discountKey);
+        emit DiscountApplied(msg.sender, discountKey);
     }
 
     /// @notice Allows a caller to renew a name for a specified duration.
@@ -507,6 +498,9 @@ contract RegistrarController is Ownable {
     }
 
     /// @notice Refunds any remaining `msg.value` after processing a registration or renewal given`price`.
+    ///
+    /// @dev It is necessary to allow "overpayment" because of premium price decay.  We don't want transactions to fail
+    ///     unnecessarily if the premium decreases between tx submission and inclusion.
     ///
     /// @param price The total value to be retained, denominated in wei.
     function _refundExcessEth(uint256 price) internal {

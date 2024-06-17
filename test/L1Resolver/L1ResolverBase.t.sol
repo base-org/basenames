@@ -18,8 +18,6 @@ contract L1ResolverTestBase is Test {
         address[] memory signers = new address[](1);
         signers[0] = signer;
         rootResolver = new MockPublicResolver();
-        vm.expectEmit();
-        emit L1Resolver.NewSigners(signers);
         resolver = new L1Resolver(URL, signers, owner, address(rootResolver));
     }
 
@@ -27,7 +25,7 @@ contract L1ResolverTestBase is Test {
         (signer, signerPk) = makeAddrAndKey("0xace");
         address[] memory signers_ = new address[](1);
         signers_[0] = signer;
-        emit L1Resolver.NewSigners(signers_);
+        emit L1Resolver.AddedSigners(signers_);
 
         resolver = new L1Resolver(URL, signers_, owner, address(rootResolver));
         assertTrue(keccak256(bytes(resolver.url())) == keccak256(bytes(URL)));
