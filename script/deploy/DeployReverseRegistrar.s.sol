@@ -15,10 +15,12 @@ contract DeployReverseRegistrar is Script {
 
         address ensAddress = vm.envAddress("REGISTRY_ADDR"); // deployer-owned registry
         Registry registry = Registry(ensAddress);
+        address controller = vm.envAddress("REGISTRAR_CONTROLLER_ADDR");
 
         ReverseRegistrar revRegstrar = new ReverseRegistrar(
             Registry(ensAddress),
-            deployerAddress // deployer as owner
+            deployerAddress, // deployer as owner
+            controller
         );
 
         // establish the reverse registrar as the owner of the 'addr.reverse' node
