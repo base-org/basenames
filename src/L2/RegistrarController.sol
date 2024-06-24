@@ -327,7 +327,7 @@ contract RegistrarController is Ownable {
     ///
     /// @param paymentReceiver_ The new payment receiver address.
     function setPaymentReceiver(address paymentReceiver_) external onlyOwner {
-        if(paymentReceiver_ == address(0)) revert InvalidPaymentReceiver();
+        if (paymentReceiver_ == address(0)) revert InvalidPaymentReceiver();
         paymentReceiver = paymentReceiver_;
         emit PayemntReceiverUpdated(paymentReceiver_);
     }
