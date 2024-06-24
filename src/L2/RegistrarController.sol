@@ -329,7 +329,7 @@ contract RegistrarController is Ownable {
     function setPaymentReceiver(address paymentReceiver_) external onlyOwner {
         if(paymentReceiver_ == address(0)) revert InvalidPaymentReceiver();
         paymentReceiver = paymentReceiver_;
-        emit ReverseRegistrarUpdated(paymentReceiver_);
+        emit PayemntReceiverUpdated(paymentReceiver_);
     }
 
     /// @notice Checks whether any of the provided addresses have registered with a discount.
