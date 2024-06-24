@@ -60,7 +60,7 @@ contract ReverseRegistrar is Ownable {
 
     /// @notice Emitted when a controller address approval status is changed by the `owner`.
     ///
-    /// @param controller The address of the new Resolver.
+    /// @param controller The address of the `controller`.
     /// @param approved The new approval state for the `controller` address.
     event ControllerApprovalChanged(address indexed controller, bool approved);
 
