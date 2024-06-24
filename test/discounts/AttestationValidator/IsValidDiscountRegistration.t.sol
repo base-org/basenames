@@ -7,7 +7,6 @@ import {Attestation} from "eas-contracts/IEAS.sol";
 import "verifications/libraries/AttestationErrors.sol";
 
 contract IsValidDiscountRegistration is AttestationValidatorBase {
-
     function test_reverts_whenTheAttestation_isExpired() public {
         Attestation memory att = _getDefaultAttestation();
         att.expirationTime = uint64(block.timestamp);
@@ -43,8 +42,7 @@ contract IsValidDiscountRegistration is AttestationValidatorBase {
     function test_reverts_whenTheValidationData_claimerAddressMismatch() public {
         address notUser = makeAddr("anon");
         bytes memory validationData = _getDefaultValidationData();
-        (, uint64 expires, bytes memory sig) =
-            abi.decode(validationData, (address, uint64, bytes));
+        (, uint64 expires, bytes memory sig) = abi.decode(validationData, (address, uint64, bytes));
         bytes memory claimerMismatchValidationData = abi.encode(notUser, expires, sig);
 
         vm.expectRevert(abi.encodeWithSelector(SybilResistanceVerifier.ClaimerAddressMismatch.selector, notUser, user));
@@ -53,9 +51,8 @@ contract IsValidDiscountRegistration is AttestationValidatorBase {
 
     function test_reverts_whenTheValidationData_signatureIsExpired() public {
         bytes memory validationData = _getDefaultValidationData();
-        (address expectedClaimer,, bytes memory sig) =
-            abi.decode(validationData, (address, uint64, bytes));
-        bytes memory claimerMismatchValidationData = abi.encode(expectedClaimer, (block.timestamp -1), sig);
+        (address expectedClaimer,, bytes memory sig) = abi.decode(validationData, (address, uint64, bytes));
+        bytes memory claimerMismatchValidationData = abi.encode(expectedClaimer, (block.timestamp - 1), sig);
 
         vm.expectRevert(abi.encodeWithSelector(SybilResistanceVerifier.SignatureExpired.selector));
         validator.isValidDiscountRegistration(user, claimerMismatchValidationData);

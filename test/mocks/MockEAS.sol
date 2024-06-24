@@ -11,8 +11,7 @@ contract MockEAS {
         att = att_;
     }
 
-    function getAttestation(bytes32) external view returns (Attestation memory){
+    function getAttestation(bytes32) external view returns (Attestation memory) {
         return att;
     }
-
 }

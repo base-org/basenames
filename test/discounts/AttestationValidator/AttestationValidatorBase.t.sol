@@ -21,7 +21,7 @@ contract AttestationValidatorBase is Test {
     bytes32 schema;
     bytes32 uid;
     uint64 time = 1717200000;
-    uint64 expires = 1893456000; 
+    uint64 expires = 1893456000;
 
     function setUp() public {
         vm.warp(time);
