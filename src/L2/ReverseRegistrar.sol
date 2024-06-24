@@ -71,14 +71,17 @@ contract ReverseRegistrar is Ownable {
     /// @notice Decorator for checking authorization status for a caller against a provided `addr`.
     ///
     /// @dev A caller is authorized to set the record for `addr` if they are one of:
-    ///     1. The `addr` is the sender 
+    ///     1. The `addr` is the sender
     ///     2. The sender is an approved `controller`
     ///     3. The sender is an approved operator for `addr` on the registry
     ///     4. The sender is `Ownable:ownerOf()` for `addr`
     ///
     /// @param addr The `addr` that is being modified.
     modifier authorized(address addr) {
-        if (addr != msg.sender && !controllers[msg.sender] && !registry.isApprovedForAll(addr, msg.sender) && !_ownsContract(addr)) {
+        if (
+            addr != msg.sender && !controllers[msg.sender] && !registry.isApprovedForAll(addr, msg.sender)
+                && !_ownsContract(addr)
+        ) {
             revert NotAuthorized(addr, msg.sender);
         }
         _;

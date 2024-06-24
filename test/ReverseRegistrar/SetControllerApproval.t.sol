@@ -10,11 +10,11 @@ contract SetControllerApproval is ReverseRegistrarBase {
         vm.assume(caller != owner && caller != address(0));
         vm.expectRevert(Ownable.Unauthorized.selector);
         reverse.setControllerApproval(caller, true);
-    } 
+    }
 
     function test_allowsTheOwner_toUpdateControllerApproval(address newController) public {
         vm.assume(newController != address(0));
-        
+
         vm.expectEmit(address(reverse));
         emit ReverseRegistrar.ControllerApprovalChanged(newController, true);
         vm.prank(owner);
@@ -27,4 +27,4 @@ contract SetControllerApproval is ReverseRegistrarBase {
         reverse.setControllerApproval(newController, false);
         assertFalse(reverse.controllers(newController));
     }
-} 
+}
