@@ -30,7 +30,7 @@ jobs:
 
       - name: Run Forge tests
         run: |
-          forge test -vvv
+          forge test -vvv --ffi
         id: test
 
       - name: Check formatting
