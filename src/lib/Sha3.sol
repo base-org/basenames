@@ -14,7 +14,7 @@ library Sha3 {
      */
     function hexAddress(address addr) internal pure returns (bytes32 ret) {
         assembly {
-            for { let i := 40 } gt(i, 0) {} {
+            for { let i := 40 } i {} {
                 i := sub(i, 1)
                 mstore8(i, byte(and(addr, 0xf), ALPHABET))
                 addr := shr(4, addr)
