@@ -12,10 +12,10 @@ import {IDiscountValidator} from "src/L2/interface/IDiscountValidator.sol";
 /// @author Coinbase (https://github.com/base-org/usernames)
 contract ERC1155DiscountValidator is IDiscountValidator {
     /// @notice The ERC1155 token contract to validate against.
-    IERC1155 token;
+    IERC1155 immutable token;
 
     /// @notice The ERC1155 token ID of the relevant NFT.
-    uint256 tokenId;
+    uint256 immutable tokenId;
 
     /// @notice ERC1155 Discount Validator constructor.
     ///
