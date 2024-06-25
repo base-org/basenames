@@ -13,7 +13,7 @@ import {NameEncoder} from "ens-contracts/utils/NameEncoder.sol";
 
 import "src/util/Constants.sol";
 
-contract DeployL2Resolver is Script {
+contract DeployRegistrarController is Script {
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         address deployerAddress = vm.addr(deployerPrivateKey);

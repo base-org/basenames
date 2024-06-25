@@ -366,7 +366,7 @@ contract BaseRegistrar is ERC721, Ownable {
 
     /// @notice Returns whether the given spender can transfer a given token ID.abi
     ///
-    /// @dev v2.1.3 version of _isApprovedOrOwner which calls ownerOf(tokenId) and takes grace period into consideration instead of ERC721.ownerOf(tokenId);
+    /// @dev v2.1.3 version of _isApprovedOrOwner which calls ownerOf(tokenId) instead of ERC721.ownerOf(tokenId);
     /// https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v2.1.3/contracts/token/ERC721/ERC721.sol#L187
     ///
     /// @param spender address of the spender to query
