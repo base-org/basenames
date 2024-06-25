@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity 0.8.23;
+pragma solidity ^0.8.23;
 
 import {Test, console} from "forge-std/Test.sol";
 import {L1Resolver} from "src/L1/L1Resolver.sol";
