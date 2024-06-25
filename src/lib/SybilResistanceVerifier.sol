@@ -23,10 +23,15 @@ library SybilResistanceVerifier {
     ///
     /// @dev The message hash should be dervied by: `keccak256(abi.encode(0x1900, trustedSignerAddress, discountClaimerAddress, expiry))`.
     ///
+    /// @param target The address of the on-chain signature verifier.
     /// @param claimer The address of the claimer.
     /// @param expires The date of signature expiry.
-    function _makeSignatureHash(address signer, address claimer, uint64 expires) internal pure returns (bytes32) {
-        return keccak256(abi.encodePacked(hex"1900", signer, claimer, expires));
+    function _makeSignatureHash(address target, address signer, address claimer, uint64 expires)
+        internal
+        pure
+        returns (bytes32)
+    {
+        return keccak256(abi.encodePacked(hex"1900", target, signer, claimer, expires));
     }
 
     /// @notice Verifies that the signature provided matches the expected signer.
@@ -44,7 +49,7 @@ library SybilResistanceVerifier {
 
         if (expectedClaimer != claimer) revert ClaimerAddressMismatch(expectedClaimer, claimer);
         if (expires < block.timestamp) revert SignatureExpired();
-        address recoveredSigner = ECDSA.recover(_makeSignatureHash(signer, claimer, expires), sig);
+        address recoveredSigner = ECDSA.recover(_makeSignatureHash(address(this), signer, claimer, expires), sig);
         return (recoveredSigner == signer);
     }
 }
