@@ -198,12 +198,10 @@ contract ReverseRegistrar is Ownable {
     ///
     /// @param addr The address to check.
     ///
-    /// @return `true` if `extcodesize` >  0, else `false`.
-    function _isContract(address addr) internal view returns (bool) {
-        uint32 size;
+    /// @return result `true` if `extcodesize` >  0, else `false`.
+    function _isContract(address addr) internal view returns (bool result) {
         assembly {
-            size := extcodesize(addr)
+            result := extcodesize(addr)
         }
-        return size > 0;
     }
 }
