@@ -33,8 +33,7 @@ library EDAPrice {
         // which would require secondsElapsed > int256.max, i.e. > 5.78e76 or 1.8e69 years
 
         int256 multiplier = FixedPointMathLib.powWad(int256(percentWadRemainingPerPeriod), int256(ratio));
-        uint256 price = FixedPointMathLib.mulWad(startPrice, uint256(multiplier));
-
+        uint256 price = (startPrice * uint256(multiplier)) / FixedPointMathLib.WAD;
         return price;
     }
 }
