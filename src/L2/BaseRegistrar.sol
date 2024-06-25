@@ -137,6 +137,14 @@ contract BaseRegistrar is ERC721, Ownable {
         _;
     }
 
+    /// @notice Decorator for determining if a name has expired.
+    ///
+    /// @param id The id being checked for expiry.
+    modifier onlyNonExpired(uint256 id) {
+        if (nameExpires[id] <= block.timestamp) revert Expired(id);
+        _;
+    }
+
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                        IMPLEMENTATION                      */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
@@ -234,8 +242,7 @@ contract BaseRegistrar is ERC721, Ownable {
     /// @param tokenId The id of the name to query the owner of.
     ///
     /// @return address The address currently marked as the owner of the given token ID.
-    function ownerOf(uint256 tokenId) public view override returns (address) {
-        if (nameExpires[tokenId] <= block.timestamp) revert Expired(tokenId);
+    function ownerOf(uint256 tokenId) public view override onlyNonExpired(tokenId) returns (address) {
         return super.ownerOf(tokenId);
     }
 
@@ -374,8 +381,13 @@ contract BaseRegistrar is ERC721, Ownable {
     ///
     /// @return `true` if msg.sender is approved for the given token ID, is an operator of the owner,
     ///         or is the owner of the token, else `false`.
-    function _isApprovedOrOwner(address spender, uint256 tokenId) internal view override returns (bool) {
-        address owner = ownerOf(tokenId);
-        return (spender == owner || getApproved(tokenId) == spender || isApprovedForAll(owner, spender));
+    function _isApprovedOrOwner(address spender, uint256 tokenId)
+        internal
+        view
+        override
+        onlyNonExpired(tokenId)
+        returns (bool)
+    {
+        return super._isApprovedOrOwner(spender, tokenId);
     }
 }
