@@ -12,4 +12,4 @@ bytes32 constant ADDR_REVERSE_NODE = 0x91d1777781884d03a6757a803996e38de2a42967f
 // @param GRACE_PERIOD the grace period for expired names
 uint256 constant GRACE_PERIOD = 90 days;
 // @param BASE_ETH_NAME The dnsName of "base.eth" returned by NameEncoder.dnsEncode("base.eth")
-bytes constant BASE_ETH_NAME = hex"04_62617365_03_657468_00";
+bytes constant BASE_ETH_NAME = hex"04626173650365746800";
