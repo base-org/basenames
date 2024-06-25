@@ -24,7 +24,6 @@ contract ExponentialPremiumFuzzTest is ExponentialPremiumOracleBase {
             assert(actualPremium <= startPremium);
         }
     }
-    
 
     function test_decayedPremium_alwaysDecreasing(uint256 elapsed1, uint256 elapsed2) public view {
         vm.assume(elapsed1 <= elapsed2);
@@ -35,6 +34,7 @@ contract ExponentialPremiumFuzzTest is ExponentialPremiumOracleBase {
 
         assert(premium1 >= premium2);
     }
+
     function test_decayedPremium_accuracy(uint256 elapsed) public {
         uint256 bound = 400 * 1 days;
         vm.assume(elapsed <= bound);
@@ -46,10 +46,9 @@ contract ExponentialPremiumFuzzTest is ExponentialPremiumOracleBase {
         uint256 result = oracle.decayedPremium(elapsed);
         bytes memory res = vm.ffi(input);
         uint256 expected = abi.decode(res, (uint256));
-        uint256 leftBound = (expected * (999)) / 1000; 
+        uint256 leftBound = (expected * (999)) / 1000;
         uint256 rightBound = (expected * (1001)) / 1000;
         bool withinBounds = (leftBound <= result && result <= rightBound); // Checking accuracy within 0.1 percent of the expected result
         assertTrue(withinBounds);
-
     }
 }
