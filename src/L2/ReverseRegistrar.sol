@@ -183,7 +183,7 @@ contract ReverseRegistrar is Ownable {
     /// @return `true` if the address returned from `Ownable:owner()` == msg.sender, else `false`.
     function _ownsContract(address addr) internal view returns (bool) {
         // Determine if a contract exists at `addr` and return early if not
-        if (!_isContract(addr)) {
+        if (addr.code.length == 0) {
             return false;
         }
         // If a contract does exist, try and call `Ownable.owner()`
@@ -192,18 +192,5 @@ contract ReverseRegistrar is Ownable {
         } catch {
             return false;
         }
-    }
-
-    /// @notice Check if the provided `addr` has a nonzero `extcodesize`.
-    ///
-    /// @param addr The address to check.
-    ///
-    /// @return `true` if `extcodesize` >  0, else `false`.
-    function _isContract(address addr) internal view returns (bool) {
-        uint32 size;
-        assembly {
-            size := extcodesize(addr)
-        }
-        return size > 0;
     }
 }
