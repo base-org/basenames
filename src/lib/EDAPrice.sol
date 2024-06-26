@@ -30,7 +30,7 @@ library EDAPrice {
 
         // percentWadRemainingPerPeriod can be safely cast because < 1e18
         // ratio can be safely cast because will not overflow unless ratio > int256.max,
-        // which would require secondsElapsed > int256.max, i.e. > 5.78e76 or 1.8e69 years
+        // which would require secondsElapsed > type(uint256).max, i.e. > 1.157e59 years
 
         int256 multiplier = FixedPointMathLib.powWad(int256(percentWadRemainingPerPeriod), int256(ratio));
         uint256 price = FixedPointMathLib.mulWad(startPrice, uint256(multiplier));
