@@ -22,6 +22,10 @@ jobs:
         with:
           python-version: '3.8'
 
+      - name: Install eth-abi
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install eth-abi
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
