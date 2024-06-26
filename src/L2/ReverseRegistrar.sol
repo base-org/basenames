@@ -94,11 +94,9 @@ contract ReverseRegistrar is Ownable {
     /// @notice ReverseRegistrar construction.
     ///
     /// @param registry_ The ENS registry, will be stored as `registry`.
-    /// @param controller The permissioned registrar controller that can set reverse records upon registration.
     /// @param owner_ The permissioned address initialized as the `owner` in the `Ownable` context.
-    constructor(ENS registry_, address controller, address owner_) {
+    constructor(ENS registry_, address owner_) {
         _initializeOwner(owner_);
-        controllers[controller] = true;
         registry = registry_;
     }
 

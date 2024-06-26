@@ -17,7 +17,9 @@ contract ReverseRegistrarBase is Test {
 
     function setUp() public {
         registry = new Registry(owner);
-        reverse = new ReverseRegistrar(ENS(address(registry)), controller, owner);
+        reverse = new ReverseRegistrar(ENS(address(registry)), owner);
+        vm.prank(owner);
+        reverse.setControllerApproval(controller, true);
         _registrySetup();
     }
 
