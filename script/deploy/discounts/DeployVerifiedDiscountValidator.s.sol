@@ -13,12 +13,8 @@ contract DeployVerifiedDiscountValidator is Script {
         address INDEXER = 0xd147a19c3B085Fb9B0c15D2EAAFC6CB086ea849B;
         vm.startBroadcast(deployerPrivateKey);
 
-        AttestationValidator validator = new AttestationValidator(
-            deployerAddr, 
-            TRUSTED_SIGNER_ADDRESS,
-            VERIFIED_ACCOUNT_SCHEMA,
-            INDEXER
-        );
+        AttestationValidator validator =
+            new AttestationValidator(deployerAddr, TRUSTED_SIGNER_ADDRESS, VERIFIED_ACCOUNT_SCHEMA, INDEXER);
         console.log("Discount Validator deployed to:");
         console.log(address(validator));
 

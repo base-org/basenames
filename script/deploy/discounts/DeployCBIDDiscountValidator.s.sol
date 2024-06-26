@@ -12,10 +12,7 @@ contract DeployCBIDDiscountValidator is Script {
 
         bytes32 ROOT = 0x06d3fa5259a86780f0f1d68a471fd5661caf196d5970ac4eda6abf068ba5659f;
 
-        CBIdDiscountValidator validator = new CBIdDiscountValidator(
-            deployerAddr,
-            ROOT
-        );
+        CBIdDiscountValidator validator = new CBIdDiscountValidator(deployerAddr, ROOT);
         console.log("Discount Validator deployed to:");
         console.log(address(validator));
 

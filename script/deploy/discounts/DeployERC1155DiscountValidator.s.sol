@@ -16,10 +16,7 @@ contract DeployERC1155DiscountValidator is Script {
         console.log("Mock ERC1155 token address:");
         console.log(address(token));
 
-        ERC1155DiscountValidator validator = new ERC1155DiscountValidator(
-            address(token),
-            1
-        );
+        ERC1155DiscountValidator validator = new ERC1155DiscountValidator(address(token), 1);
 
         console.log("Discount Validator deployed to:");
         console.log(address(validator));
