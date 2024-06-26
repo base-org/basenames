@@ -26,5 +26,4 @@ contract DecayedPremium is ExponentialPremiumOracleBase {
         uint256 actualPremium = oracle.decayedPremium(elapsed);
         assertEq(actualPremium, expectedPremium);
     }
-    
 }
