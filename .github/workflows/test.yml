@@ -17,6 +17,12 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-verison: '3.8'
+
+
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
