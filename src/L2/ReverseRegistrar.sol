@@ -105,7 +105,10 @@ contract ReverseRegistrar is Ownable {
         emit DefaultResolverChanged(defaultResolver);
     }
 
-    /// @notice Transfers ownership of the reverse ENS record for `msg.sender` to the provided `owner`.
+    /// @notice Transfers ownership of the reverse ENS records for `msg.sender` to the provided `owner`.
+    ///
+    /// @dev First claims the base-specific ENSIP-19 compliant reverse node, then claims and returns the
+    ///     `addr.reverse` node. 
     ///
     /// @param owner The address to set as the owner of the reverse record in ENS.
     ///
@@ -172,7 +175,7 @@ contract ReverseRegistrar is Ownable {
         return setNameForAddr(msg.sender, msg.sender, address(defaultResolver), name);
     }
 
-    /// @notice Sets the `name()` record for the reverse ENS record associated with the `addr` provided.
+    /// @notice Sets the `name()` record for the reverse ENS records associated with the `addr` provided.
     ///
     /// @dev Updates the resolver to a designated resolver. Only callable by `addr`'s `authroized` addresses.
     ///     Establishes both a vestigial `addr.reverse` node and an ENSIP-19 compliant chain-specific `chain.reverse` node.
