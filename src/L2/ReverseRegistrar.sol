@@ -5,7 +5,7 @@ import {ENS} from "ens-contracts/registry/ENS.sol";
 import {NameResolver} from "ens-contracts/resolvers/profiles/NameResolver.sol";
 import {Ownable} from "solady/auth/Ownable.sol";
 
-import {ADDR_REVERSE_NODE} from "src/util/Constants.sol";
+import {ADDR_REVERSE_NODE, BASE_REVERSE_NODE} from "src/util/Constants.sol";
 import {Sha3} from "src/lib/Sha3.sol";
 
 /// @title Reverse Registrar
@@ -49,6 +49,12 @@ contract ReverseRegistrar is Ownable {
     /// @param addr The address for which the the record was set.
     /// @param node  The namehashed node that was set as the reverse record.
     event ReverseClaimed(address indexed addr, bytes32 indexed node);
+
+    /// @notice Emitted upon successfully establishing a base-specific reverse record.
+    ///
+    /// @param addr The address for which the the record was set.
+    /// @param node  The namehashed node that was set as the base reverse record.
+    event BaseReverseClaimed(address indexed addr, bytes32 indexed node);
 
     /// @notice Emitted when the default Resolver is changed by the `owner`.
     ///
@@ -105,6 +111,7 @@ contract ReverseRegistrar is Ownable {
     ///
     /// @return The ENS node hash of the reverse record.
     function claim(address owner) public returns (bytes32) {
+        claimForBaseAddr(msg.sender, owner, address(defaultResolver));
         return claimForAddr(msg.sender, owner, address(defaultResolver));
     }
 
@@ -124,6 +131,24 @@ contract ReverseRegistrar is Ownable {
         emit ReverseClaimed(addr, reverseNode);
         registry.setSubnodeRecord(ADDR_REVERSE_NODE, labelHash, owner, resolver, 0);
         return reverseNode;
+    }
+
+    /// @notice Transfers ownership of the base-specific reverse ENS record for `addr` to the provided `owner`.
+    ///
+    /// @dev Restricted to only `authorized` owners/operators of `addr`.
+    ///     Emits `BaseReverseClaimed` after successfully transfering ownership of the reverse record.
+    ///
+    /// @param addr The reverse record to set.
+    /// @param owner The new owner of the reverse record in ENS.
+    /// @param resolver The address of the resolver to set.
+    ///
+    /// @return The ENS node hash of the base-specific reverse record.
+    function claimForBaseAddr(address addr, address owner, address resolver) public authorized(addr) returns (bytes32) {
+        bytes32 labelHash = Sha3.hexAddress(addr);
+        bytes32 baseReverseNode = keccak256(abi.encodePacked(BASE_REVERSE_NODE, labelHash));
+        emit BaseReverseClaimed(addr, baseReverseNode);
+        registry.setSubnodeRecord(BASE_REVERSE_NODE, labelHash, owner, resolver, 0);
+        return baseReverseNode;
     }
 
     /// @notice Transfers ownership and sets the resolver of the reverse ENS record for `addr` to the provided `owner`.
@@ -150,19 +175,24 @@ contract ReverseRegistrar is Ownable {
     /// @notice Sets the `name()` record for the reverse ENS record associated with the `addr` provided.
     ///
     /// @dev Updates the resolver to a designated resolver. Only callable by `addr`'s `authroized` addresses.
+    ///     Establishes both a vestigial `addr.reverse` node and an ENSIP-19 compliant chain-specific `chain.reverse` node.
     ///
     /// @param addr The reverse record to set.
     /// @param owner The owner of the reverse node.
     /// @param resolver The resolver of the reverse node.
     /// @param name The name to set for this address.
     ///
-    /// @return The ENS node hash of the reverse record.
+    /// @return The ENS node hash of the `addr.reverse` record.
     function setNameForAddr(address addr, address owner, address resolver, string memory name)
         public
         returns (bytes32)
     {
         bytes32 node_ = claimForAddr(addr, owner, resolver);
         NameResolver(resolver).setName(node_, name);
+
+        bytes32 baseNode_ = claimForBaseAddr(addr, owner, resolver);
+        NameResolver(resolver).setName(baseNode_, name);
+
         return node_;
     }
 
@@ -173,6 +203,17 @@ contract ReverseRegistrar is Ownable {
     /// @return The ENS node hash.
     function node(address addr) public pure returns (bytes32) {
         return keccak256(abi.encodePacked(ADDR_REVERSE_NODE, Sha3.hexAddress(addr)));
+    }
+
+    /// @notice Returns the base-specific node hash for a provided `addr`'s reverse records.
+    ///
+    /// @dev Compliant with ENSIP-19 for cross-chain reverse name resolution.
+    ///
+    /// @param addr The address to hash.
+    ///
+    /// @return The base-specific node hash.
+    function baseNode(address addr) public pure returns (bytes32) {
+        return keccak256(abi.encodePacked(BASE_REVERSE_NODE, Sha3.hexAddress(addr)));
     }
 
     /// @notice Allows this contract to check if msg.sender is the `Ownable:owner()` for `addr`.
