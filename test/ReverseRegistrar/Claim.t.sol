@@ -16,7 +16,7 @@ contract Claim is ReverseRegistrarBase {
 
         vm.prank(owner);
         reverse.setDefaultResolver(resolver);
-        
+
         vm.expectEmit(address(reverse));
         emit ReverseRegistrar.BaseReverseClaimed(user, baseReverseNode);
         vm.expectEmit(address(reverse));

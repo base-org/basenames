@@ -108,7 +108,7 @@ contract ReverseRegistrar is Ownable {
     /// @notice Transfers ownership of the reverse ENS records for `msg.sender` to the provided `owner`.
     ///
     /// @dev First claims the base-specific ENSIP-19 compliant reverse node, then claims and returns the
-    ///     `addr.reverse` node. 
+    ///     `addr.reverse` node.
     ///
     /// @param owner The address to set as the owner of the reverse record in ENS.
     ///
@@ -146,7 +146,11 @@ contract ReverseRegistrar is Ownable {
     /// @param resolver The address of the resolver to set.
     ///
     /// @return The ENS node hash of the base-specific reverse record.
-    function claimForBaseAddr(address addr, address owner, address resolver) public authorized(addr) returns (bytes32) {
+    function claimForBaseAddr(address addr, address owner, address resolver)
+        public
+        authorized(addr)
+        returns (bytes32)
+    {
         bytes32 labelHash = Sha3.hexAddress(addr);
         bytes32 baseReverseNode = keccak256(abi.encodePacked(BASE_REVERSE_NODE, labelHash));
         emit BaseReverseClaimed(addr, baseReverseNode);

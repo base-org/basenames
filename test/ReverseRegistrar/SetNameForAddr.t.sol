@@ -84,7 +84,7 @@ contract SetNameForAddr is ReverseRegistrarBase {
         emit ReverseRegistrar.BaseReverseClaimed(address(ownedContract), baseReverseNode);
         vm.prank(user);
         bytes32 returnedReverseNode = reverse.setNameForAddr(address(ownedContract), user, address(resolver), name);
-        
+
         assertTrue(reverseNode == returnedReverseNode);
         address retOwner = registry.owner(reverseNode);
         assertTrue(retOwner == user);
