@@ -9,7 +9,7 @@ contract BaseNode is ReverseRegistrarBase {
     function test_returnsExpectedNode(address addr) public view {
         bytes32 labelHash = Sha3.hexAddress(addr);
         bytes32 expectedNode = keccak256(abi.encodePacked(BASE_REVERSE_NODE, labelHash));
-        bytes32 retNode = reverse.node(addr);
+        bytes32 retNode = reverse.baseNode(addr);
         assertTrue(retNode == expectedNode);
     }
 }
