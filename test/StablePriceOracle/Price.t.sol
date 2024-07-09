@@ -7,7 +7,7 @@ import {IPriceOracle} from "src/L2/interface/IPriceOracle.sol";
 import {StablePriceOracleBase} from "./StablePriceOracleBase.t.sol";
 
 contract Price is StablePriceOracleBase {
-    uint256 duration = 365 days;
+    uint256 duration = 365.25 days;
 
     function test_price_calculatePrice_oneLetter() public view {
         IPriceOracle.Price memory price1 = stablePriceOracle.price("a", 0, duration);
