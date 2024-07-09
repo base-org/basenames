@@ -59,7 +59,7 @@ contract AttestationValidatorBase is Test {
     }
 
     function _getDefaultValidationData() internal virtual returns (bytes memory) {
-        bytes32 digest = SybilResistanceVerifier._makeSignatureHash(signer, user, expires);
+        bytes32 digest = SybilResistanceVerifier._makeSignatureHash(address(validator), signer, user, expires);
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(signerPk, digest);
         bytes memory sig = abi.encodePacked(r, s, v);
         return abi.encode(user, expires, sig);
