@@ -260,11 +260,13 @@ contract BaseRegistrar is ERC721, Ownable {
     ///
     /// @return The new expiry date.
     function renew(uint256 id, uint256 duration) external live onlyController returns (uint256) {
-        if (nameExpires[id] + GRACE_PERIOD < block.timestamp) revert NotRegisteredOrInGrace(id);
+        uint256 expires = nameExpires[id];
+        if (expires + GRACE_PERIOD < block.timestamp) revert NotRegisteredOrInGrace(id);
 
-        nameExpires[id] += duration;
-        emit NameRenewed(id, nameExpires[id]);
-        return nameExpires[id];
+        expires += duration;
+        nameExpires[id] = expires;
+        emit NameRenewed(id, expires);
+        return expires;
     }
 
     /// @notice Reclaim ownership of a name in ENS, if you own it in the registrar.
