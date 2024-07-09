@@ -432,8 +432,8 @@ contract RegistrarController is Ownable {
 
         _validatePayment(price);
 
-        _register(request);
         discountedRegistrants[msg.sender] = true;
+        _register(request);
 
         _refundExcessEth(price);
 
