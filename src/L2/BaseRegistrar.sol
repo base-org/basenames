@@ -29,7 +29,7 @@ contract BaseRegistrar is ERC721, Ownable {
     mapping(uint256 id => uint256 expiry) public nameExpires;
 
     /// @notice The Registry contract.
-    ENS public registry;
+    ENS public immutable registry;
 
     /// @notice The namehash of the TLD this registrar owns (eg, base.eth).
     bytes32 public immutable baseNode;
@@ -137,6 +137,14 @@ contract BaseRegistrar is ERC721, Ownable {
         _;
     }
 
+    /// @notice Decorator for determining if a name has expired.
+    ///
+    /// @param id The id being checked for expiry.
+    modifier onlyNonExpired(uint256 id) {
+        if (nameExpires[id] <= block.timestamp) revert Expired(id);
+        _;
+    }
+
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                        IMPLEMENTATION                      */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
@@ -234,8 +242,7 @@ contract BaseRegistrar is ERC721, Ownable {
     /// @param tokenId The id of the name to query the owner of.
     ///
     /// @return address The address currently marked as the owner of the given token ID.
-    function ownerOf(uint256 tokenId) public view override returns (address) {
-        if (nameExpires[tokenId] <= block.timestamp) revert Expired(tokenId);
+    function ownerOf(uint256 tokenId) public view override onlyNonExpired(tokenId) returns (address) {
         return super.ownerOf(tokenId);
     }
 
@@ -260,11 +267,13 @@ contract BaseRegistrar is ERC721, Ownable {
     ///
     /// @return The new expiry date.
     function renew(uint256 id, uint256 duration) external live onlyController returns (uint256) {
-        if (nameExpires[id] + GRACE_PERIOD < block.timestamp) revert NotRegisteredOrInGrace(id);
+        uint256 expires = nameExpires[id];
+        if (expires + GRACE_PERIOD < block.timestamp) revert NotRegisteredOrInGrace(id);
 
-        nameExpires[id] += duration;
-        emit NameRenewed(id, nameExpires[id]);
-        return nameExpires[id];
+        expires += duration;
+        nameExpires[id] = expires;
+        emit NameRenewed(id, expires);
+        return expires;
     }
 
     /// @notice Reclaim ownership of a name in ENS, if you own it in the registrar.
@@ -366,7 +375,7 @@ contract BaseRegistrar is ERC721, Ownable {
 
     /// @notice Returns whether the given spender can transfer a given token ID.abi
     ///
-    /// @dev v2.1.3 version of _isApprovedOrOwner which calls ownerOf(tokenId) and takes grace period into consideration instead of ERC721.ownerOf(tokenId);
+    /// @dev v2.1.3 version of _isApprovedOrOwner which calls ownerOf(tokenId) instead of ERC721.ownerOf(tokenId);
     /// https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v2.1.3/contracts/token/ERC721/ERC721.sol#L187
     ///
     /// @param spender address of the spender to query
@@ -374,8 +383,13 @@ contract BaseRegistrar is ERC721, Ownable {
     ///
     /// @return `true` if msg.sender is approved for the given token ID, is an operator of the owner,
     ///         or is the owner of the token, else `false`.
-    function _isApprovedOrOwner(address spender, uint256 tokenId) internal view override returns (bool) {
-        address owner = ownerOf(tokenId);
-        return (spender == owner || getApproved(tokenId) == spender || isApprovedForAll(owner, spender));
+    function _isApprovedOrOwner(address spender, uint256 tokenId)
+        internal
+        view
+        override
+        onlyNonExpired(tokenId)
+        returns (bool)
+    {
+        return super._isApprovedOrOwner(spender, tokenId);
     }
 }

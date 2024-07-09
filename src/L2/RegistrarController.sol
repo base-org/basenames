@@ -432,8 +432,8 @@ contract RegistrarController is Ownable {
 
         _validatePayment(price);
 
-        _register(request);
         discountedRegistrants[msg.sender] = true;
+        _register(request);
 
         _refundExcessEth(price);
 
@@ -443,8 +443,9 @@ contract RegistrarController is Ownable {
     /// @notice Allows a caller to renew a name for a specified duration.
     ///
     /// @dev This `payable` method must receive appropriate `msg.value` to pass `_validatePayment()`.
-    ///     The price for renewal never incorporates pricing `premium`. Use the `base` price returned by the `rentPrice`
-    ///     tuple to determine the price for calling this method.
+    ///     The price for renewal never incorporates pricing `premium`. This is because we only expect
+    ///     renewal on names that are not expired or are in the grace period. Use the `base` price returned
+    ///     by the `rentPrice` tuple to determine the price for calling this method.
     ///
     /// @param name The name that is being renewed.
     /// @param duration The duration to extend the expiry, in seconds.

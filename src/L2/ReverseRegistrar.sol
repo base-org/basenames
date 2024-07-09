@@ -24,6 +24,9 @@ contract ReverseRegistrar is Ownable {
     /// @notice The Registry contract.
     ENS public immutable registry;
 
+    /// @notice Permissioned controller contracts.
+    mapping(address controller => bool approved) public controllers;
+
     /// @notice The default resolver for setting Name resolution records.
     NameResolver public defaultResolver;
 
@@ -55,6 +58,12 @@ contract ReverseRegistrar is Ownable {
     /// @param resolver The address of the new Resolver.
     event DefaultResolverChanged(NameResolver indexed resolver);
 
+    /// @notice Emitted when a controller address approval status is changed by the `owner`.
+    ///
+    /// @param controller The address of the `controller`.
+    /// @param approved The new approval state for the `controller` address.
+    event ControllerApprovalChanged(address indexed controller, bool approved);
+
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                          MODIFIERS                         */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
@@ -63,12 +72,16 @@ contract ReverseRegistrar is Ownable {
     ///
     /// @dev A caller is authorized to set the record for `addr` if they are one of:
     ///     1. The `addr` is the sender
-    ///     2. The sender is an approved operator for `addr` on the registry
-    ///     3. The sender is `Ownable:ownerOf()` for `addr`
+    ///     2. The sender is an approved `controller`
+    ///     3. The sender is an approved operator for `addr` on the registry
+    ///     4. The sender is `Ownable:ownerOf()` for `addr`
     ///
     /// @param addr The `addr` that is being modified.
     modifier authorized(address addr) {
-        if (addr != msg.sender && !registry.isApprovedForAll(addr, msg.sender) && !_ownsContract(addr)) {
+        if (
+            addr != msg.sender && !controllers[msg.sender] && !registry.isApprovedForAll(addr, msg.sender)
+                && !_ownsContract(addr)
+        ) {
             revert NotAuthorized(addr, msg.sender);
         }
         _;
@@ -97,6 +110,16 @@ contract ReverseRegistrar is Ownable {
         if (address(resolver) == address(0)) revert NoZeroAddress();
         defaultResolver = NameResolver(resolver);
         emit DefaultResolverChanged(defaultResolver);
+    }
+
+    /// @notice Allows the owner to change the approval status of an address as a controller.
+    ///
+    /// @param controller The address of the controller.
+    /// @param approved Whether the controller has permissions to modify reverse records.
+    function setControllerApproval(address controller, bool approved) public onlyOwner {
+        if (controller == address(0)) revert NoZeroAddress();
+        controllers[controller] = approved;
+        emit ControllerApprovalChanged(controller, approved);
     }
 
     /// @notice Transfers ownership of the reverse ENS record for `msg.sender` to the provided `owner`.
@@ -183,7 +206,7 @@ contract ReverseRegistrar is Ownable {
     /// @return `true` if the address returned from `Ownable:owner()` == msg.sender, else `false`.
     function _ownsContract(address addr) internal view returns (bool) {
         // Determine if a contract exists at `addr` and return early if not
-        if (!_isContract(addr)) {
+        if (addr.code.length == 0) {
             return false;
         }
         // If a contract does exist, try and call `Ownable.owner()`
@@ -192,18 +215,5 @@ contract ReverseRegistrar is Ownable {
         } catch {
             return false;
         }
-    }
-
-    /// @notice Check if the provided `addr` has a nonzero `extcodesize`.
-    ///
-    /// @param addr The address to check.
-    ///
-    /// @return `true` if `extcodesize` >  0, else `false`.
-    function _isContract(address addr) internal view returns (bool) {
-        uint32 size;
-        assembly {
-            size := extcodesize(addr)
-        }
-        return size > 0;
     }
 }
