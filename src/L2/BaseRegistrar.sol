@@ -29,7 +29,7 @@ contract BaseRegistrar is ERC721, Ownable {
     mapping(uint256 id => uint256 expiry) public nameExpires;
 
     /// @notice The Registry contract.
-    ENS public registry;
+    ENS public immutable registry;
 
     /// @notice The namehash of the TLD this registrar owns (eg, base.eth).
     bytes32 public immutable baseNode;

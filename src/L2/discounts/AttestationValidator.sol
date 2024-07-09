@@ -22,7 +22,7 @@ contract AttestationValidator is Ownable, AttestationAccessControl, IDiscountVal
     address signer;
 
     /// @dev The EAS schema id for Coinbase Verified Accounts.
-    bytes32 schemaID;
+    bytes32 immutable schemaID;
 
     /// @notice Attestation Validator constructor
     ///
