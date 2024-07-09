@@ -27,7 +27,13 @@ contract DeployRegistrarController is Script {
         string memory rootName = ".basetest.eth";
 
         RegistrarController controller = new RegistrarController(
-            BaseRegistrar(base), IPriceOracle(oracle), IReverseRegistrar(reverse), deployerAddress, rootNode, rootName
+            BaseRegistrar(base),
+            IPriceOracle(oracle),
+            IReverseRegistrar(reverse),
+            deployerAddress,
+            rootNode,
+            rootName,
+            deployerAddress
         );
 
         console.log("RegistrarController deployed to:");
