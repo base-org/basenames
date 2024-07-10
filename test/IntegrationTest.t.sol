@@ -51,14 +51,13 @@ contract IntegrationTest is Test {
     bytes32 constant REVERSE_LABEL = 0xdec08c9dbbdd0890e300eb5062089b2d4b1c40e3673bbccb5423f7b37dcf9a9c;
     bytes32 constant ADDR_LABEL = 0xe5e14487b78f85faa6e1808e89246cf57dd34831548ff2e6097380d98db2504a;
 
-
     function setUp() public {
         owner = makeAddr("owner");
         signer = makeAddr("signer");
         alice = makeAddr("alice");
 
         registry = new Registry(owner);
-        reverseRegistrar = new ReverseRegistrar(registry, owner);        
+        reverseRegistrar = new ReverseRegistrar(registry, owner);
 
         uint256[] memory rentPrices = new uint256[](6);
         rentPrices[0] = 317_097_919_837;
@@ -72,7 +71,7 @@ contract IntegrationTest is Test {
         baseRegistrar = new BaseRegistrar(registry, owner, BASE_ETH_NODE);
 
         _establishNamespaces();
-        
+
         registrarController = new RegistrarController(
             baseRegistrar,
             exponentialPremiumPriceOracle,
@@ -88,12 +87,7 @@ contract IntegrationTest is Test {
         vm.prank(owner);
         reverseRegistrar.setControllerApproval(address(registrarController), true);
 
-        defaultL2Resolver = new L2Resolver(
-            registry,
-            address(registrarController),
-            address(reverseRegistrar),
-            owner
-        );
+        defaultL2Resolver = new L2Resolver(registry, address(registrarController), address(reverseRegistrar), owner);
 
         vm.prank(owner);
         reverseRegistrar.setDefaultResolver(address(defaultL2Resolver));
@@ -105,12 +99,12 @@ contract IntegrationTest is Test {
     }
 
     function _establishNamespaces() internal {
-        //  establish base.eth namespace and assign ownership of base.eth to the registrar controller 
+        //  establish base.eth namespace and assign ownership of base.eth to the registrar controller
         vm.startPrank(owner);
         registry.setSubnodeOwner(ROOT_NODE, ETH_LABEL, owner);
         registry.setSubnodeOwner(ETH_NODE, BASE_LABEL, address(baseRegistrar));
 
-        // establish addr.reverse namespace and assign ownership of addr.reverse to the reverse registrar 
+        // establish addr.reverse namespace and assign ownership of addr.reverse to the reverse registrar
         registry.setSubnodeOwner(ROOT_NODE, REVERSE_LABEL, owner);
         registry.setSubnodeOwner(REVERSE_NODE, ADDR_LABEL, address(reverseRegistrar));
         vm.stopPrank();
@@ -119,14 +113,13 @@ contract IntegrationTest is Test {
     function test_integration_register() public {
         vm.stopPrank();
         vm.startPrank(alice);
-        
 
         string memory name = "alice";
         uint256 duration = 90 days;
 
         uint256 registerPrice = registrarController.registerPrice(name, duration);
         vm.deal(alice, registerPrice);
-        
+
         RegistrarController.RegisterRequest memory request = RegistrarController.RegisterRequest({
             name: name,
             owner: alice,
