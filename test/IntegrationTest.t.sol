@@ -31,6 +31,7 @@ contract IntegrationTest is Test {
     address owner;
     address signer;
     address alice;
+    address payments;
 
     L1Resolver l1Resolver;
 
@@ -55,6 +56,7 @@ contract IntegrationTest is Test {
         owner = makeAddr("owner");
         signer = makeAddr("signer");
         alice = makeAddr("alice");
+        payments = makeAddr("payments");
 
         registry = new Registry(owner);
         reverseRegistrar = new ReverseRegistrar(registry, owner);
@@ -78,7 +80,8 @@ contract IntegrationTest is Test {
             IReverseRegistrar(address(reverseRegistrar)),
             owner,
             BASE_ETH_NODE,
-            ".base.eth"
+            ".base.eth",
+            payments
         );
 
         vm.prank(owner);
