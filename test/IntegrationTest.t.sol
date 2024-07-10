@@ -79,11 +79,14 @@ contract IntegrationTest is Test {
             IReverseRegistrar(address(reverseRegistrar)),
             owner,
             BASE_ETH_NODE,
-            "base.eth"
+            ".base.eth"
         );
 
         vm.prank(owner);
         baseRegistrar.addController(address(registrarController));
+
+        vm.prank(owner);
+        reverseRegistrar.setControllerApproval(address(registrarController), true);
 
         defaultL2Resolver = new L2Resolver(
             registry,
