@@ -80,6 +80,9 @@ contract RegistrarController is Ownable {
     /// @notice The name for which this registration adds subdomains for, i.e. ".base.eth".
     string public rootName;
 
+    /// @notice The address that will receive ETH funds upon `withdraw()` being called.
+    address public paymentReceiver;
+
     /// @notice Each discount is stored against a unique 32-byte identifier, i.e. keccak256("test.discount.validator").
     mapping(bytes32 key => DiscountDetails details) public discounts;
 
@@ -137,6 +140,9 @@ contract RegistrarController is Ownable {
     /// @param key The discount being set.
     error InvalidDiscountAmount(bytes32 key);
 
+    /// @notice Thrown when the payment receiver is being set to address(0).
+    error InvalidPaymentReceiver();
+
     /// @notice Thrown when the discount validator is being set to address(0).
     ///
     /// @param key The discount being set.
@@ -176,6 +182,11 @@ contract RegistrarController is Ownable {
     /// @param label The hashed label of the name.
     /// @param expires The date that the renewed name expires.
     event NameRenewed(string name, bytes32 indexed label, uint256 expires);
+
+    /// @notice Emitted when the payment receiver is updated.
+    ///
+    /// @param newPaymentReceiver The address of the new payment receiver.
+    event PayemntReceiverUpdated(address newPaymentReceiver);
 
     /// @notice Emitted when the price oracle is updated.
     ///
@@ -260,13 +271,15 @@ contract RegistrarController is Ownable {
         IReverseRegistrar reverseRegistrar_,
         address owner_,
         bytes32 rootNode_,
-        string memory rootName_
+        string memory rootName_,
+        address paymentReceiver_
     ) {
         base = base_;
         prices = prices_;
         reverseRegistrar = reverseRegistrar_;
         rootNode = rootNode_;
         rootName = rootName_;
+        paymentReceiver = paymentReceiver_;
         _initializeOwner(owner_);
         reverseRegistrar.claim(owner_);
     }
@@ -306,6 +319,17 @@ contract RegistrarController is Ownable {
     function setReverseRegistrar(IReverseRegistrar reverse_) external onlyOwner {
         reverseRegistrar = reverse_;
         emit ReverseRegistrarUpdated(address(reverse_));
+    }
+
+    /// @notice Allows the `owner` to set the reverse registrar contract.
+    ///
+    /// @dev Emits `ReverseRegistrarUpdated` after setting the `paymentReceiver` address.
+    ///
+    /// @param paymentReceiver_ The new payment receiver address.
+    function setPaymentReceiver(address paymentReceiver_) external onlyOwner {
+        if (paymentReceiver_ == address(0)) revert InvalidPaymentReceiver();
+        paymentReceiver = paymentReceiver_;
+        emit PayemntReceiverUpdated(paymentReceiver_);
     }
 
     /// @notice Checks whether any of the provided addresses have registered with a discount.
@@ -432,8 +456,8 @@ contract RegistrarController is Ownable {
 
         _validatePayment(price);
 
-        _register(request);
         discountedRegistrants[msg.sender] = true;
+        _register(request);
 
         _refundExcessEth(price);
 
@@ -443,8 +467,9 @@ contract RegistrarController is Ownable {
     /// @notice Allows a caller to renew a name for a specified duration.
     ///
     /// @dev This `payable` method must receive appropriate `msg.value` to pass `_validatePayment()`.
-    ///     The price for renewal never incorporates pricing `premium`. Use the `base` price returned by the `rentPrice`
-    ///     tuple to determine the price for calling this method.
+    ///     The price for renewal never incorporates pricing `premium`. This is because we only expect
+    ///     renewal on names that are not expired or are in the grace period. Use the `base` price returned
+    ///     by the `rentPrice` tuple to determine the price for calling this method.
     ///
     /// @param name The name that is being renewed.
     /// @param duration The duration to extend the expiry, in seconds.
@@ -542,9 +567,9 @@ contract RegistrarController is Ownable {
         active ? activeDiscounts.add(key) : activeDiscounts.remove(key);
     }
 
-    /// @notice Allows anyone to withdraw the eth accumulated on this contract back to the `owner`.
+    /// @notice Allows anyone to withdraw the eth accumulated on this contract back to the `paymentReceiver`.
     function withdrawETH() public {
-        (bool sent,) = payable(owner()).call{value: (address(this).balance)}("");
+        (bool sent,) = payable(paymentReceiver).call{value: (address(this).balance)}("");
         if (!sent) revert TransferFailed();
     }
 

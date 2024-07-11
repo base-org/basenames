@@ -16,7 +16,7 @@ contract ExponentialPremiumOracleBase is Test {
     uint256 rent10;
 
     uint256 startPremium = 1e18;
-    uint256 totalDays = 365 days;
+    uint256 totalDays = 21;
 
     function setUp() public {
         uint256[] memory rentPrices = new uint256[](6);

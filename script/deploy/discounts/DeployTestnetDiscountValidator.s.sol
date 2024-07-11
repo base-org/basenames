@@ -4,7 +4,7 @@ pragma solidity ^0.8.23;
 import "forge-std/Script.sol";
 import {TestnetDiscountValidator} from "test/mocks/TestnetDiscountValidator.sol";
 
-contract DeployRegistry is Script {
+contract DeployTestnetDiscountValidator is Script {
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);

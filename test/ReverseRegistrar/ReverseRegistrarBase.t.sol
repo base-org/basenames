@@ -10,6 +10,7 @@ import {ETH_NODE, REVERSE_NODE} from "src/util/Constants.sol";
 contract ReverseRegistrarBase is Test {
     address public owner = makeAddr("owner");
     address public user = makeAddr("user");
+    address public controller = makeAddr("controller");
 
     Registry public registry;
     ReverseRegistrar public reverse;
@@ -17,6 +18,8 @@ contract ReverseRegistrarBase is Test {
     function setUp() public {
         registry = new Registry(owner);
         reverse = new ReverseRegistrar(ENS(address(registry)), owner);
+        vm.prank(owner);
+        reverse.setControllerApproval(controller, true);
         _registrySetup();
     }
 
@@ -39,5 +42,6 @@ contract ReverseRegistrarBase is Test {
     function test_constructor() public view {
         assertTrue(reverse.owner() == owner);
         assertTrue(address(reverse.registry()) == address(registry));
+        assertTrue(reverse.controllers(controller));
     }
 }

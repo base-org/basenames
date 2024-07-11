@@ -61,7 +61,7 @@ contract IsValidDiscountRegistration is AttestationValidatorBase {
     function test_returnsFalse_whenTheExpectedSignerMismatches(uint256 pk) public view {
         vm.assume(pk != signerPk && pk != 0 && pk < type(uint128).max);
         address badSigner = vm.addr(pk);
-        bytes32 digest = SybilResistanceVerifier._makeSignatureHash(badSigner, user, expires);
+        bytes32 digest = SybilResistanceVerifier._makeSignatureHash(address(validator), badSigner, user, expires);
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(pk, digest);
         bytes memory sig = abi.encodePacked(r, s, v);
         bytes memory badSignerValidationData = abi.encode(user, expires, sig);

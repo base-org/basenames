@@ -29,6 +29,7 @@ contract RegistrarControllerBase is Test {
 
     address owner = makeAddr("owner");
     address user = makeAddr("user");
+    address payments = makeAddr("payments");
 
     bytes32 public rootNode = BASE_ETH_NODE;
     string public rootName = ".base.eth";
@@ -59,7 +60,8 @@ contract RegistrarControllerBase is Test {
             IReverseRegistrar(address(reverse)),
             owner,
             rootNode,
-            rootName
+            rootName,
+            payments
         );
     }
 
