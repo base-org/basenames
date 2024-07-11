@@ -5,7 +5,6 @@ import "forge-std/Script.sol";
 import "src/L2/discounts/CBIdDiscountValidator.sol";
 
 contract SetCBIdTreeRoot is Script {
-
     bytes32 root = 0x8cbc28e840d1cd2accddec6592a4bffce2ca38c6c559c252504f342dd46acbb6;
 
     function run() public {
