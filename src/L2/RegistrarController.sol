@@ -383,7 +383,7 @@ contract RegistrarController is Ownable {
     /// @return price The `Price` tuple containing the base and premium prices respectively, denominated in wei.
     function rentPrice(string memory name, uint256 duration) public view returns (IPriceOracle.Price memory price) {
         bytes32 label = keccak256(bytes(name));
-        price = prices.price(name, _getPremium(uint256(label)), duration);
+        price = prices.price(name, _getExpiry(uint256(label)), duration);
     }
 
     /// @notice Checks the register price for a provided `name` and `duration`.
@@ -515,7 +515,7 @@ contract RegistrarController is Ownable {
     ///     names. Use the `launchTime` to establish a premium price around the actual launch time.
     ///
     /// @param tokenId The ID of the token to check for expiry.
-    function _getPremium(uint256 tokenId) internal view returns (uint256 expires) {
+    function _getExpiry(uint256 tokenId) internal view returns (uint256 expires) {
         expires = base.nameExpires(tokenId);
         if (expires == 0) {
             expires = launchTime;
