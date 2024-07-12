@@ -17,7 +17,6 @@ import {MockDiscountValidator} from "test/mocks/MockDiscountValidator.sol";
 import {MockPublicResolver} from "test/mocks/MockPublicResolver.sol";
 import {BASE_ETH_NODE, REVERSE_NODE} from "src/util/Constants.sol";
 
-
 contract EARegistrarControllerBase is Test {
     EARegistrarController public controller;
     MockBaseRegistrar public base;
@@ -84,7 +83,12 @@ contract EARegistrarControllerBase is Test {
         });
     }
 
-    function _getDefaultRegisterRequest() internal view virtual returns (EARegistrarController.RegisterRequest memory) {
+    function _getDefaultRegisterRequest()
+        internal
+        view
+        virtual
+        returns (EARegistrarController.RegisterRequest memory)
+    {
         return EARegistrarController.RegisterRequest({
             name: name,
             owner: user,

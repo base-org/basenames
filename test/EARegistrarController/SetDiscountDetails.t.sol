@@ -24,7 +24,9 @@ contract SetDiscountDetails is EARegistrarControllerBase {
     function test_reverts_ifTheDiscounValidatorIsInvalid() public {
         EARegistrarController.DiscountDetails memory noValidator = _getDefaultDiscount();
         noValidator.discountValidator = address(0);
-        vm.expectRevert(abi.encodeWithSelector(EARegistrarController.InvalidValidator.selector, discountKey, address(0)));
+        vm.expectRevert(
+            abi.encodeWithSelector(EARegistrarController.InvalidValidator.selector, discountKey, address(0))
+        );
         vm.prank(owner);
         controller.setDiscountDetails(noValidator);
     }
