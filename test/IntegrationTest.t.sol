@@ -110,6 +110,8 @@ contract IntegrationTest is Test {
         // establish addr.reverse namespace and assign ownership of addr.reverse to the reverse registrar
         registry.setSubnodeOwner(ROOT_NODE, REVERSE_LABEL, owner);
         registry.setSubnodeOwner(REVERSE_NODE, ADDR_LABEL, address(reverseRegistrar));
+        // establish 80002105.reverse namespace and assign ownership to the reverse registrar
+        registry.setSubnodeOwner(REVERSE_NODE, keccak256("80002105"), address(reverseRegistrar));
         vm.stopPrank();
     }
 
