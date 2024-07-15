@@ -28,8 +28,8 @@ library SignatureVerifier {
     /// @return result The `result` decoded from `response`.
     function verify(bytes calldata request, bytes calldata response) internal view returns (address, bytes memory) {
         (bytes memory result, uint64 expires, bytes memory sig) = abi.decode(response, (bytes, uint64, bytes));
-        address signer = ECDSA.recover(makeSignatureHash(address(this), expires, request, result), sig);
         if (expires < block.timestamp) revert SignatureExpired();
+        address signer = ECDSA.recover(makeSignatureHash(address(this), expires, request, result), sig);
         return (signer, result);
     }
 }

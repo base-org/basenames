@@ -65,4 +65,19 @@ contract ClaimForAddr is ReverseRegistrarBase {
         address retResolver = registry.resolver(reverseNode);
         assertTrue(retResolver == resolver);
     }
+
+    function test_allowsController_toClaimForAddr_forUserAddress() public {
+        bytes32 labelHash = Sha3.hexAddress(user);
+        bytes32 reverseNode = keccak256(abi.encodePacked(ADDR_REVERSE_NODE, labelHash));
+
+        vm.expectEmit(address(reverse));
+        emit ReverseRegistrar.ReverseClaimed(user, reverseNode);
+        vm.prank(controller);
+        bytes32 returnedReverseNode = reverse.claimForAddr(user, user, resolver);
+        assertTrue(reverseNode == returnedReverseNode);
+        address retOwner = registry.owner(reverseNode);
+        assertTrue(retOwner == user);
+        address retResolver = registry.resolver(reverseNode);
+        assertTrue(retResolver == resolver);
+    }
 }

@@ -1,16 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ~0.8.17;
 
-import "./StablePriceOracle.sol";
-import {GRACE_PERIOD} from "src/util/Constants.sol";
+import {FixedPointMathLib} from "solady/utils/FixedPointMathLib.sol";
+
 import {EDAPrice} from "src/lib/EDAPrice.sol";
-import "solady/utils/FixedPointMathLib.sol";
-import {Test, console} from "forge-std/Test.sol";
+import {GRACE_PERIOD} from "src/util/Constants.sol";
+import {StablePriceOracle} from "src/L2/StablePriceOracle.sol";
 
 contract ExponentialPremiumPriceOracle is StablePriceOracle {
     uint256 public immutable startPremium;
     uint256 public immutable endValue;
-    uint256 constant PRECISION = 1e18;
 
     constructor(uint256[] memory rentPrices, uint256 startPremium_, uint256 totalDays) StablePriceOracle(rentPrices) {
         startPremium = startPremium_;

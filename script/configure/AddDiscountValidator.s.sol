@@ -10,12 +10,12 @@ contract AddDiscountValidator is Script {
         vm.startBroadcast(deployerPrivateKey);
 
         ////////////////////////////////////////////////
-        bytes32 key = keccak256("testnet.discount.validator");
+        bytes32 key = keccak256("erc1155.discount.validator");
         RegistrarController.DiscountDetails memory details = RegistrarController.DiscountDetails({
             active: true,
-            discountValidator: vm.envAddress("DISCOUNT_VALIDATOR"),
+            discountValidator: vm.envAddress("ERC1155_DISCOUNT_VALIDATOR"),
             key: key,
-            discount: 10 ether
+            discount: 0.001 ether
         });
         ////////////////////////////////////////////////
 
