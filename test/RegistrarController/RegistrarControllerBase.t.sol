@@ -43,6 +43,9 @@ contract RegistrarControllerBase is Test {
     uint256 discountAmount = 0.1 ether;
     uint256 duration = 365 days;
 
+    uint256 deployTime = 1720000000; // July 3, 2024
+    uint256 launchTime = 1720800000; // July 12, 2024
+
     function setUp() public {
         base = new MockBaseRegistrar();
         reverse = new MockReverseRegistrar();
@@ -53,6 +56,7 @@ contract RegistrarControllerBase is Test {
 
         _establishNamespace();
 
+        vm.warp(deployTime);
         vm.prank(owner);
         controller = new RegistrarController(
             BaseRegistrar(address(base)),

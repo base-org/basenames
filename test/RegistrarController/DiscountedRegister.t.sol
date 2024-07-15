@@ -79,12 +79,12 @@ contract DiscountedRegister is RegistrarControllerBase {
         vm.deal(user, 1 ether);
         vm.prank(owner);
         controller.setDiscountDetails(_getDefaultDiscount());
-        uint256 price = controller.discountedRegisterPrice(name, duration, discountKey);
         validator.setReturnValue(true);
         base.setAvailable(uint256(nameLabel), true);
         RegistrarController.RegisterRequest memory request = _getDefaultRegisterRequest();
         uint256 expires = block.timestamp + request.duration;
         base.setNameExpires(uint256(nameLabel), expires);
+        uint256 price = controller.discountedRegisterPrice(name, duration, discountKey);
 
         vm.expectEmit(address(controller));
         emit RegistrarController.ETHPaymentProcessed(user, price);
@@ -108,12 +108,12 @@ contract DiscountedRegister is RegistrarControllerBase {
         vm.deal(user, 1 ether);
         vm.prank(owner);
         controller.setDiscountDetails(_getDefaultDiscount());
-        uint256 price = controller.discountedRegisterPrice(name, duration, discountKey);
         validator.setReturnValue(true);
         base.setAvailable(uint256(nameLabel), true);
         RegistrarController.RegisterRequest memory request = _getDefaultRegisterRequest();
         uint256 expires = block.timestamp + request.duration;
         base.setNameExpires(uint256(nameLabel), expires);
+        uint256 price = controller.discountedRegisterPrice(name, duration, discountKey);
 
         vm.prank(user);
         controller.discountedRegister{value: price + 1}(request, discountKey, "");
@@ -126,12 +126,13 @@ contract DiscountedRegister is RegistrarControllerBase {
         vm.deal(user, 1 ether);
         vm.prank(owner);
         controller.setDiscountDetails(_getDefaultDiscount());
-        uint256 price = controller.discountedRegisterPrice(name, duration, discountKey);
         validator.setReturnValue(true);
         base.setAvailable(uint256(nameLabel), true);
         RegistrarController.RegisterRequest memory request = _getDefaultRegisterRequest();
         uint256 expires = block.timestamp + request.duration;
         base.setNameExpires(uint256(nameLabel), expires);
+        uint256 price = controller.discountedRegisterPrice(name, duration, discountKey);
+
         vm.prank(user);
         controller.discountedRegister{value: price}(request, discountKey, "");
 

@@ -83,6 +83,9 @@ contract RegistrarController is Ownable {
     /// @notice The address that will receive ETH funds upon `withdraw()` being called.
     address public paymentReceiver;
 
+    /// @notice The timestamp of "go-live". Used for setting at-launch pricing premium.
+    uint256 public launchTime;
+
     /// @notice Each discount is stored against a unique 32-byte identifier, i.e. keccak256("test.discount.validator").
     mapping(bytes32 key => DiscountDetails details) public discounts;
 
@@ -321,6 +324,13 @@ contract RegistrarController is Ownable {
         emit ReverseRegistrarUpdated(address(reverse_));
     }
 
+    /// @notice Allows the `owner` to set the stored `launchTime`.
+    ///
+    /// @param launchTime_ The new launch time timestamp.
+    function setLaunchTime(uint256 launchTime_) external onlyOwner {
+        launchTime = launchTime_;
+    }
+
     /// @notice Allows the `owner` to set the reverse registrar contract.
     ///
     /// @dev Emits `ReverseRegistrarUpdated` after setting the `paymentReceiver` address.
@@ -373,7 +383,7 @@ contract RegistrarController is Ownable {
     /// @return price The `Price` tuple containing the base and premium prices respectively, denominated in wei.
     function rentPrice(string memory name, uint256 duration) public view returns (IPriceOracle.Price memory price) {
         bytes32 label = keccak256(bytes(name));
-        price = prices.price(name, base.nameExpires(uint256(label)), duration);
+        price = prices.price(name, _getExpiry(uint256(label)), duration);
     }
 
     /// @notice Checks the register price for a provided `name` and `duration`.
@@ -497,6 +507,19 @@ contract RegistrarController is Ownable {
             revert InsufficientValue();
         }
         emit ETHPaymentProcessed(msg.sender, price);
+    }
+
+    /// @notice Helper for deciding whether to include a launch-premium.
+    ///
+    /// @dev If the token returns a `0` expiry time, it hasn't been registered before. On launch, this will be true for all
+    ///     names. Use the `launchTime` to establish a premium price around the actual launch time.
+    ///
+    /// @param tokenId The ID of the token to check for expiry.
+    function _getExpiry(uint256 tokenId) internal view returns (uint256 expires) {
+        expires = base.nameExpires(tokenId);
+        if (expires == 0) {
+            expires = launchTime;
+        }
     }
 
     /// @notice Shared registartion logic for both `register()` and `discountedRegister()`.

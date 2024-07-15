@@ -11,6 +11,16 @@ contract RentPrice is RegistrarControllerBase {
         assertEq(retPrices.premium, prices.DEFAULT_PERMIUM_WEI());
     }
 
+    function test_returnsPremium_ifTimeIsNearLaunchTime() public {
+        vm.prank(owner);
+        controller.setLaunchTime(launchTime);
+
+        vm.warp(launchTime + 1);
+        IPriceOracle.Price memory retPrices = controller.rentPrice(name, 0);
+        assertEq(retPrices.base, prices.DEFAULT_BASE_WEI());
+        assertEq(retPrices.premium, prices.DEFAULT_INCLUDED_PREMIUM());
+    }
+
     function test_fuzz_returnsPrice_fromPricingOracle(uint256 fuzzBase, uint256 fuzzPremium) public {
         vm.assume(fuzzBase != 0 && fuzzBase < type(uint128).max);
         vm.assume(fuzzPremium < type(uint128).max);

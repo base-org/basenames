@@ -50,10 +50,10 @@ contract Register is RegistrarControllerBase {
         vm.deal(user, 1 ether);
         RegistrarController.RegisterRequest memory request = _getDefaultRegisterRequest();
 
-        uint256 price = controller.registerPrice(request.name, request.duration);
         base.setAvailable(uint256(nameLabel), true);
         uint256 expires = block.timestamp + request.duration;
         base.setNameExpires(uint256(nameLabel), expires);
+        uint256 price = controller.registerPrice(request.name, request.duration);
 
         vm.expectEmit(address(controller));
         emit RegistrarController.ETHPaymentProcessed(user, price);
@@ -72,10 +72,10 @@ contract Register is RegistrarControllerBase {
         vm.deal(user, 1 ether);
         RegistrarController.RegisterRequest memory request = _getDefaultRegisterRequest();
 
-        uint256 price = controller.registerPrice(request.name, request.duration);
         base.setAvailable(uint256(nameLabel), true);
         uint256 expires = block.timestamp + request.duration;
         base.setNameExpires(uint256(nameLabel), expires);
+        uint256 price = controller.registerPrice(request.name, request.duration);
 
         vm.prank(user);
         controller.register{value: price + 1}(request);
