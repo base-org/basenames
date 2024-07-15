@@ -118,12 +118,6 @@ contract ReverseRegistrar is Ownable {
         emit DefaultResolverChanged(defaultResolver);
     }
 
-<<<<<<< HEAD
-    /// @notice Transfers ownership of the reverse ENS records for `msg.sender` to the provided `owner`.
-    ///
-    /// @dev First claims the base-specific ENSIP-19 compliant reverse node, then claims and returns the
-    ///     `addr.reverse` node.
-=======
     /// @notice Allows the owner to change the approval status of an address as a controller.
     ///
     /// @param controller The address of the controller.
@@ -135,7 +129,6 @@ contract ReverseRegistrar is Ownable {
     }
 
     /// @notice Transfers ownership of the reverse ENS record for `msg.sender` to the provided `owner`.
->>>>>>> main
     ///
     /// @param owner The address to set as the owner of the reverse record in ENS.
     ///
