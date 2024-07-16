@@ -1,0 +1,35 @@
+name: Slither Analysis
+# Config File for Public Github Repos
+## Private Github needs External Action support, this will not work in Private Github
+on:
+  # Only run this action on pushes / pull requests to main branch
+  push:
+    branches: [ main, slither-action ]
+  pull_request:
+    branches: [ main, slither-action ]
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Slither
+        uses: crytic/slither-action@v0.4.0
+        id: slither
+        # continue-on-error: true
+        with:
+          sarif: results.sarif
+          # Don't fail so that SARIF step still works
+          fail-on: none
+          # advanced: this can be set by Slither config file by using the next line instead
+          # fail-on: config
+
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ${{ steps.slither.outputs.sarif }}
+
+# Set GH_TOKEN permissions to be as restricted as possible
+# security-events must be set to write for the SARIF upload step
+permissions:
+  security-events: write
