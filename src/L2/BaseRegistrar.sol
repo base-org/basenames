@@ -308,12 +308,12 @@ contract BaseRegistrar is ERC721, Ownable {
 
     /// @dev Returns the token collection name.
     function name() public pure override returns (string memory) {
-        return "";
+        return "Basenames";
     }
 
     /// @dev Returns the token collection symbol.
     function symbol() public pure override returns (string memory) {
-        return "";
+        return "BASENAME";
     }
 
     /// @dev Returns the Uniform Resource Identifier (URI) for token `id`.

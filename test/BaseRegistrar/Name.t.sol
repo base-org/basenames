@@ -6,7 +6,7 @@ import {BaseRegistrarBase} from "./BaseRegistrarBase.t.sol";
 
 contract Name is BaseRegistrarBase {
     function test_nameIsSetAsExpected() public view {
-        string memory expectedName = "";
+        string memory expectedName = "Basenames";
         assertEq(keccak256(bytes(baseRegistrar.name())), keccak256(bytes(expectedName)));
     }
 }
