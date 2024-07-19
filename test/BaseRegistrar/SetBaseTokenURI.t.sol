@@ -8,6 +8,7 @@ import {LibString} from "solady/utils/LibString.sol";
 
 contract SetBaseTokenURI is BaseRegistrarBase {
     using LibString for uint256;
+
     string public newBaseURI = "https://newurl.org/";
 
     function test_allowsTheOwnerToSetTheBaseURI() public {
