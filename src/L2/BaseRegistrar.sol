@@ -334,8 +334,8 @@ contract BaseRegistrar is ERC721, Ownable {
     /// @dev Reverts if the `tokenId` is expired or un-owned.
     ///
     /// @param tokenId The token for which to return the metadata uri.
-    /// 
-    /// @return The URI for the specified `tokenId`. 
+    ///
+    /// @return The URI for the specified `tokenId`.
     function tokenURI(uint256 tokenId) public view override onlyNonExpired(tokenId) returns (string memory) {
         return bytes(baseURI).length > 0 ? string.concat(baseURI, tokenId.toString()) : "";
     }
