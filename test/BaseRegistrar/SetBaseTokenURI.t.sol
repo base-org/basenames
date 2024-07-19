@@ -14,9 +14,14 @@ contract SetBaseTokenURI is BaseRegistrarBase {
     function test_allowsTheOwnerToSetTheBaseURI() public {
         vm.prank(owner);
         baseRegistrar.setBaseTokenURI(newBaseURI);
-        uint256 tokenID = 1;
-        string memory returnedURI = baseRegistrar.tokenURI(1);
-        string memory expectedURI = string.concat(newBaseURI, tokenID.toString());
+
+        _registrationSetup();
+        vm.warp(blockTimestamp);
+        vm.prank(controller);
+        baseRegistrar.register(id, user, duration);
+
+        string memory returnedURI = baseRegistrar.tokenURI(id);
+        string memory expectedURI = string.concat(newBaseURI, id.toString());
         assertEq(keccak256(bytes(returnedURI)), keccak256(bytes(expectedURI)));
     }
 

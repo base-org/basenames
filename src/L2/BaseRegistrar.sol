@@ -70,6 +70,11 @@ contract BaseRegistrar is ERC721, Ownable {
     /// @param tokenId The id of the name that is not available.
     error NotAvailable(uint256 tokenId);
 
+    /// @notice Thrown when the queried tokenId does not exist.
+    ///
+    /// @param tokenId The id of the name that does not exist.
+    error NonexistentToken(uint256 tokenId);
+
     /// @notice Thrown when the name is not registered or in its Grace Period.
     ///
     /// @param tokenId The id of the token that is not registered or in Grace Period.
@@ -324,8 +329,14 @@ contract BaseRegistrar is ERC721, Ownable {
         return "BASENAME";
     }
 
-    /// @dev Returns the Uniform Resource Identifier (URI) for token `id`.
-    function tokenURI(uint256 tokenId) public view override returns (string memory) {
+    /// @notice Returns the Uniform Resource Identifier (URI) for token `id`.
+    ///
+    /// @dev Reverts if the `tokenId` is expired or un-owned.
+    ///
+    /// @param tokenId The token for which to return the metadata uri.
+    /// 
+    /// @return The URI for the specified `tokenId`. 
+    function tokenURI(uint256 tokenId) public view override onlyNonExpired(tokenId) returns (string memory) {
         return bytes(baseURI).length > 0 ? string.concat(baseURI, tokenId.toString()) : "";
     }
 
