@@ -6,6 +6,7 @@ import {ERC721} from "lib/solady/src/tokens/ERC721.sol";
 import {IERC721} from "openzeppelin-contracts/contracts/token/ERC721/IERC721.sol";
 import {IERC165} from "openzeppelin-contracts/contracts/utils/introspection/ERC165.sol";
 import {Ownable} from "solady/auth/Ownable.sol";
+import {LibString} from "solady/utils/LibString.sol";
 
 import {GRACE_PERIOD} from "src/util/Constants.sol";
 
@@ -21,6 +22,8 @@ import {GRACE_PERIOD} from "src/util/Constants.sol";
 ///
 /// @author Coinbase (https://github.com/base-org/usernames)
 contract BaseRegistrar is ERC721, Ownable {
+    using LibString for uint256;
+
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                          STORAGE                           */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
@@ -33,6 +36,9 @@ contract BaseRegistrar is ERC721, Ownable {
 
     /// @notice The namehash of the TLD this registrar owns (eg, base.eth).
     bytes32 public immutable baseNode;
+
+    /// @notice The base URI for token metadata.
+    string private baseURI;
 
     /// @notice A map of addresses that are authorised to register and renew names.
     mapping(address controller => bool isApproved) public controllers;
@@ -154,10 +160,12 @@ contract BaseRegistrar is ERC721, Ownable {
     /// @param registry_ The Registry contract.
     /// @param owner_ The permissioned address initialized as the `owner` in the `Ownable` context.
     /// @param baseNode_ The node that this contract manages registrations for.
-    constructor(ENS registry_, address owner_, bytes32 baseNode_) {
+    /// @param baseURI_ The base token URI for NFT metadata.
+    constructor(ENS registry_, address owner_, bytes32 baseNode_, string memory baseURI_) {
         _initializeOwner(owner_);
         registry = registry_;
         baseNode = baseNode_;
+        baseURI = baseURI_;
     }
 
     /// @notice Authorises a controller, who can register and renew domains.
@@ -317,8 +325,13 @@ contract BaseRegistrar is ERC721, Ownable {
     }
 
     /// @dev Returns the Uniform Resource Identifier (URI) for token `id`.
-    function tokenURI(uint256) public pure override returns (string memory) {
-        return "";
+    function tokenURI(uint256 tokenId) public view override returns (string memory) {
+        return bytes(baseURI).length > 0 ? string.concat(baseURI, tokenId.toString()) : "";
+    }
+
+    /// @dev Allows the owner to set the the base Uniform Resource Identifier (URI)`.
+    function setBaseTokenURI(string memory baseURI_) public onlyOwner {
+        baseURI = baseURI_;
     }
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/

@@ -18,7 +18,7 @@ contract DeployBaseRegistrar is Script {
         address ensAddress = vm.envAddress("REGISTRY_ADDR"); // deployer-owned registry
         (, bytes32 node) = NameEncoder.dnsEncodeName("basetest.eth");
 
-        BaseRegistrar base = new BaseRegistrar(ENS(ensAddress), deployerAddress, node);
+        BaseRegistrar base = new BaseRegistrar(ENS(ensAddress), deployerAddress, node, "");
 
         console.log("Base Registrar deployed to:");
         console.log(address(base));
