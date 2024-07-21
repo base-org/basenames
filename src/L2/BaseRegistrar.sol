@@ -124,6 +124,17 @@ contract BaseRegistrar is ERC721, Ownable {
         uint256 indexed id, address indexed owner, uint256 expires, address resolver, uint64 ttl
     );
 
+    /// @notice Emitted when metadata for a token range is updated.
+    ///
+    /// @dev Useful for third-party platforms such as NFT marketplaces who can update
+    ///     the images and related attributes of the NFTs in a timely fashion.
+    ///     To refresh a whole collection, emit `_toTokenId` with `type(uint256).max`
+    ///     ERC-4906: https://eip.tools/eip/4906
+    ///
+    /// @param _fromTokenId The starting range of `tokenId` for which metadata has been updated.
+    /// @param _toTokenId The ending range of `tokenId` for which metadata has been updated.
+    event BatchMetadataUpdate(uint256 _fromTokenId, uint256 _toTokenId);
+
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                          MODIFIERS                         */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
@@ -343,6 +354,7 @@ contract BaseRegistrar is ERC721, Ownable {
     /// @dev Allows the owner to set the the base Uniform Resource Identifier (URI)`.
     function setBaseTokenURI(string memory baseURI_) public onlyOwner {
         baseURI = baseURI_;
+        emit BatchMetadataUpdate(1, type(uint256).max);
     }
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/

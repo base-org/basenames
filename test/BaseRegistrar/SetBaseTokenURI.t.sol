@@ -12,6 +12,8 @@ contract SetBaseTokenURI is BaseRegistrarBase {
     string public newBaseURI = "https://newurl.org/";
 
     function test_allowsTheOwnerToSetTheBaseURI() public {
+        vm.expectEmit(address(baseRegistrar));
+        emit BaseRegistrar.BatchMetadataUpdate(1, type(uint256).max);
         vm.prank(owner);
         baseRegistrar.setBaseTokenURI(newBaseURI);
 
