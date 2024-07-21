@@ -17,6 +17,7 @@ contract ExponentialPremiumOracleBase is Test {
 
     uint256 startPremium = 1e18;
     uint256 totalDays = 21;
+    uint256 secondsInPeriod = 1 days;
 
     function setUp() public {
         uint256[] memory rentPrices = new uint256[](6);
@@ -35,7 +36,7 @@ contract ExponentialPremiumOracleBase is Test {
         rentPrices[4] = rent5;
         rentPrices[5] = rent10;
 
-        oracle = new ExponentialPremiumPriceOracle(rentPrices, startPremium, totalDays);
+        oracle = new ExponentialPremiumPriceOracle(rentPrices, startPremium, totalDays, secondsInPeriod);
     }
 
     function test_constructor() public view {

@@ -21,7 +21,7 @@ contract DeployPriceOracle is Script {
         uint256 premiumStart = 500 ether;
         uint256 totalDays = 28 days;
 
-        StablePriceOracle oracle = new ExponentialPremiumPriceOracle(prices, premiumStart, totalDays);
+        StablePriceOracle oracle = new ExponentialPremiumPriceOracle(prices, premiumStart, totalDays, 1 days);
         console.log("Price Oracle deployed to:");
         console.log(address(oracle));
 
