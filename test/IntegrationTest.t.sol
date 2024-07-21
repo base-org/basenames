@@ -70,7 +70,7 @@ contract IntegrationTest is Test {
         rentPrices[5] = 3_170_979; //3,170,979.1983764587 = 1e14 / (365 * 24 * 3600)
 
         exponentialPremiumPriceOracle = new ExponentialPremiumPriceOracle(rentPrices, 1e18, 21);
-        baseRegistrar = new BaseRegistrar(registry, owner, BASE_ETH_NODE, "");
+        baseRegistrar = new BaseRegistrar(registry, owner, BASE_ETH_NODE, "", "");
 
         _establishNamespaces();
 
