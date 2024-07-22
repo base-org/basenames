@@ -173,7 +173,7 @@ contract L2Resolver is
         return _tokenApprovals[owner][node][delegate];
     }
 
-    /// @notice Check to see whether `msg.sender` is authroized to modify records for the specified `node`.
+    /// @notice Check to see whether `msg.sender` is authorized to modify records for the specified `node`.
     ///
     /// @dev Override for `ResolverBase:isAuthorised()`. Used in the context of each inherited resolver "profile".
     ///     Validates that `msg.sender` is one of:
