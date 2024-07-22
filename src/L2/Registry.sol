@@ -27,10 +27,10 @@ contract Registry is ENS {
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
     /// @notice The storage of `Record` structs per `node`.
-    mapping(bytes32 node => Record record) records;
+    mapping(bytes32 node => Record record) internal records;
 
     /// @notice Storage for approved operators on a per-holder basis.
-    mapping(address nameHolder => mapping(address operator => bool isApproved)) operators;
+    mapping(address nameHolder => mapping(address operator => bool isApproved)) internal operators;
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                          ERRORS                            */
