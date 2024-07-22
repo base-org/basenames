@@ -333,7 +333,7 @@ contract RegistrarController is Ownable {
 
     /// @notice Allows the `owner` to set the reverse registrar contract.
     ///
-    /// @dev Emits `ReverseRegistrarUpdated` after setting the `paymentReceiver` address.
+    /// @dev Emits `PaymentReceiverUpdated` after setting the `paymentReceiver` address.
     ///
     /// @param paymentReceiver_ The new payment receiver address.
     function setPaymentReceiver(address paymentReceiver_) external onlyOwner {
