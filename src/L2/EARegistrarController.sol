@@ -186,7 +186,7 @@ contract EARegistrarController is Ownable {
     /// @notice Emitted when the payment receiver is updated.
     ///
     /// @param newPaymentReceiver The address of the new payment receiver.
-    event PayemntReceiverUpdated(address newPaymentReceiver);
+    event PaymentReceiverUpdated(address newPaymentReceiver);
 
     /// @notice Emitted when the price oracle is updated.
     ///
@@ -329,7 +329,7 @@ contract EARegistrarController is Ownable {
     function setPaymentReceiver(address paymentReceiver_) external onlyOwner {
         if (paymentReceiver_ == address(0)) revert InvalidPaymentReceiver();
         paymentReceiver = paymentReceiver_;
-        emit PayemntReceiverUpdated(paymentReceiver_);
+        emit PaymentReceiverUpdated(paymentReceiver_);
     }
 
     /// @notice Checks whether any of the provided addresses have registered with a discount.
