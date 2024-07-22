@@ -176,13 +176,6 @@ contract EARegistrarController is Ownable {
     /// @param expires The date that the registration expires.
     event NameRegistered(string name, bytes32 indexed label, address indexed owner, uint256 expires);
 
-    /// @notice Emitted when a name is renewed.
-    ///
-    /// @param name The name that was renewed.
-    /// @param label The hashed label of the name.
-    /// @param expires The date that the renewed name expires.
-    event NameRenewed(string name, bytes32 indexed label, uint256 expires);
-
     /// @notice Emitted when the payment receiver is updated.
     ///
     /// @param newPaymentReceiver The address of the new payment receiver.
