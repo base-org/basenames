@@ -38,10 +38,10 @@ contract BaseRegistrar is ERC721, Ownable {
     bytes32 public immutable baseNode;
 
     /// @notice The base URI for token metadata.
-    string private baseURI;
+    string private _baseURI;
 
     /// @notice The URI for collection metadata.
-    string private collectionURI;
+    string private _collectionURI;
 
     /// @notice A map of addresses that are authorised to register and renew names.
     mapping(address controller => bool isApproved) public controllers;
@@ -196,8 +196,8 @@ contract BaseRegistrar is ERC721, Ownable {
         _initializeOwner(owner_);
         registry = registry_;
         baseNode = baseNode_;
-        baseURI = baseURI_;
-        collectionURI = collectionURI_;
+        _baseURI = baseURI_;
+        _collectionURI = collectionURI_;
     }
 
     /// @notice Authorises a controller, who can register and renew domains.
@@ -364,27 +364,30 @@ contract BaseRegistrar is ERC721, Ownable {
     ///
     /// @return The URI for the specified `tokenId`.
     function tokenURI(uint256 tokenId) public view override onlyNonExpired(tokenId) returns (string memory) {
-        return bytes(baseURI).length > 0 ? string.concat(baseURI, tokenId.toString()) : "";
+        return bytes(_baseURI).length > 0 ? string.concat(_baseURI, tokenId.toString()) : "";
     }
 
     /// @notice Returns the Uniform Resource Identifier (URI) for the contract.
     ///
     /// @dev ERC-7572: https://eips.ethereum.org/EIPS/eip-7572
     function contractURI() public view returns (string memory) {
-        return collectionURI;
+        return _collectionURI;
     }
 
     /// @dev Allows the owner to set the the base Uniform Resource Identifier (URI)`.
     ///     Emits the `BatchMetadataUpdate` event for the full range of valid `tokenIds`.
     function setBaseTokenURI(string memory baseURI_) public onlyOwner {
-        baseURI = baseURI_;
-        emit BatchMetadataUpdate(1, type(uint256).max);
+        _baseURI = baseURI_;
+        /// @dev minimum valid tokenId is `1` because uint256(nodehash) will never be called against `nodehash == 0x0`.
+        uint256 minTokenId = 1;
+        uint256 maxTokenId = type(uint256).max;
+        emit BatchMetadataUpdate(minTokenId, maxTokenId);
     }
 
     /// @dev Allows the owner to set the the contract Uniform Resource Identifier (URI)`.
     ///     Emits the `ContractURIUpdated` event.
     function setContractURI(string memory collectionURI_) public onlyOwner {
-        collectionURI = collectionURI_;
+        _collectionURI = collectionURI_;
         emit ContractURIUpdated();
     }
 
