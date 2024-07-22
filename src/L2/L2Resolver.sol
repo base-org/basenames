@@ -49,7 +49,7 @@ contract L2Resolver is
     /// @notice The reverse registrar contract.
     address public reverseRegistrar;
 
-    /// @notice A mapping of operators per owner address. An operator is authroized to make changes to
+    /// @notice A mapping of operators per owner address. An operator is authorized to make changes to
     ///         all names owned by the `owner`.
     mapping(address owner => mapping(address operator => bool isApproved)) private _operatorApprovals;
 
