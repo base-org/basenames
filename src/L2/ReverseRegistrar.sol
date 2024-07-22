@@ -115,6 +115,7 @@ contract ReverseRegistrar is Ownable {
     function setDefaultResolver(address resolver) public onlyOwner {
         if (address(resolver) == address(0)) revert NoZeroAddress();
         defaultResolver = NameResolver(resolver);
+        registry.setResolver(BASE_REVERSE_NODE, resolver);
         emit DefaultResolverChanged(defaultResolver);
     }
 
