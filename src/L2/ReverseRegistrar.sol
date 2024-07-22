@@ -34,7 +34,7 @@ contract ReverseRegistrar is Ownable {
     /*                          ERRORS                            */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
-    /// @notice Thrown when `sender` is not authrorized to modify records for `addr`.
+    /// @notice Thrown when `sender` is not authorized to modify records for `addr`.
     ///
     /// @param addr The `addr` that was being modified.
     /// @param sender The unauthorized sender.
@@ -201,7 +201,7 @@ contract ReverseRegistrar is Ownable {
 
     /// @notice Sets the `name()` record for the reverse ENS records associated with the `addr` provided.
     ///
-    /// @dev Updates the resolver to a designated resolver. Only callable by `addr`'s `authroized` addresses.
+    /// @dev Updates the resolver to a designated resolver. Only callable by `addr`'s `authorized` addresses.
     ///     Establishes both a vestigial `addr.reverse` node and an ENSIP-19 compliant chain-specific `chain.reverse` node.
     ///
     /// @param addr The reverse record to set.

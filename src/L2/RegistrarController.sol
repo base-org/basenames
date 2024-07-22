@@ -189,7 +189,7 @@ contract RegistrarController is Ownable {
     /// @notice Emitted when the payment receiver is updated.
     ///
     /// @param newPaymentReceiver The address of the new payment receiver.
-    event PayemntReceiverUpdated(address newPaymentReceiver);
+    event PaymentReceiverUpdated(address newPaymentReceiver);
 
     /// @notice Emitted when the price oracle is updated.
     ///
@@ -333,13 +333,13 @@ contract RegistrarController is Ownable {
 
     /// @notice Allows the `owner` to set the reverse registrar contract.
     ///
-    /// @dev Emits `ReverseRegistrarUpdated` after setting the `paymentReceiver` address.
+    /// @dev Emits `PaymentReceiverUpdated` after setting the `paymentReceiver` address.
     ///
     /// @param paymentReceiver_ The new payment receiver address.
     function setPaymentReceiver(address paymentReceiver_) external onlyOwner {
         if (paymentReceiver_ == address(0)) revert InvalidPaymentReceiver();
         paymentReceiver = paymentReceiver_;
-        emit PayemntReceiverUpdated(paymentReceiver_);
+        emit PaymentReceiverUpdated(paymentReceiver_);
     }
 
     /// @notice Checks whether any of the provided addresses have registered with a discount.
