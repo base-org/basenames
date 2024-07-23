@@ -2,6 +2,7 @@
 pragma solidity ^0.8.23;
 
 import {IPriceOracle} from "src/L2/interface/IPriceOracle.sol";
+import {GRACE_PERIOD} from "src/util/Constants.sol";
 
 contract MockPriceOracle is IPriceOracle {
     uint256 public constant DEFAULT_BASE_WEI = 0.1 ether;
@@ -21,8 +22,12 @@ contract MockPriceOracle is IPriceOracle {
         view
         returns (IPriceOracle.Price memory)
     {
-        if ((expires == block.timestamp + duration) || expires == 0) {
-            return (prices[name].base == 0) ? (defaultPrice) : prices[name];
+        if (prices[name].base > 0) return prices[name];
+        if (
+            (expires == block.timestamp + duration + GRACE_PERIOD) || (expires == block.timestamp + duration)
+                || expires == 0
+        ) {
+            return defaultPrice;
         }
         return IPriceOracle.Price({base: DEFAULT_BASE_WEI, premium: DEFAULT_INCLUDED_PREMIUM});
     }

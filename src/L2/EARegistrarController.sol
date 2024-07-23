@@ -7,7 +7,7 @@ import {Ownable} from "solady/auth/Ownable.sol";
 import {SafeERC20} from "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 import {StringUtils} from "ens-contracts/ethregistrar/StringUtils.sol";
 
-import {BASE_ETH_NODE} from "src/util/Constants.sol";
+import {BASE_ETH_NODE, GRACE_PERIOD} from "src/util/Constants.sol";
 import {BaseRegistrar} from "./BaseRegistrar.sol";
 import {IDiscountValidator} from "./interface/IDiscountValidator.sol";
 import {IPriceOracle} from "./interface/IPriceOracle.sol";
@@ -366,7 +366,7 @@ contract EARegistrarController is Ownable {
     /// @return price The `Price` tuple containing the base and premium prices respectively, denominated in wei.
     function rentPrice(string memory name, uint256 duration) public view returns (IPriceOracle.Price memory price) {
         bytes32 label = keccak256(bytes(name));
-        price = prices.price(name, base.nameExpires(uint256(label)), duration);
+        price = prices.price(name, base.nameExpires(uint256(label)) + GRACE_PERIOD, duration);
     }
 
     /// @notice Checks the register price for a provided `name` and `duration`.
