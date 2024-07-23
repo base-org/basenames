@@ -358,7 +358,7 @@ contract BaseRegistrar is ERC721, Ownable {
 
     /// @notice Returns the Uniform Resource Identifier (URI) for token `id`.
     ///
-    /// @dev Reverts if the `tokenId` is expired or un-owned.
+    /// @dev Reverts if the `tokenId` has not be registered.
     ///
     /// @param tokenId The token for which to return the metadata uri.
     ///
