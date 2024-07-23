@@ -15,6 +15,8 @@ import {NameResolver} from "ens-contracts/resolvers/profiles/NameResolver.sol";
 import {PubkeyResolver} from "ens-contracts/resolvers/profiles/PubkeyResolver.sol";
 import {TextResolver} from "ens-contracts/resolvers/profiles/TextResolver.sol";
 
+import {IReverseRegistrar} from "src/L2/interface/IReverseRegistrar.sol";
+
 /// @title L2 Resolver
 ///
 /// @notice The default resolver for the Base Usernames project. This contract implements the functionality of the ENS
@@ -113,6 +115,7 @@ contract L2Resolver is
         registrarController = registrarController_;
         reverseRegistrar = reverseRegistrar_;
         _initializeOwner(owner_);
+        IReverseRegistrar(reverseRegistrar_).claim(owner_);
     }
 
     /// @notice Allows the `owner` to set the registrar controller contract address.
