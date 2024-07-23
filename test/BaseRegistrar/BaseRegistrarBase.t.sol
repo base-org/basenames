@@ -20,11 +20,13 @@ contract BaseRegistrarBase is Test {
     bytes32 public node = keccak256(abi.encodePacked(BASE_ETH_NODE, label));
     uint256 public duration = 365 days;
     uint256 public blockTimestamp = 1716496498; // May 23, 2024
+    string public baseURI = "https://base.org/api/basenames/metadata/";
+    string public collectionURI = "https://base.org/api/basenames/contract/";
 
     function setUp() public {
         vm.prank(owner);
         registry = new Registry(owner);
-        baseRegistrar = new BaseRegistrar(registry, owner, BASE_ETH_NODE);
+        baseRegistrar = new BaseRegistrar(registry, owner, BASE_ETH_NODE, baseURI, collectionURI);
         _ensSetup();
     }
 
