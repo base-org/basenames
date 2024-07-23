@@ -36,7 +36,7 @@ contract ReverseRegistrar is Ownable {
     /*                          ERRORS                            */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
-    /// @notice Thrown when `sender` is not authrorized to modify records for `addr`.
+    /// @notice Thrown when `sender` is not authorized to modify records for `addr`.
     ///
     /// @param addr The `addr` that was being modified.
     /// @param sender The unauthorized sender.
@@ -111,6 +111,7 @@ contract ReverseRegistrar is Ownable {
     function setDefaultResolver(address resolver) public onlyOwner {
         if (address(resolver) == address(0)) revert NoZeroAddress();
         defaultResolver = NameResolver(resolver);
+        registry.setResolver(BASE_REVERSE_NODE, resolver);
         emit DefaultResolverChanged(defaultResolver);
     }
 
