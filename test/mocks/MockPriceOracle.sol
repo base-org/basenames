@@ -22,11 +22,12 @@ contract MockPriceOracle is IPriceOracle {
         view
         returns (IPriceOracle.Price memory)
     {
+        if (prices[name].base > 0) return prices[name];
         if (
             (expires == block.timestamp + duration + GRACE_PERIOD) || (expires == block.timestamp + duration)
                 || expires == 0
         ) {
-            return (prices[name].base == 0) ? (defaultPrice) : prices[name];
+            return defaultPrice;
         }
         return IPriceOracle.Price({base: DEFAULT_BASE_WEI, premium: DEFAULT_INCLUDED_PREMIUM});
     }
