@@ -13,6 +13,7 @@ import {IMulticallable} from "ens-contracts/resolvers/IMulticallable.sol";
 import {INameResolver} from "ens-contracts/resolvers/profiles/INameResolver.sol";
 import {IPubkeyResolver} from "ens-contracts/resolvers/profiles/IPubkeyResolver.sol";
 import {ITextResolver} from "ens-contracts/resolvers/profiles/ITextResolver.sol";
+import {IExtendedResolver} from "ens-contracts/resolvers/profiles/IExtendedResolver.sol";
 
 contract SupportsInterface is L2ResolverBase {
     function test_supportsABIResolver() public view {
@@ -53,5 +54,9 @@ contract SupportsInterface is L2ResolverBase {
 
     function test_supportsTextResolver() public view {
         assertTrue(resolver.supportsInterface(type(ITextResolver).interfaceId));
+    }
+
+    function test_supportsExtendedResolver() public view {
+        assertTrue(resolver.supportsInterface(type(IExtendedResolver).interfaceId));
     }
 }

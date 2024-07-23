@@ -7,6 +7,7 @@ import {ContentHashResolver} from "ens-contracts/resolvers/profiles/ContentHashR
 import {DNSResolver} from "ens-contracts/resolvers/profiles/DNSResolver.sol";
 import {ENS} from "ens-contracts/registry/ENS.sol";
 import {ExtendedResolver} from "ens-contracts/resolvers/profiles/ExtendedResolver.sol";
+import {IExtendedResolver} from "ens-contracts/resolvers/profiles/IExtendedResolver.sol";
 import {InterfaceResolver} from "ens-contracts/resolvers/profiles/InterfaceResolver.sol";
 import {Multicallable} from "ens-contracts/resolvers/Multicallable.sol";
 import {Ownable} from "solady/auth/Ownable.sol";
@@ -218,6 +219,6 @@ contract L2Resolver is
         )
         returns (bool)
     {
-        return super.supportsInterface(interfaceID);
+        return (interfaceID == type(IExtendedResolver).interfaceId || super.supportsInterface(interfaceID));
     }
 }
