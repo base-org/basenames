@@ -27,10 +27,10 @@ contract Registry is ENS {
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
     /// @notice The storage of `Record` structs per `node`.
-    mapping(bytes32 node => Record record) internal records;
+    mapping(bytes32 node => Record record) internal _records;
 
     /// @notice Storage for approved operators on a per-holder basis.
-    mapping(address nameHolder => mapping(address operator => bool isApproved)) internal operators;
+    mapping(address nameHolder => mapping(address operator => bool isApproved)) internal _operators;
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                          ERRORS                            */
@@ -47,8 +47,8 @@ contract Registry is ENS {
     ///
     /// @param node The node to check authorization approval for.
     modifier authorized(bytes32 node) {
-        address owner_ = records[node].owner;
-        if (owner_ != msg.sender && !operators[owner_][msg.sender]) revert Unauthorized();
+        address owner_ = _records[node].owner;
+        if (owner_ != msg.sender && !_operators[owner_][msg.sender]) revert Unauthorized();
         _;
     }
 
@@ -61,7 +61,7 @@ contract Registry is ENS {
     ///
     /// @param rootOwner The address that can establish new TLDs.
     constructor(address rootOwner) {
-        records[0x0].owner = rootOwner;
+        _records[0x0].owner = rootOwner;
     }
 
     /// @notice Sets the record for a node.
@@ -130,7 +130,7 @@ contract Registry is ENS {
     /// @param node The node to update.
     /// @param resolver_ The address of the resolver.
     function setResolver(bytes32 node, address resolver_) public virtual override authorized(node) {
-        records[node].resolver = resolver_;
+        _records[node].resolver = resolver_;
         emit NewResolver(node, resolver_);
     }
 
@@ -141,7 +141,7 @@ contract Registry is ENS {
     /// @param node The node to update.
     /// @param ttl_ The TTL in seconds.
     function setTTL(bytes32 node, uint64 ttl_) public virtual override authorized(node) {
-        records[node].ttl = ttl_;
+        _records[node].ttl = ttl_;
         emit NewTTL(node, ttl_);
     }
 
@@ -153,7 +153,7 @@ contract Registry is ENS {
     /// @param operator Address to add to the set of authorized operators.
     /// @param approved True if the operator is approved, false to revoke approval.
     function setApprovalForAll(address operator, bool approved) external virtual override {
-        operators[msg.sender][operator] = approved;
+        _operators[msg.sender][operator] = approved;
         emit ApprovalForAll(msg.sender, operator, approved);
     }
 
@@ -163,7 +163,7 @@ contract Registry is ENS {
     ///
     /// @return The address for the specified node if one is set, returns address(0) if this contract is owner.
     function owner(bytes32 node) public view virtual override returns (address) {
-        address addr = records[node].owner;
+        address addr = _records[node].owner;
         if (addr == address(this)) {
             return address(0);
         }
@@ -176,7 +176,7 @@ contract Registry is ENS {
     ///
     /// @return The address of the resolver.
     function resolver(bytes32 node) public view virtual override returns (address) {
-        return records[node].resolver;
+        return _records[node].resolver;
     }
 
     /// @notice Returns the TTL of a node.
@@ -185,7 +185,7 @@ contract Registry is ENS {
     ///
     /// @return The ttl of the node.
     function ttl(bytes32 node) public view virtual override returns (uint64) {
-        return records[node].ttl;
+        return _records[node].ttl;
     }
 
     /// @notice Returns whether a record exists in this registry.
@@ -194,7 +194,7 @@ contract Registry is ENS {
     ///
     /// @return `true` if a record exists, else `false`.
     function recordExists(bytes32 node) public view virtual override returns (bool) {
-        return records[node].owner != address(0x0);
+        return _records[node].owner != address(0x0);
     }
 
     /// @notice Query if an address is an authorized operator for another address.
@@ -204,7 +204,7 @@ contract Registry is ENS {
     ///
     /// @return `true` if `operator` is an approved operator for `owner`, else `fase`.
     function isApprovedForAll(address owner_, address operator) external view virtual override returns (bool) {
-        return operators[owner_][operator];
+        return _operators[owner_][operator];
     }
 
     /// @notice Set the owner in storage.
@@ -212,7 +212,7 @@ contract Registry is ENS {
     /// @param node The specified node.
     /// @param owner_  The owner to store for that node.
     function _setOwner(bytes32 node, address owner_) internal virtual {
-        records[node].owner = owner_;
+        _records[node].owner = owner_;
     }
 
     /// @notice Set the resolver and ttl in storage.
@@ -221,13 +221,13 @@ contract Registry is ENS {
     /// @param resolver_ The address of the resolver.
     /// @param ttl_ The TTL in seconds.
     function _setResolverAndTTL(bytes32 node, address resolver_, uint64 ttl_) internal {
-        if (resolver_ != records[node].resolver) {
-            records[node].resolver = resolver_;
+        if (resolver_ != _records[node].resolver) {
+            _records[node].resolver = resolver_;
             emit NewResolver(node, resolver_);
         }
 
-        if (ttl_ != records[node].ttl) {
-            records[node].ttl = ttl_;
+        if (ttl_ != _records[node].ttl) {
+            _records[node].ttl = ttl_;
             emit NewTTL(node, ttl_);
         }
     }
