@@ -250,8 +250,6 @@ contract EARegistrarController is Ownable {
 
     /// @notice Registrar Controller construction sets all of the requisite external contracts.
     ///
-    /// @dev Assigns ownership of this contract's reverse record to the `owner_`.
-    ///
     /// @param base_ The base registrar contract.
     /// @param prices_ The pricing oracle contract.
     /// @param reverseRegistrar_ The reverse registrar contract.
@@ -274,7 +272,6 @@ contract EARegistrarController is Ownable {
         rootName = rootName_;
         paymentReceiver = paymentReceiver_;
         _initializeOwner(owner_);
-        reverseRegistrar.claim(owner_);
     }
 
     /// @notice Allows the `owner` to set discount details for a specified `key`.
