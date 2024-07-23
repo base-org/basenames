@@ -160,7 +160,7 @@ contract ReverseRegistrar is Ownable {
     /// @param owner The address to set as the owner of the reverse record in ENS.
     /// @param resolver The address of the resolver to set.
     ///
-    /// @return The ENS node hash of the reverse record.
+    /// @return The ENS node hash of the base-specific reverse record.
     function claimWithResolver(address owner, address resolver) public returns (bytes32) {
         return claimForBaseAddr(msg.sender, owner, resolver);
     }
