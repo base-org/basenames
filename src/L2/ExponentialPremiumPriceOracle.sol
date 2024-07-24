@@ -4,7 +4,6 @@ pragma solidity ~0.8.17;
 import {FixedPointMathLib} from "solady/utils/FixedPointMathLib.sol";
 
 import {EDAPrice} from "src/lib/EDAPrice.sol";
-import {GRACE_PERIOD} from "src/util/Constants.sol";
 import {StablePriceOracle} from "src/L2/StablePriceOracle.sol";
 
 contract ExponentialPremiumPriceOracle is StablePriceOracle {
@@ -20,7 +19,6 @@ contract ExponentialPremiumPriceOracle is StablePriceOracle {
      */
 
     function _premium(string memory, uint256 expires, uint256) internal view override returns (uint256) {
-        expires = expires + GRACE_PERIOD;
         if (expires > block.timestamp) {
             return 0;
         }

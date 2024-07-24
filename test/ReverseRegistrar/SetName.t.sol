@@ -4,7 +4,7 @@ pragma solidity ^0.8.23;
 import {ReverseRegistrarBase} from "./ReverseRegistrarBase.t.sol";
 import {ReverseRegistrar} from "src/L2/ReverseRegistrar.sol";
 import {Sha3} from "src/lib/Sha3.sol";
-import {ADDR_REVERSE_NODE, BASE_REVERSE_NODE} from "src/util/Constants.sol";
+import {BASE_REVERSE_NODE} from "src/util/Constants.sol";
 import {NameResolver, MockNameResolver} from "test/mocks/MockNameResolver.sol";
 
 contract SetName is ReverseRegistrarBase {
@@ -12,7 +12,6 @@ contract SetName is ReverseRegistrarBase {
 
     function test_setsName() public {
         bytes32 labelHash = Sha3.hexAddress(user);
-        bytes32 reverseNode = keccak256(abi.encodePacked(ADDR_REVERSE_NODE, labelHash));
         bytes32 baseReverseNode = keccak256(abi.encodePacked(BASE_REVERSE_NODE, labelHash));
 
         string memory name = "name";
@@ -20,22 +19,15 @@ contract SetName is ReverseRegistrarBase {
         reverse.setDefaultResolver(address(resolver));
 
         vm.expectEmit(address(reverse));
-        emit ReverseRegistrar.ReverseClaimed(user, reverseNode);
-        vm.expectEmit(address(reverse));
         emit ReverseRegistrar.BaseReverseClaimed(user, baseReverseNode);
         vm.prank(user);
         bytes32 returnedReverseNode = reverse.setName(name);
 
-        assertTrue(reverseNode == returnedReverseNode);
-        address retOwner = registry.owner(reverseNode);
-        assertTrue(retOwner == user);
+        assertTrue(baseReverseNode == returnedReverseNode);
         address retBaseOwner = registry.owner(baseReverseNode);
         assertTrue(retBaseOwner == user);
-        address retResolver = registry.resolver(reverseNode);
-        assertTrue(retResolver == address(resolver));
         address retBaseResolver = registry.resolver(baseReverseNode);
         assertTrue(retBaseResolver == address(resolver));
-        assertTrue(keccak256(abi.encode(resolver.name(reverseNode))) == keccak256(abi.encode(name)));
         assertTrue(keccak256(abi.encode(resolver.name(baseReverseNode))) == keccak256(abi.encode(name)));
     }
 }

@@ -66,7 +66,6 @@ contract EARegistrarControllerBase is Test {
     function test_controller_constructor() public view {
         assertEq(address(controller.prices()), address(prices));
         assertEq(address(controller.reverseRegistrar()), address(reverse));
-        assertTrue(reverse.hasClaimed(owner));
         assertEq(controller.owner(), owner);
         assertEq(controller.rootNode(), rootNode);
         assertEq(keccak256(bytes(controller.rootName())), keccak256(bytes(rootName)));
