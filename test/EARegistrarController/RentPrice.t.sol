@@ -6,9 +6,9 @@ import {IPriceOracle} from "src/L2/interface/IPriceOracle.sol";
 
 contract RentPrice is EARegistrarControllerBase {
     function test_returnsPrice_fromPricingOracle() public view {
-        IPriceOracle.Price memory retPrices = controller.rentPrice(name, 0);
+        IPriceOracle.Price memory retPrices = controller.rentPrice(name, duration);
         assertEq(retPrices.base, prices.DEFAULT_BASE_WEI());
-        assertEq(retPrices.premium, prices.DEFAULT_PERMIUM_WEI());
+        assertEq(retPrices.premium, prices.DEFAULT_INCLUDED_PREMIUM());
     }
 
     function test_fuzz_returnsPrice_fromPricingOracle(uint256 fuzzBase, uint256 fuzzPremium) public {

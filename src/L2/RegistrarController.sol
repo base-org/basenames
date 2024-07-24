@@ -7,7 +7,7 @@ import {Ownable} from "solady/auth/Ownable.sol";
 import {SafeERC20} from "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 import {StringUtils} from "ens-contracts/ethregistrar/StringUtils.sol";
 
-import {BASE_ETH_NODE} from "src/util/Constants.sol";
+import {BASE_ETH_NODE, GRACE_PERIOD} from "src/util/Constants.sol";
 import {BaseRegistrar} from "./BaseRegistrar.sol";
 import {IDiscountValidator} from "./interface/IDiscountValidator.sol";
 import {IPriceOracle} from "./interface/IPriceOracle.sol";
@@ -189,7 +189,7 @@ contract RegistrarController is Ownable {
     /// @notice Emitted when the payment receiver is updated.
     ///
     /// @param newPaymentReceiver The address of the new payment receiver.
-    event PayemntReceiverUpdated(address newPaymentReceiver);
+    event PaymentReceiverUpdated(address newPaymentReceiver);
 
     /// @notice Emitted when the price oracle is updated.
     ///
@@ -333,13 +333,13 @@ contract RegistrarController is Ownable {
 
     /// @notice Allows the `owner` to set the reverse registrar contract.
     ///
-    /// @dev Emits `ReverseRegistrarUpdated` after setting the `paymentReceiver` address.
+    /// @dev Emits `PaymentReceiverUpdated` after setting the `paymentReceiver` address.
     ///
     /// @param paymentReceiver_ The new payment receiver address.
     function setPaymentReceiver(address paymentReceiver_) external onlyOwner {
         if (paymentReceiver_ == address(0)) revert InvalidPaymentReceiver();
         paymentReceiver = paymentReceiver_;
-        emit PayemntReceiverUpdated(paymentReceiver_);
+        emit PaymentReceiverUpdated(paymentReceiver_);
     }
 
     /// @notice Checks whether any of the provided addresses have registered with a discount.
@@ -515,11 +515,14 @@ contract RegistrarController is Ownable {
     ///     names. Use the `launchTime` to establish a premium price around the actual launch time.
     ///
     /// @param tokenId The ID of the token to check for expiry.
+    ///
+    /// @return expires Returns the expiry + GRACE_PERIOD for previously registered names, else `launchTime`.
     function _getExpiry(uint256 tokenId) internal view returns (uint256 expires) {
         expires = base.nameExpires(tokenId);
         if (expires == 0) {
-            expires = launchTime;
+            return launchTime;
         }
+        return expires + GRACE_PERIOD;
     }
 
     /// @notice Shared registartion logic for both `register()` and `discountedRegister()`.

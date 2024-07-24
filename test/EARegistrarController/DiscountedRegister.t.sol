@@ -83,7 +83,7 @@ contract DiscountedRegister is EARegistrarControllerBase {
         validator.setReturnValue(true);
         base.setAvailable(uint256(nameLabel), true);
         EARegistrarController.RegisterRequest memory request = _getDefaultRegisterRequest();
-        uint256 expires = block.timestamp + request.duration;
+        uint256 expires = request.duration;
         base.setNameExpires(uint256(nameLabel), expires);
 
         vm.expectEmit(address(controller));
@@ -112,7 +112,7 @@ contract DiscountedRegister is EARegistrarControllerBase {
         validator.setReturnValue(true);
         base.setAvailable(uint256(nameLabel), true);
         EARegistrarController.RegisterRequest memory request = _getDefaultRegisterRequest();
-        uint256 expires = block.timestamp + request.duration;
+        uint256 expires = request.duration;
         base.setNameExpires(uint256(nameLabel), expires);
 
         vm.prank(user);
@@ -130,7 +130,7 @@ contract DiscountedRegister is EARegistrarControllerBase {
         validator.setReturnValue(true);
         base.setAvailable(uint256(nameLabel), true);
         EARegistrarController.RegisterRequest memory request = _getDefaultRegisterRequest();
-        uint256 expires = block.timestamp + request.duration;
+        uint256 expires = request.duration;
         base.setNameExpires(uint256(nameLabel), expires);
         vm.prank(user);
         controller.discountedRegister{value: price}(request, discountKey, "");

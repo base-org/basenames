@@ -22,7 +22,7 @@ contract SetPaymentReceiver is EARegistrarControllerBase {
     function test_allowsTheOwner_toSetThePaymentReceiver(address newReceiver) public {
         vm.assume(newReceiver != address(0));
         vm.expectEmit(address(controller));
-        emit EARegistrarController.PayemntReceiverUpdated(newReceiver);
+        emit EARegistrarController.PaymentReceiverUpdated(newReceiver);
         vm.prank(owner);
         controller.setPaymentReceiver(newReceiver);
         assertEq(newReceiver, controller.paymentReceiver());

@@ -6,6 +6,7 @@ import {ERC721} from "lib/solady/src/tokens/ERC721.sol";
 import {IERC721} from "openzeppelin-contracts/contracts/token/ERC721/IERC721.sol";
 import {IERC165} from "openzeppelin-contracts/contracts/utils/introspection/ERC165.sol";
 import {Ownable} from "solady/auth/Ownable.sol";
+import {LibString} from "solady/utils/LibString.sol";
 
 import {GRACE_PERIOD} from "src/util/Constants.sol";
 
@@ -21,6 +22,8 @@ import {GRACE_PERIOD} from "src/util/Constants.sol";
 ///
 /// @author Coinbase (https://github.com/base-org/usernames)
 contract BaseRegistrar is ERC721, Ownable {
+    using LibString for uint256;
+
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                          STORAGE                           */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
@@ -33,6 +36,12 @@ contract BaseRegistrar is ERC721, Ownable {
 
     /// @notice The namehash of the TLD this registrar owns (eg, base.eth).
     bytes32 public immutable baseNode;
+
+    /// @notice The base URI for token metadata.
+    string private _baseURI;
+
+    /// @notice The URI for collection metadata.
+    string private _collectionURI;
 
     /// @notice A map of addresses that are authorised to register and renew names.
     mapping(address controller => bool isApproved) public controllers;
@@ -63,6 +72,11 @@ contract BaseRegistrar is ERC721, Ownable {
     ///
     /// @param tokenId The id of the name that is not available.
     error NotAvailable(uint256 tokenId);
+
+    /// @notice Thrown when the queried tokenId does not exist.
+    ///
+    /// @param tokenId The id of the name that does not exist.
+    error NonexistentToken(uint256 tokenId);
 
     /// @notice Thrown when the name is not registered or in its Grace Period.
     ///
@@ -113,6 +127,22 @@ contract BaseRegistrar is ERC721, Ownable {
         uint256 indexed id, address indexed owner, uint256 expires, address resolver, uint64 ttl
     );
 
+    /// @notice Emitted when metadata for a token range is updated.
+    ///
+    /// @dev Useful for third-party platforms such as NFT marketplaces who can update
+    ///     the images and related attributes of the NFTs in a timely fashion.
+    ///     To refresh a whole collection, emit `_toTokenId` with `type(uint256).max`
+    ///     ERC-4906: https://eip.tools/eip/4906
+    ///
+    /// @param _fromTokenId The starting range of `tokenId` for which metadata has been updated.
+    /// @param _toTokenId The ending range of `tokenId` for which metadata has been updated.
+    event BatchMetadataUpdate(uint256 _fromTokenId, uint256 _toTokenId);
+
+    /// @notice Emitted when the metadata for the contract collection is updated.
+    ///
+    /// @dev ERC-7572: https://eips.ethereum.org/EIPS/eip-7572
+    event ContractURIUpdated();
+
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                          MODIFIERS                         */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
@@ -154,10 +184,20 @@ contract BaseRegistrar is ERC721, Ownable {
     /// @param registry_ The Registry contract.
     /// @param owner_ The permissioned address initialized as the `owner` in the `Ownable` context.
     /// @param baseNode_ The node that this contract manages registrations for.
-    constructor(ENS registry_, address owner_, bytes32 baseNode_) {
+    /// @param baseURI_ The base token URI for NFT metadata.
+    /// @param collectionURI_ The URI for the collection's metadata.
+    constructor(
+        ENS registry_,
+        address owner_,
+        bytes32 baseNode_,
+        string memory baseURI_,
+        string memory collectionURI_
+    ) {
         _initializeOwner(owner_);
         registry = registry_;
         baseNode = baseNode_;
+        _baseURI = baseURI_;
+        _collectionURI = collectionURI_;
     }
 
     /// @notice Authorises a controller, who can register and renew domains.
@@ -316,9 +356,41 @@ contract BaseRegistrar is ERC721, Ownable {
         return "BASENAME";
     }
 
-    /// @dev Returns the Uniform Resource Identifier (URI) for token `id`.
-    function tokenURI(uint256) public pure override returns (string memory) {
-        return "";
+    /// @notice Returns the Uniform Resource Identifier (URI) for token `id`.
+    ///
+    /// @dev Reverts if the `tokenId` has not be registered.
+    ///
+    /// @param tokenId The token for which to return the metadata uri.
+    ///
+    /// @return The URI for the specified `tokenId`.
+    function tokenURI(uint256 tokenId) public view override returns (string memory) {
+        if (_ownerOf(tokenId) == address(0)) revert NonexistentToken(tokenId);
+
+        return bytes(_baseURI).length > 0 ? string.concat(_baseURI, tokenId.toString()) : "";
+    }
+
+    /// @notice Returns the Uniform Resource Identifier (URI) for the contract.
+    ///
+    /// @dev ERC-7572: https://eips.ethereum.org/EIPS/eip-7572
+    function contractURI() public view returns (string memory) {
+        return _collectionURI;
+    }
+
+    /// @dev Allows the owner to set the the base Uniform Resource Identifier (URI)`.
+    ///     Emits the `BatchMetadataUpdate` event for the full range of valid `tokenIds`.
+    function setBaseTokenURI(string memory baseURI_) public onlyOwner {
+        _baseURI = baseURI_;
+        /// @dev minimum valid tokenId is `1` because uint256(nodehash) will never be called against `nodehash == 0x0`.
+        uint256 minTokenId = 1;
+        uint256 maxTokenId = type(uint256).max;
+        emit BatchMetadataUpdate(minTokenId, maxTokenId);
+    }
+
+    /// @dev Allows the owner to set the the contract Uniform Resource Identifier (URI)`.
+    ///     Emits the `ContractURIUpdated` event.
+    function setContractURI(string memory collectionURI_) public onlyOwner {
+        _collectionURI = collectionURI_;
+        emit ContractURIUpdated();
     }
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/

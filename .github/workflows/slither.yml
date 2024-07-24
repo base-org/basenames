@@ -11,7 +11,8 @@ jobs:
   analyze:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Run Slither
         uses: crytic/slither-action@v0.4.0
@@ -33,3 +34,5 @@ jobs:
 # security-events must be set to write for the SARIF upload step
 permissions:
   security-events: write
+  contents: read
+  actions: read

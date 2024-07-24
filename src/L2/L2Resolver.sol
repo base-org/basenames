@@ -7,12 +7,15 @@ import {ContentHashResolver} from "ens-contracts/resolvers/profiles/ContentHashR
 import {DNSResolver} from "ens-contracts/resolvers/profiles/DNSResolver.sol";
 import {ENS} from "ens-contracts/registry/ENS.sol";
 import {ExtendedResolver} from "ens-contracts/resolvers/profiles/ExtendedResolver.sol";
+import {IExtendedResolver} from "ens-contracts/resolvers/profiles/IExtendedResolver.sol";
 import {InterfaceResolver} from "ens-contracts/resolvers/profiles/InterfaceResolver.sol";
 import {Multicallable} from "ens-contracts/resolvers/Multicallable.sol";
 import {Ownable} from "solady/auth/Ownable.sol";
 import {NameResolver} from "ens-contracts/resolvers/profiles/NameResolver.sol";
 import {PubkeyResolver} from "ens-contracts/resolvers/profiles/PubkeyResolver.sol";
 import {TextResolver} from "ens-contracts/resolvers/profiles/TextResolver.sol";
+
+import {IReverseRegistrar} from "src/L2/interface/IReverseRegistrar.sol";
 
 /// @title L2 Resolver
 ///
@@ -49,7 +52,7 @@ contract L2Resolver is
     /// @notice The reverse registrar contract.
     address public reverseRegistrar;
 
-    /// @notice A mapping of operators per owner address. An operator is authroized to make changes to
+    /// @notice A mapping of operators per owner address. An operator is authorized to make changes to
     ///         all names owned by the `owner`.
     mapping(address owner => mapping(address operator => bool isApproved)) private _operatorApprovals;
 
@@ -112,6 +115,7 @@ contract L2Resolver is
         registrarController = registrarController_;
         reverseRegistrar = reverseRegistrar_;
         _initializeOwner(owner_);
+        IReverseRegistrar(reverseRegistrar_).claim(owner_);
     }
 
     /// @notice Allows the `owner` to set the registrar controller contract address.
@@ -173,7 +177,7 @@ contract L2Resolver is
         return _tokenApprovals[owner][node][delegate];
     }
 
-    /// @notice Check to see whether `msg.sender` is authroized to modify records for the specified `node`.
+    /// @notice Check to see whether `msg.sender` is authorized to modify records for the specified `node`.
     ///
     /// @dev Override for `ResolverBase:isAuthorised()`. Used in the context of each inherited resolver "profile".
     ///     Validates that `msg.sender` is one of:
@@ -218,6 +222,6 @@ contract L2Resolver is
         )
         returns (bool)
     {
-        return super.supportsInterface(interfaceID);
+        return (interfaceID == type(IExtendedResolver).interfaceId || super.supportsInterface(interfaceID));
     }
 }
