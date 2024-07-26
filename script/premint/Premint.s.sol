@@ -23,7 +23,7 @@ contract Premint is Script {
         bytes32 label = keccak256(bytes(name));
         uint256 id = uint256(label);
 
-        if(!BaseRegistrar(BASE_REGISTRAR).isAvailable(id)) {
+        if (!BaseRegistrar(BASE_REGISTRAR).isAvailable(id)) {
             console.log("Name already registered");
             return;
         }
