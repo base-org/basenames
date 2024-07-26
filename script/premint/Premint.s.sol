@@ -12,9 +12,7 @@ contract Premint is Script {
     address BASE_REGISTRAR = vm.envAddress("BASE_REGISTRAR_ADDR");
     address BASE_ECOSYSTEM_MULTISIG = vm.envAddress("BASE_ECOSYSTEM_MULTISIG");
 
-    uint256 duration = 36500 days;
-
-    function run(string memory name) external {
+    function run(string memory name, uint256 duration) external {
         console.log("-------------------------------");
         console.log("Minting name:");
         console.log(name);
@@ -24,6 +22,11 @@ contract Premint is Script {
 
         bytes32 label = keccak256(bytes(name));
         uint256 id = uint256(label);
+
+        if(!BaseRegistrar(BASE_REGISTRAR).isAvailable(id)) {
+            console.log("Name already registered");
+            return;
+        }
 
         BaseRegistrar(BASE_REGISTRAR).registerOnly(id, BASE_ECOSYSTEM_MULTISIG, duration);
     }
