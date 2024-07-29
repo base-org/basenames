@@ -18,7 +18,7 @@ contract L1ResolverMainnet is Test {
     string constant URL = "TEST_URL";
 
     function setUp() public {
-        uint256 forkId = vm.createFork(vm.envString("ETHEREUM_RPC_URL"));
+        uint256 forkId = vm.createFork("https://eth.llamarpc.com");
         vm.selectFork(forkId);
 
         address[] memory signers = new address[](1);
