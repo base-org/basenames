@@ -207,10 +207,10 @@ contract L1Resolver is IExtendedResolver, ERC165, Ownable {
             || ERC165(rootResolver).supportsInterface(interfaceID);
     }
 
-    /// @notice Internal method for completing `resolve` inteded for the `rootResolver`.
+    /// @notice Internal method for completing `resolve` intended for the `rootResolver`.
     ///
     /// @dev The `PublicResolver` located at `rootResolver` does not implement the `resolve(bytes,bytes)` method.
-    ///     This method completes the resolution request by staticalling `rootResolver` with the resolve request.
+    ///     This method completes the resolution request by staticcalling `rootResolver` with the resolve request.
     ///     Implementation matches the ENS `ExtendedResolver:resolve(bytes,bytes)` method with the exception that it `staticcall`s the
     ///     the `rootResolver` instead of `address(this)`.
     ///
