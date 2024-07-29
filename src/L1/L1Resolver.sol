@@ -217,7 +217,7 @@ contract L1Resolver is IExtendedResolver, ERC165, Ownable {
     /// @param data The ABI encoded data for the underlying resolution function (Eg, addr(bytes32), text(bytes32,string), etc).
     ///
     /// @return The return data, ABI encoded identically to the underlying function.
-    function _resolve(bytes memory, /* name */ bytes memory data) internal view returns (bytes memory) {
+    function _resolve(bytes memory, bytes memory data) internal view returns (bytes memory) {
         (bool success, bytes memory result) = rootResolver.staticcall(data);
         if (success) {
             return result;
