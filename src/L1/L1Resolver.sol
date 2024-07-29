@@ -164,7 +164,7 @@ contract L1Resolver is IExtendedResolver, ERC165, Ownable {
     function resolve(bytes calldata name, bytes calldata data) external view override returns (bytes memory) {
         // Check for base.eth resolution, and resolve return early if so
         if (keccak256(BASE_ETH_NAME) == keccak256(name)) {
-            return IExtendedResolver(rootResolver).resolve(name, data);
+            return _resolve(name, data);
         }
 
         bytes memory callData = abi.encodeWithSelector(IExtendedResolver.resolve.selector, name, data);
@@ -205,6 +205,31 @@ contract L1Resolver is IExtendedResolver, ERC165, Ownable {
     function supportsInterface(bytes4 interfaceID) public view override returns (bool) {
         return interfaceID == type(IExtendedResolver).interfaceId || super.supportsInterface(interfaceID)
             || ERC165(rootResolver).supportsInterface(interfaceID);
+    }
+
+    /// @notice Internal method for completing `resolve` inteded for the `rootResolver`.
+    /// 
+    /// @dev The `PublicResolver` located at `rootResolver` does not implement the `resolve(bytes,bytes)` method.
+    ///     This method completes the resolution request by staticalling `rootResolver` with the resolve request.
+    ///     Implementation matches the ENS `ExtendedResolver:resolve(bytes,bytes)` method with the exception that it `staticcall`s the
+    ///     the `rootResolver` instead of `address(this)`. 
+    ///
+    /// @param data The ABI encoded data for the underlying resolution function (Eg, addr(bytes32), text(bytes32,string), etc).
+    ///
+    /// @return The return data, ABI encoded identically to the underlying function.
+    function _resolve(
+        bytes memory /* name */,
+        bytes memory data
+    ) internal view returns (bytes memory) {
+        (bool success, bytes memory result) = rootResolver.staticcall(data);
+        if (success) {
+            return result;
+        } else {
+            // Revert with the reason provided by the call
+            assembly {
+                revert(add(result, 0x20), mload(result))
+            }
+        }
     }
 
     /// @notice Generic handler for requests to the `rootResolver`
