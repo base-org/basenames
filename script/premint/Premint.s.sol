@@ -2,6 +2,8 @@
 pragma solidity ^0.8.23;
 
 import {BaseRegistrar} from "src/L2/BaseRegistrar.sol";
+import {LibString} from "solady/utils/LibString.sol";
+
 import "forge-std/Script.sol";
 
 /// @title Script for autonomously reserving names with a controller-permissioned pkey
@@ -28,6 +30,18 @@ contract Premint is Script {
             return;
         }
 
+        // Premint name
         BaseRegistrar(BASE_REGISTRAR).registerOnly(id, BASE_ECOSYSTEM_MULTISIG, duration);
+        
+        // Record name and id in csv 
+        string memory idStr = vm.toString(id);
+        string memory data = LibString.concat(name, ",");
+        data = LibString.concat(data, idStr);
+        data = LibString.concat(data, "\n");
+        string[] memory input = new string[](3);
+        input[0] = "python3";
+        input[1] = "py/writer.py";
+        input[2] = data;
+        vm.ffi(input);
     }
 }
