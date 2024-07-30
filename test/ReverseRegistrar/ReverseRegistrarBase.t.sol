@@ -5,7 +5,7 @@ import {Test} from "forge-std/Test.sol";
 import {ReverseRegistrar} from "src/L2/ReverseRegistrar.sol";
 import {Registry} from "src/L2/Registry.sol";
 import {ENS} from "ens-contracts/registry/ENS.sol";
-import {ETH_NODE, REVERSE_NODE} from "src/util/Constants.sol";
+import {ETH_NODE, REVERSE_NODE, BASE_REVERSE_NODE} from "src/util/Constants.sol";
 
 contract ReverseRegistrarBase is Test {
     address public owner = makeAddr("owner");
@@ -17,7 +17,7 @@ contract ReverseRegistrarBase is Test {
 
     function setUp() public {
         registry = new Registry(owner);
-        reverse = new ReverseRegistrar(ENS(address(registry)), owner);
+        reverse = new ReverseRegistrar(ENS(address(registry)), owner, BASE_REVERSE_NODE);
         vm.prank(owner);
         reverse.setControllerApproval(controller, true);
         _registrySetup();
