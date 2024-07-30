@@ -5,7 +5,6 @@ import {ENS} from "ens-contracts/registry/ENS.sol";
 import {NameResolver} from "ens-contracts/resolvers/profiles/NameResolver.sol";
 import {Ownable} from "solady/auth/Ownable.sol";
 
-import {BASE_REVERSE_NODE} from "src/util/Constants.sol";
 import {Sha3} from "src/lib/Sha3.sol";
 
 /// @title Reverse Registrar
@@ -13,8 +12,8 @@ import {Sha3} from "src/lib/Sha3.sol";
 /// @notice Registrar which allows registrants to establish a name as their "primary" record for reverse resolution.
 ///         Inspired by ENS's ReverseRegistrar implementation:
 ///         https://github.com/ensdomains/ens-contracts/blob/staging/contracts/reverseRegistrar/ReverseRegistrar.sol
-///         Writes records to the base-specific reverse node, compliant with ENSIP-19
-///         https://docs.ens.domains/ensip/19
+///         Writes records to the network-specific reverse node set on construction via `reverseNode`.
+///         Compliant with ENSIP-19: https://docs.ens.domains/ensip/19
 ///
 /// @author Coinbase (https://github.com/base-org/usernames)
 /// @author ENS (https://github.com/ensdomains/ens-contracts)
@@ -25,6 +24,9 @@ contract ReverseRegistrar is Ownable {
 
     /// @notice The Registry contract.
     ENS public immutable registry;
+
+    /// @notice The reverse node this registrar manages.
+    bytes32 public immutable reverseNode;
 
     /// @notice Permissioned controller contracts.
     mapping(address controller => bool approved) public controllers;
@@ -97,9 +99,10 @@ contract ReverseRegistrar is Ownable {
     ///
     /// @param registry_ The ENS registry, will be stored as `registry`.
     /// @param owner_ The permissioned address initialized as the `owner` in the `Ownable` context.
-    constructor(ENS registry_, address owner_) {
+    constructor(ENS registry_, address owner_, bytes32 reverseNode_) {
         _initializeOwner(owner_);
         registry = registry_;
+        reverseNode = reverseNode_;
     }
 
     /// @notice Allows the owner to change the address of the default resolver.
@@ -111,7 +114,7 @@ contract ReverseRegistrar is Ownable {
     function setDefaultResolver(address resolver) public onlyOwner {
         if (address(resolver) == address(0)) revert NoZeroAddress();
         defaultResolver = NameResolver(resolver);
-        registry.setResolver(BASE_REVERSE_NODE, resolver);
+        registry.setResolver(reverseNode, resolver);
         emit DefaultResolverChanged(defaultResolver);
     }
 
@@ -150,9 +153,9 @@ contract ReverseRegistrar is Ownable {
         returns (bytes32)
     {
         bytes32 labelHash = Sha3.hexAddress(addr);
-        bytes32 baseReverseNode = keccak256(abi.encodePacked(BASE_REVERSE_NODE, labelHash));
+        bytes32 baseReverseNode = keccak256(abi.encodePacked(reverseNode, labelHash));
         emit BaseReverseClaimed(addr, baseReverseNode);
-        registry.setSubnodeRecord(BASE_REVERSE_NODE, labelHash, owner, resolver, 0);
+        registry.setSubnodeRecord(reverseNode, labelHash, owner, resolver, 0);
         return baseReverseNode;
     }
 
@@ -202,8 +205,8 @@ contract ReverseRegistrar is Ownable {
     /// @param addr The address to hash.
     ///
     /// @return The base-specific reverse node hash.
-    function node(address addr) public pure returns (bytes32) {
-        return keccak256(abi.encodePacked(BASE_REVERSE_NODE, Sha3.hexAddress(addr)));
+    function node(address addr) public view returns (bytes32) {
+        return keccak256(abi.encodePacked(reverseNode, Sha3.hexAddress(addr)));
     }
 
     /// @notice Allows this contract to check if msg.sender is the `Ownable:owner()` for `addr`.
