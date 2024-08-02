@@ -32,8 +32,8 @@ contract Premint is Script {
 
         // Premint name
         BaseRegistrar(BASE_REGISTRAR).registerOnly(id, BASE_ECOSYSTEM_MULTISIG, duration);
-        
-        // Record name and id in csv 
+
+        // Record name and id in csv
         string memory idStr = vm.toString(id);
         string memory data = LibString.concat(name, ",");
         data = LibString.concat(data, idStr);
