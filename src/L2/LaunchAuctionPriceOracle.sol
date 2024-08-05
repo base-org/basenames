@@ -32,7 +32,7 @@ contract LaunchAuctionPriceOracle is StablePriceOracle {
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
     /// @notice The half-life of the premium price decay
-    uint256 constant SECONDS_IN_PERIOD = 1 hours;
+    uint256 constant PRICE_PREMIUM_HALF_LIFE = 1 hours;
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                        IMPLEMENTATION                      */
@@ -78,6 +78,6 @@ contract LaunchAuctionPriceOracle is StablePriceOracle {
     function decayedPremium(uint256 elapsed) public view returns (uint256) {
         /// @dev 50% decay per period in wad format
         uint256 perPeriodDecayPercentWad = FixedPointMathLib.WAD / 2;
-        return EDAPrice.currentPrice(startPremium, elapsed, SECONDS_IN_PERIOD, perPeriodDecayPercentWad);
+        return EDAPrice.currentPrice(startPremium, elapsed, PRICE_PREMIUM_HALF_LIFE, perPeriodDecayPercentWad);
     }
 }
