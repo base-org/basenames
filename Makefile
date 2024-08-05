@@ -66,6 +66,17 @@ execute-premint-5:
 		--rpc-url $(BASE_RPC_URL) --fork-retries 5 --broadcast; \
 	done
 
+# premint6 file should be minted with a 100-year duration, these are Coinbase/Base specific domains
+# 3153600000 = 100 (years) * 365 (days) * 24 (hours) * 3600 (seconds)
+.PHONY: execute-premint-6
+execute-premint-6:
+	@for name in $$(cat script/premint/premint6); \
+	do \
+		echo "$$name"; \
+		forge script script/premint/Premint.s.sol --ffi --sig "run(string,uint256)" "$$name" 3153600000 \
+		--rpc-url $(BASE_RPC_URL) --fork-retries 5 --broadcast; \
+	done
+
 write-ids:
 	@for name in $$(cat script/premint/premint1); \
 	do \
