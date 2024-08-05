@@ -63,9 +63,9 @@ contract LaunchAuctionPriceOracle is StablePriceOracle {
             return 0;
         }
         uint256 elapsed = block.timestamp - expires;
-        uint256 premium = decayedPremium(elapsed);
-        if (premium > endValue) {
-            return premium - endValue;
+        uint256 premium_ = decayedPremium(elapsed);
+        if (premium_ > endValue) {
+            return premium_ - endValue;
         }
         return 0;
     }
