@@ -7,7 +7,7 @@ import {Ownable} from "solady/auth/Ownable.sol";
 import {SafeERC20} from "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 import {StringUtils} from "ens-contracts/ethregistrar/StringUtils.sol";
 
-import {BASE_ETH_NODE} from "src/util/Constants.sol";
+import {BASE_ETH_NODE, GRACE_PERIOD} from "src/util/Constants.sol";
 import {BaseRegistrar} from "./BaseRegistrar.sol";
 import {IDiscountValidator} from "./interface/IDiscountValidator.sol";
 import {IPriceOracle} from "./interface/IPriceOracle.sol";
@@ -176,17 +176,10 @@ contract EARegistrarController is Ownable {
     /// @param expires The date that the registration expires.
     event NameRegistered(string name, bytes32 indexed label, address indexed owner, uint256 expires);
 
-    /// @notice Emitted when a name is renewed.
-    ///
-    /// @param name The name that was renewed.
-    /// @param label The hashed label of the name.
-    /// @param expires The date that the renewed name expires.
-    event NameRenewed(string name, bytes32 indexed label, uint256 expires);
-
     /// @notice Emitted when the payment receiver is updated.
     ///
     /// @param newPaymentReceiver The address of the new payment receiver.
-    event PayemntReceiverUpdated(address newPaymentReceiver);
+    event PaymentReceiverUpdated(address newPaymentReceiver);
 
     /// @notice Emitted when the price oracle is updated.
     ///
@@ -257,8 +250,6 @@ contract EARegistrarController is Ownable {
 
     /// @notice Registrar Controller construction sets all of the requisite external contracts.
     ///
-    /// @dev Assigns ownership of this contract's reverse record to the `owner_`.
-    ///
     /// @param base_ The base registrar contract.
     /// @param prices_ The pricing oracle contract.
     /// @param reverseRegistrar_ The reverse registrar contract.
@@ -281,7 +272,6 @@ contract EARegistrarController is Ownable {
         rootName = rootName_;
         paymentReceiver = paymentReceiver_;
         _initializeOwner(owner_);
-        reverseRegistrar.claim(owner_);
     }
 
     /// @notice Allows the `owner` to set discount details for a specified `key`.
@@ -323,13 +313,13 @@ contract EARegistrarController is Ownable {
 
     /// @notice Allows the `owner` to set the reverse registrar contract.
     ///
-    /// @dev Emits `ReverseRegistrarUpdated` after setting the `paymentReceiver` address.
+    /// @dev Emits `PaymentReceiverUpdated` after setting the `paymentReceiver` address.
     ///
     /// @param paymentReceiver_ The new payment receiver address.
     function setPaymentReceiver(address paymentReceiver_) external onlyOwner {
         if (paymentReceiver_ == address(0)) revert InvalidPaymentReceiver();
         paymentReceiver = paymentReceiver_;
-        emit PayemntReceiverUpdated(paymentReceiver_);
+        emit PaymentReceiverUpdated(paymentReceiver_);
     }
 
     /// @notice Checks whether any of the provided addresses have registered with a discount.
@@ -373,7 +363,7 @@ contract EARegistrarController is Ownable {
     /// @return price The `Price` tuple containing the base and premium prices respectively, denominated in wei.
     function rentPrice(string memory name, uint256 duration) public view returns (IPriceOracle.Price memory price) {
         bytes32 label = keccak256(bytes(name));
-        price = prices.price(name, base.nameExpires(uint256(label)), duration);
+        price = prices.price(name, base.nameExpires(uint256(label)) + GRACE_PERIOD, duration);
     }
 
     /// @notice Checks the register price for a provided `name` and `duration`.

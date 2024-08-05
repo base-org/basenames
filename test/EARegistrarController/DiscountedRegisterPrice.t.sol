@@ -18,7 +18,7 @@ contract DiscountedRegisterPrice is EARegistrarControllerBase {
     }
 
     function test_returnsZero_whenThePriceIsLessThanOrEqualToTheDiscount(uint256 price) public {
-        vm.assume(price <= discountAmount);
+        vm.assume(price <= discountAmount && price > 0);
         prices.setPrice(name, IPriceOracle.Price({base: price, premium: 0}));
         vm.prank(owner);
         controller.setDiscountDetails(_getDefaultDiscount());

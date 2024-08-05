@@ -7,11 +7,12 @@ import {Registry} from "src/L2/Registry.sol";
 import {ENS} from "ens-contracts/registry/ENS.sol";
 import {ETH_NODE, REVERSE_NODE} from "src/util/Constants.sol";
 import {NameEncoder} from "ens-contracts/utils/NameEncoder.sol";
+import {MockReverseRegistrar} from "test/mocks/MockReverseRegistrar.sol";
 
 contract L2ResolverBase is Test {
     L2Resolver public resolver;
     Registry public registry;
-    address reverse = makeAddr("reverse");
+    address reverse;
     address controller = makeAddr("controller");
     address owner = makeAddr("owner");
     address user = makeAddr("user");
@@ -21,6 +22,7 @@ contract L2ResolverBase is Test {
 
     function setUp() public {
         registry = new Registry(owner);
+        reverse = address(new MockReverseRegistrar());
         resolver = new L2Resolver(ENS(address(registry)), controller, reverse, owner);
         (, node) = NameEncoder.dnsEncodeName(name);
         _establishNamespace();

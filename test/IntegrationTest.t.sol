@@ -22,7 +22,7 @@ import {
     ETH_NODE,
     BASE_ETH_NODE,
     REVERSE_NODE,
-    ADDR_REVERSE_NODE,
+    BASE_REVERSE_NODE,
     GRACE_PERIOD,
     BASE_ETH_NAME
 } from "src/util/Constants.sol";
@@ -59,7 +59,7 @@ contract IntegrationTest is Test {
         payments = makeAddr("payments");
 
         registry = new Registry(owner);
-        reverseRegistrar = new ReverseRegistrar(registry, owner);
+        reverseRegistrar = new ReverseRegistrar(registry, owner, BASE_REVERSE_NODE);
 
         uint256[] memory rentPrices = new uint256[](6);
         rentPrices[0] = 317_097_919_837;
@@ -69,8 +69,8 @@ contract IntegrationTest is Test {
         rentPrices[4] = 31_709_791;
         rentPrices[5] = 3_170_979; //3,170,979.1983764587 = 1e14 / (365 * 24 * 3600)
 
-        exponentialPremiumPriceOracle = new ExponentialPremiumPriceOracle(rentPrices, 1e18, 21, 1 days);
-        baseRegistrar = new BaseRegistrar(registry, owner, BASE_ETH_NODE);
+        exponentialPremiumPriceOracle = new ExponentialPremiumPriceOracle(rentPrices, 1e18, 21);
+        baseRegistrar = new BaseRegistrar(registry, owner, BASE_ETH_NODE, "", "");
 
         _establishNamespaces();
 
@@ -107,10 +107,8 @@ contract IntegrationTest is Test {
         registry.setSubnodeOwner(ROOT_NODE, ETH_LABEL, owner);
         registry.setSubnodeOwner(ETH_NODE, BASE_LABEL, address(baseRegistrar));
 
-        // establish addr.reverse namespace and assign ownership of addr.reverse to the reverse registrar
-        registry.setSubnodeOwner(ROOT_NODE, REVERSE_LABEL, owner);
-        registry.setSubnodeOwner(REVERSE_NODE, ADDR_LABEL, address(reverseRegistrar));
         // establish 80002105.reverse namespace and assign ownership to the reverse registrar
+        registry.setSubnodeOwner(ROOT_NODE, REVERSE_LABEL, owner);
         registry.setSubnodeOwner(REVERSE_NODE, keccak256("80002105"), address(reverseRegistrar));
         vm.stopPrank();
     }
