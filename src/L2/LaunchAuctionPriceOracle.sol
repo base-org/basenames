@@ -78,7 +78,6 @@ contract LaunchAuctionPriceOracle is StablePriceOracle {
     function decayedPremium(uint256 elapsed) public view returns (uint256) {
         /// @dev 50% decay per period in wad format
         uint256 perPeriodDecayPercentWad = FixedPointMathLib.WAD / 2;
-        uint256 premium = EDAPrice.currentPrice(startPremium, elapsed, SECONDS_IN_PERIOD, perPeriodDecayPercentWad);
-        return premium;
+        return EDAPrice.currentPrice(startPremium, elapsed, SECONDS_IN_PERIOD, perPeriodDecayPercentWad);
     }
 }
