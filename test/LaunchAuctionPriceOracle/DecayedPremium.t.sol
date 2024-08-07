@@ -20,7 +20,7 @@ contract DecayedPremium is LaunchAuctionPriceOracleBase {
         uint256 auctionEndPremium = oracle.decayedPremium(totalDays * 1 days);
         assertTrue(auctionEndPremium < oracle.endValue());
     }
-    
+
     function test_decayedPremium_halfPeriod() public view {
         uint256 elapsed = 1 hours / 2;
         uint256 expectedPremium = 70710678118654752400; // Calculated expected value for premium price after 1/2 day
