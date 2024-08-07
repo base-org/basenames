@@ -77,6 +77,17 @@ execute-premint-6:
 		--rpc-url $(BASE_RPC_URL) --fork-retries 5 --broadcast; \
 	done
 
+# premint7 file should be minted with a 1-year duration, these are the F500 names
+# 31536000 = 1 (years) * 365 (days) * 24 (hours) * 3600 (seconds)
+.PHONY: execute-premint-7
+execute-premint-7:
+	@for name in $$(cat script/premint/premint7); \
+	do \
+		echo "$$name"; \
+		forge script script/premint/Premint.s.sol --ffi --sig "run(string,uint256)" "$$name" 31536000 \
+		--rpc-url $(BASE_RPC_URL) --fork-retries 5 --broadcast; \
+	done
+
 write-ids:
 	@for name in $$(cat script/premint/premint1); \
 	do \
