@@ -49,7 +49,7 @@ elapsed_times, prices = calculate_prices(base, start_premium, end_value, num_day
 
 data = zip(elapsed_times, prices)
 
-with open("1.5hr1day.csv", "a") as f:
+with open("1hr2day.csv", "a") as f:
     for line in data:
         f.write(str(line[0]) + "," + str(line[1]) + "\n")
 
