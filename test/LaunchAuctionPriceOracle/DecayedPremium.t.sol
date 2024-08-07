@@ -23,14 +23,14 @@ contract DecayedPremium is LaunchAuctionPriceOracleBase {
 
     function test_decayedPremium_halfPeriod() public view {
         uint256 elapsed = 1 hours / 2;
-        uint256 expectedPremium = 70710678118654752400; // Calculated expected value for premium price after 1/2 day
+        uint256 expectedPremium = 70710678118654752400; // Calculated expected value for premium price after 1/2 hour
         uint256 actualPremium = oracle.decayedPremium(elapsed);
         assertEq(actualPremium, expectedPremium);
     }
 
     function test_decayedPremium_threePeriods() public view {
         uint256 elapsed = 3 hours;
-        uint256 expectedPremium = 12499999999999999900; // Calculated expected value for premium price after 3 days
+        uint256 expectedPremium = 12499999999999999900; // Calculated expected value for premium price after 3 hours
         uint256 actualPremium = oracle.decayedPremium(elapsed);
         assertEq(actualPremium, expectedPremium);
     }
