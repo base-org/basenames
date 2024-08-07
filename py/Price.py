@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 PRECISION = 10 ** 18
 SECONDS_PER_DAY = 86400
-DAY_FRACTION = 24
+DAY_FRACTION = 8
 
 def decayed_premium(start_premium, elapsed_seconds, seconds_in_period, per_period_decay_percent_wad):
     ratio = elapsed_seconds / seconds_in_period
@@ -52,11 +52,11 @@ num_days = num
 
 elapsed_times, prices = calculate_prices(base, start_premium, end_value, num_days, seconds_in_period, per_period_decay_percent_wad)
 plt.figure(figsize=(start, num))
-plt.plot(elapsed_times, prices, marker='o')
+plt.plot([x * 3 for x in elapsed_times], prices, marker='o')
 # plt.xlabel('Elapsed Time (days/%s)' % DAY_FRACTION)
 plt.xlabel('Elapsed Time (hours)')
 plt.ylabel('Premium Price')
 plt.title('Pricing Chart')
 plt.grid(True)
-plt.xticks(range(num_days*DAY_FRACTION + 1))
+plt.xticks(range(num_days*DAY_FRACTION*3 + 1))
 plt.show()
