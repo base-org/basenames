@@ -2,8 +2,10 @@
 pragma solidity ^0.8.17;
 
 import {Test} from "forge-std/Test.sol";
+import {FixedPointMathLib} from "solady/utils/FixedPointMathLib.sol";
 import {StablePriceOracle} from "src/L2/StablePriceOracle.sol";
 import {LaunchAuctionPriceOracle} from "src/L2/LaunchAuctionPriceOracle.sol";
+import {EDAPrice} from "src/lib/EDAPrice.sol";
 
 contract LaunchAuctionPriceOracleBase is Test {
     LaunchAuctionPriceOracle oracle;
@@ -19,6 +21,11 @@ contract LaunchAuctionPriceOracleBase is Test {
     uint256 totalDays = 1;
 
     uint256 hoursPerDay = 24;
+
+    /// @notice The half-life of the premium price decay
+    uint256 constant PRICE_PREMIUM_HALF_LIFE = 1 hours;
+    uint256 constant PER_PERIOD_DECAY_PERCENT_WAD = FixedPointMathLib.WAD / 2;
+    uint256 constant ONE_HUNDRED_YEARS = 36_500 days;
 
     function setUp() public {
         uint256[] memory rentPrices = new uint256[](6);
@@ -49,5 +56,14 @@ contract LaunchAuctionPriceOracleBase is Test {
         assertEq(oracle.price4Letter(), rent4);
         assertEq(oracle.price5Letter(), rent5);
         assertEq(oracle.price10Letter(), rent10);
+    }
+
+    /// @return Returns the auction duration in seconds
+    function _auctionDuration() internal view returns (uint256) {
+        return totalDays * 1 days;
+    }
+
+    function _calculateDecayedPremium(uint256 elapsed) internal view returns (uint256) {
+        return EDAPrice.currentPrice(startPremium, elapsed, PRICE_PREMIUM_HALF_LIFE, PER_PERIOD_DECAY_PERCENT_WAD);
     }
 }
