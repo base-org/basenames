@@ -19,7 +19,7 @@ def calculate_prices(base_price, start_premium, end_value, num_days, seconds_in_
     elapsed_times = []
     prices = []
 
-    for hour in range(num_days * 24 + 1):
+    for hour in range(int(num_days * 24) + 1):
         for i in range(10):
             elapsed_time = (hour + i / 10) * SECONDS_PER_HOUR
 
@@ -32,9 +32,11 @@ def calculate_prices(base_price, start_premium, end_value, num_days, seconds_in_
     return elapsed_times, prices
 
 start = int(input("Input a value for the start premium (ETH): "))
-num_days = int(input("Input a value for the number of days over which the price should decay: "))
+num_days = float(input("Input a value for the number of days over which the price should decay: "))
 halflife = float(input("Input the number of hours in the halflife: "))
 base = float(input("Input the base price (ETH) of the name: "))
+filename = str(input("Input the filename to store the table values: "))
+filename = filename + ".csv"
 
 start_premium = start * (10 ** 18)
 seconds_in_period = SECONDS_PER_HOUR * halflife
@@ -49,15 +51,15 @@ elapsed_times, prices = calculate_prices(base, start_premium, end_value, num_day
 
 data = zip(elapsed_times, prices)
 
-with open("0.5hr1day.csv", "a") as f:
+with open(filename, "a") as f:
     for line in data:
         f.write(str(line[0]) + "," + str(line[1]) + "\n")
 
-plt.figure(figsize=(start, num_hours))
-plt.plot(elapsed_times, prices, marker='o')
-plt.xlabel('Elapsed Time (hours)')
-plt.ylabel('Premium Price')
-plt.title('Pricing Chart')
-plt.grid(True)
-plt.xticks(range(num_days*DAY_FRACTION*3 + 1))
-plt.show()
+# plt.figure(figsize=(start, num_hours))
+# plt.plot(elapsed_times, prices, marker='o')
+# plt.xlabel('Elapsed Time (hours)')
+# plt.ylabel('Premium Price')
+# plt.title('Pricing Chart')
+# plt.grid(True)
+# plt.xticks(range(int(num_days*DAY_FRACTION*3) + 1))
+# plt.show()
