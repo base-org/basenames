@@ -30,11 +30,10 @@ contract LaunchAuctionPriceOracleBase is Test {
     function setUp() public {
         uint256[] memory rentPrices = new uint256[](6);
 
-
         /// @dev These are the per-second prices (wei/s) for various letter lengths, i.e.
         ///     1-letter == rent1, 2-letter == rent2, etc.
         ///     The price values are set so that the annual pricing matches our product prices:
-        ///     0.1 ETH for a 3-letter name, 0.01 ETH for a 4-letter name, etc... 
+        ///     0.1 ETH for a 3-letter name, 0.01 ETH for a 4-letter name, etc...
         rent1 = 316_808_781_402;
         rent2 = 31_680_878_140;
         rent3 = 3_168_087_814;
