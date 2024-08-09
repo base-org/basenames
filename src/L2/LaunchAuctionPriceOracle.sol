@@ -31,8 +31,8 @@ contract LaunchAuctionPriceOracle is StablePriceOracle {
     /*                          CONSTANTS                         */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
-    /// @notice The half-life of the premium price decay
-    uint256 constant PRICE_PREMIUM_HALF_LIFE = 1 hours;
+    /// @notice The half-life of the premium price decay in seconds.
+    uint256 constant PRICE_PREMIUM_HALF_LIFE = 1.5 hours;
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                        IMPLEMENTATION                      */
@@ -42,10 +42,11 @@ contract LaunchAuctionPriceOracle is StablePriceOracle {
     ///
     /// @param rentPrices The base prices passed to construction of the StablePriceOracle.
     /// @param startPremium_ The starting price for the dutch auction, denominated in wei.
-    /// @param totalDays    The total duration (in days) for the dutch auction.
-    constructor(uint256[] memory rentPrices, uint256 startPremium_, uint256 totalDays) StablePriceOracle(rentPrices) {
+    /// @param totalHours    The total duration (in hours) for the dutch auction.
+    constructor(uint256[] memory rentPrices, uint256 startPremium_, uint256 totalHours) StablePriceOracle(rentPrices) {
         startPremium = startPremium_;
-        endValue = startPremium >> (totalDays * 24); // 1 hour halflife
+        require((totalHours * 1 hours) % PRICE_PREMIUM_HALF_LIFE == 0, "Invalid totalHours");
+        endValue = startPremium >> (totalHours / PRICE_PREMIUM_HALF_LIFE);
     }
 
     /// @notice The internal method for calculating pricing premium

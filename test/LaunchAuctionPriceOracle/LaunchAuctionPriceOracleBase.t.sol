@@ -18,12 +18,12 @@ contract LaunchAuctionPriceOracleBase is Test {
     uint256 rent10;
 
     uint256 startPremium = 100 ether;
-    uint256 totalDays = 1;
+    uint256 totalHours = 36;
 
     uint256 hoursPerDay = 24;
 
     /// @notice The half-life of the premium price decay
-    uint256 constant PRICE_PREMIUM_HALF_LIFE = 1 hours;
+    uint256 constant PRICE_PREMIUM_HALF_LIFE = 1.5 hours;
     uint256 constant PER_PERIOD_DECAY_PERCENT_WAD = FixedPointMathLib.WAD / 2;
     uint256 constant ONE_HUNDRED_YEARS = 36_500 days;
 
@@ -48,12 +48,12 @@ contract LaunchAuctionPriceOracleBase is Test {
         rentPrices[4] = rent5;
         rentPrices[5] = rent10;
 
-        oracle = new LaunchAuctionPriceOracle(rentPrices, startPremium, totalDays);
+        oracle = new LaunchAuctionPriceOracle(rentPrices, startPremium, totalHours);
     }
 
     function test_constructor() public view {
         assertEq(oracle.startPremium(), startPremium);
-        assertEq(oracle.endValue(), startPremium >> (totalDays * hoursPerDay));
+        assertEq(oracle.endValue(), startPremium >> (totalHours / PRICE_PREMIUM_HALF_LIFE));
         assertEq(oracle.price1Letter(), rent1);
         assertEq(oracle.price2Letter(), rent2);
         assertEq(oracle.price3Letter(), rent3);
@@ -64,7 +64,7 @@ contract LaunchAuctionPriceOracleBase is Test {
 
     /// @return Returns the auction duration in seconds
     function _auctionDuration() internal view returns (uint256) {
-        return totalDays * 1 days;
+        return totalHours * 1 hours;
     }
 
     function _calculateDecayedPremium(uint256 elapsed) internal view returns (uint256) {

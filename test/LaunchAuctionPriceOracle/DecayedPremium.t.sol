@@ -13,7 +13,7 @@ contract DecayedPremium is LaunchAuctionPriceOracleBase {
     }
 
     function test_decayedPremium_auctionEnd() public view {
-        uint256 auctionEndPremium = oracle.decayedPremium(totalDays * 1 days);
+        uint256 auctionEndPremium = oracle.decayedPremium(_auctionDuration());
         assertTrue(auctionEndPremium < oracle.endValue());
     }
 
