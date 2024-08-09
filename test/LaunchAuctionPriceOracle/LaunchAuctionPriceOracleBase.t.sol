@@ -28,6 +28,26 @@ contract LaunchAuctionPriceOracleBase is Test {
     uint256 constant ONE_HUNDRED_YEARS = 36_500 days;
 
     function setUp() public {
+        oracle = new LaunchAuctionPriceOracle(_getRentPrices(), startPremium, totalHours);
+    }
+
+    function test_constructor() public view {
+        assertEq(oracle.startPremium(), startPremium);
+        assertEq(oracle.endValue(), startPremium >> (totalHours / PRICE_PREMIUM_HALF_LIFE));
+        assertEq(oracle.price1Letter(), rent1);
+        assertEq(oracle.price2Letter(), rent2);
+        assertEq(oracle.price3Letter(), rent3);
+        assertEq(oracle.price4Letter(), rent4);
+        assertEq(oracle.price5Letter(), rent5);
+        assertEq(oracle.price10Letter(), rent10);
+    }
+
+    function test_constructorReverts_whenInvalidDuration() public {
+        vm.expectRevert(LaunchAuctionPriceOracle.InvalidDuration.selector);
+        new LaunchAuctionPriceOracle(_getRentPrices(), startPremium, totalHours + 1);
+    }
+
+    function _getRentPrices() internal returns (uint256[] memory) {
         uint256[] memory rentPrices = new uint256[](6);
 
         /// @dev These are the per-second prices (wei/s) for various letter lengths, i.e.
@@ -48,18 +68,7 @@ contract LaunchAuctionPriceOracleBase is Test {
         rentPrices[4] = rent5;
         rentPrices[5] = rent10;
 
-        oracle = new LaunchAuctionPriceOracle(rentPrices, startPremium, totalHours);
-    }
-
-    function test_constructor() public view {
-        assertEq(oracle.startPremium(), startPremium);
-        assertEq(oracle.endValue(), startPremium >> (totalHours / PRICE_PREMIUM_HALF_LIFE));
-        assertEq(oracle.price1Letter(), rent1);
-        assertEq(oracle.price2Letter(), rent2);
-        assertEq(oracle.price3Letter(), rent3);
-        assertEq(oracle.price4Letter(), rent4);
-        assertEq(oracle.price5Letter(), rent5);
-        assertEq(oracle.price10Letter(), rent10);
+        return rentPrices;
     }
 
     /// @return Returns the auction duration in seconds
