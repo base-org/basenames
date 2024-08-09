@@ -40,7 +40,7 @@ contract StablePriceOracle is IPriceOracle {
 
     /// @notice Price Oracle constructor which sets the immutably stored prices.
     ///
-    /// @param _rentPrices An array of prices orderd in increasing length.
+    /// @param _rentPrices An array of prices ordered in increasing length.
     constructor(uint256[] memory _rentPrices) {
         price1Letter = _rentPrices[0];
         price2Letter = _rentPrices[1];
