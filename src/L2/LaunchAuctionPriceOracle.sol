@@ -35,6 +35,13 @@ contract LaunchAuctionPriceOracle is StablePriceOracle {
     uint256 constant PRICE_PREMIUM_HALF_LIFE = 1.5 hours;
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+    /*                          ERRORS                            */
+    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+
+    /// @notice Thrown when the auction duration is not cleanly divisible by the auction halflife.
+    error InvalidDuration();
+
+    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                        IMPLEMENTATION                      */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
@@ -45,7 +52,7 @@ contract LaunchAuctionPriceOracle is StablePriceOracle {
     /// @param totalHours    The total duration (in hours) for the dutch auction.
     constructor(uint256[] memory rentPrices, uint256 startPremium_, uint256 totalHours) StablePriceOracle(rentPrices) {
         startPremium = startPremium_;
-        require((totalHours * 1 hours) % PRICE_PREMIUM_HALF_LIFE == 0, "Invalid totalHours");
+        if ((totalHours * 1 hours) % PRICE_PREMIUM_HALF_LIFE != 0) revert InvalidDuration();
         endValue = startPremium >> (totalHours / PRICE_PREMIUM_HALF_LIFE);
     }
 
