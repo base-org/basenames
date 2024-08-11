@@ -20,8 +20,6 @@ contract LaunchAuctionPriceOracleBase is Test {
     uint256 startPremium = 100 ether;
     uint256 totalHours = 36;
 
-    uint256 hoursPerDay = 24;
-
     /// @notice The half-life of the premium price decay
     uint256 constant PRICE_PREMIUM_HALF_LIFE = 1.5 hours;
     uint256 constant PER_PERIOD_DECAY_PERCENT_WAD = FixedPointMathLib.WAD / 2;
@@ -33,7 +31,7 @@ contract LaunchAuctionPriceOracleBase is Test {
 
     function test_constructor() public view {
         assertEq(oracle.startPremium(), startPremium);
-        assertEq(oracle.endValue(), startPremium >> (totalHours / PRICE_PREMIUM_HALF_LIFE));
+        assertEq(oracle.endValue(), startPremium >> ((totalHours * 1 hours) / PRICE_PREMIUM_HALF_LIFE));
         assertEq(oracle.price1Letter(), rent1);
         assertEq(oracle.price2Letter(), rent2);
         assertEq(oracle.price3Letter(), rent3);

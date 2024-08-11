@@ -53,7 +53,7 @@ contract LaunchAuctionPriceOracle is StablePriceOracle {
     constructor(uint256[] memory rentPrices, uint256 startPremium_, uint256 totalHours) StablePriceOracle(rentPrices) {
         startPremium = startPremium_;
         if ((totalHours * 1 hours) % PRICE_PREMIUM_HALF_LIFE != 0) revert InvalidDuration();
-        endValue = startPremium >> (totalHours / PRICE_PREMIUM_HALF_LIFE);
+        endValue = startPremium >> ((totalHours * 1 hours) / PRICE_PREMIUM_HALF_LIFE);
     }
 
     /// @notice The internal method for calculating pricing premium
