@@ -87,8 +87,6 @@ contract IntegrationTestBase is Test {
             payments
         );
 
-        vm.prank(owner);
-        baseRegistrar.addController(address(registrarController));
 
         vm.prank(owner);
         reverseRegistrar.setControllerApproval(address(registrarController), true);
@@ -101,6 +99,9 @@ contract IntegrationTestBase is Test {
         vm.prank(owner);
         reverseRegistrar.setName("rootOwner");
 
+        vm.prank(owner);
+        baseRegistrar.addController(address(registrarController));
+        
         vm.prank(owner);
         registrarController.setLaunchTime(LAUNCH_TIME);
         vm.warp(LAUNCH_TIME);
