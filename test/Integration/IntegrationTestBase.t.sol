@@ -14,6 +14,7 @@ import {IPriceOracle} from "src/L2/interface/IPriceOracle.sol";
 import {IReverseRegistrar} from "src/L2/interface/IReverseRegistrar.sol";
 import {L1Resolver} from "src/L1/L1Resolver.sol";
 import {L2Resolver} from "src/L2/L2Resolver.sol";
+import {LaunchAuctionPriceOracle} from "src/L2/LaunchAuctionPriceOracle.sol";
 import {RegistrarController} from "src/L2/RegistrarController.sol";
 import {Registry} from "src/L2/Registry.sol";
 import {ReverseRegistrar} from "src/L2/ReverseRegistrar.sol";
@@ -27,7 +28,7 @@ import {
     BASE_ETH_NAME
 } from "src/util/Constants.sol";
 
-contract IntegrationTest is Test {
+contract IntegrationTestBase is Test {
     address owner;
     address signer;
     address alice;
@@ -40,6 +41,7 @@ contract IntegrationTest is Test {
     RegistrarController registrarController;
     L2Resolver defaultL2Resolver;
     ReverseRegistrar reverseRegistrar;
+    LaunchAuctionPriceOracle launchAuctionPriceOracle;
     ExponentialPremiumPriceOracle exponentialPremiumPriceOracle;
 
     AttestationValidator attestationValidator;
@@ -52,7 +54,14 @@ contract IntegrationTest is Test {
     bytes32 constant REVERSE_LABEL = 0xdec08c9dbbdd0890e300eb5062089b2d4b1c40e3673bbccb5423f7b37dcf9a9c;
     bytes32 constant ADDR_LABEL = 0xe5e14487b78f85faa6e1808e89246cf57dd34831548ff2e6097380d98db2504a;
 
-    function setUp() public {
+    uint256 constant LAUNCH_AUCTION_START_PRICE = 100 ether;
+    uint256 constant LAUNCH_AUCTION_DURATION_HOURS = 36;
+    uint256 constant LAUNCH_TIME = 1723420800; // Monday, August 12, 2024 12:00:00 AM GMT
+
+    uint256 constant EXPIRY_AUCTION_START_PRICE = 1000 ether;
+    uint256 constant EXPIRY_AUCTION_DURATION_DAYS = 21;
+
+    function setUp() public virtual {
         owner = makeAddr("owner");
         signer = makeAddr("signer");
         alice = makeAddr("alice");
@@ -61,22 +70,16 @@ contract IntegrationTest is Test {
         registry = new Registry(owner);
         reverseRegistrar = new ReverseRegistrar(registry, owner, BASE_REVERSE_NODE);
 
-        uint256[] memory rentPrices = new uint256[](6);
-        rentPrices[0] = 317_097_919_837;
-        rentPrices[1] = 31_709_791_983;
-        rentPrices[2] = 3_170_979_198;
-        rentPrices[3] = 317_097_919;
-        rentPrices[4] = 31_709_791;
-        rentPrices[5] = 3_170_979; //3,170,979.1983764587 = 1e14 / (365 * 24 * 3600)
+        launchAuctionPriceOracle =
+            new LaunchAuctionPriceOracle(_getBasePrices(), LAUNCH_AUCTION_START_PRICE, LAUNCH_AUCTION_DURATION_HOURS);
 
-        exponentialPremiumPriceOracle = new ExponentialPremiumPriceOracle(rentPrices, 1e18, 21);
         baseRegistrar = new BaseRegistrar(registry, owner, BASE_ETH_NODE, "", "");
 
         _establishNamespaces();
 
         registrarController = new RegistrarController(
             baseRegistrar,
-            exponentialPremiumPriceOracle,
+            IPriceOracle(launchAuctionPriceOracle),
             IReverseRegistrar(address(reverseRegistrar)),
             owner,
             BASE_ETH_NODE,
@@ -98,7 +101,9 @@ contract IntegrationTest is Test {
         vm.prank(owner);
         reverseRegistrar.setName("rootOwner");
 
-        vm.warp(GRACE_PERIOD * 10);
+        vm.prank(owner);
+        registrarController.setLaunchTime(LAUNCH_TIME);
+        vm.warp(LAUNCH_TIME);
     }
 
     function _establishNamespaces() internal {
@@ -133,5 +138,16 @@ contract IntegrationTest is Test {
         });
 
         registrarController.register{value: registerPrice}(request);
+    }
+
+    function _getBasePrices() internal pure returns (uint256[] memory) {
+        uint256[] memory rentPrices = new uint256[](6);
+        rentPrices[0] = 316_808_781_402;
+        rentPrices[1] = 31_680_878_140;
+        rentPrices[2] = 3_168_087_814;
+        rentPrices[3] = 316_808_781;
+        rentPrices[4] = 31_680_878;
+        rentPrices[5] = 3_168_087; // 3,168,808.781402895 = 1e14 / (365.25 * 24 * 3600)
+        return rentPrices;
     }
 }
