@@ -18,14 +18,14 @@ contract DecayedPremium is LaunchAuctionPriceOracleBase {
     }
 
     function test_decayedPremium_halfPeriod() public view {
-        uint256 elapsed = 1 hours / 2;
+        uint256 elapsed = PRICE_PREMIUM_HALF_LIFE / 2;
         uint256 expectedPremium = _calculateDecayedPremium(elapsed);
         uint256 actualPremium = oracle.decayedPremium(elapsed);
         assertEq(actualPremium, expectedPremium);
     }
 
     function test_decayedPremium_threePeriods() public view {
-        uint256 elapsed = 3 hours;
+        uint256 elapsed = 3 * PRICE_PREMIUM_HALF_LIFE;
         uint256 expectedPremium = _calculateDecayedPremium(elapsed);
         uint256 actualPremium = oracle.decayedPremium(elapsed);
         assertEq(actualPremium, expectedPremium);
