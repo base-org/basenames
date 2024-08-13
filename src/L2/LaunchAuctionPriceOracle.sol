@@ -10,7 +10,7 @@ import {StablePriceOracle} from "src/L2/StablePriceOracle.sol";
 ///
 /// @notice The mechanism by which names are auctioned upon Basenames public launch. The RegistrarController
 ///     Passes the `launchTime` in place of expiry for all new names. The half life of this contract is hard-coded
-///     to 1 hour, accomplished by bitshifting the `endValue` and by passing this period into the exponential decay
+///     to 1.5 hours, accomplished by bitshifting the `endValue` and by passing this period into the exponential decay
 ///     calculation.
 ///
 ///     Inspired by the `ExponentialPremiumPriceOracle` implemented by ENS:
