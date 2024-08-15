@@ -88,6 +88,17 @@ execute-premint-7:
 		--rpc-url $(BASE_RPC_URL) --fork-retries 5 --broadcast; \
 	done
 
+# premint8 file should be minted with a 1-year duration, these are the base BD names
+# 31536000 = 1 (years) * 365 (days) * 24 (hours) * 3600 (seconds)
+.PHONY: execute-premint-8
+execute-premint-8:
+	@for name in $$(cat script/premint/premint8); \
+	do \
+		echo "$$name"; \
+		forge script script/premint/Premint.s.sol --ffi --sig "run(string,uint256)" "$$name" 31536000 \
+		--rpc-url $(BASE_RPC_URL) --fork-retries 5 --broadcast; \
+	done
+
 write-ids:
 	@for name in $$(cat script/premint/premint1); \
 	do \
