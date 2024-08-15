@@ -123,7 +123,7 @@ contract IntegrationTestBase is Test {
         vm.startPrank(alice);
 
         string memory name = "alice";
-        uint256 duration = 90 days;
+        uint256 duration = 365.25 days;
 
         uint256 registerPrice = registrarController.registerPrice(name, duration);
         vm.deal(alice, registerPrice);
