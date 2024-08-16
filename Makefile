@@ -99,6 +99,17 @@ execute-premint-8:
 		--rpc-url $(BASE_RPC_URL) --fork-retries 5 --broadcast; \
 	done
 
+# premint9 file should be minted with a 100-year duration, these are the base project words
+# 3153600000 = 100 (years) * 365 (days) * 24 (hours) * 3600 (seconds)
+.PHONY: execute-premint-9
+execute-premint-9:
+	@for name in $$(cat script/premint/premint9); \
+	do \
+		echo "$$name"; \
+		forge script script/premint/Premint.s.sol --ffi --sig "run(string,uint256)" "$$name" 31536000 \
+		--rpc-url $(BASE_RPC_URL) --fork-retries 5 --broadcast; \
+	done
+
 write-ids:
 	@for name in $$(cat script/premint/premint1); \
 	do \
