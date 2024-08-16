@@ -2,7 +2,7 @@
 # BASENAMES
 
 
-This repository contians code for minting and managing [ENS](https://docs.ens.domains/) subdomains on the Base network as `base.eth` subdomains. 
+This repository contains code for minting and managing [ENS](https://docs.ens.domains/) subdomains on the Base network as `base.eth` subdomains. 
 
 It supports:
 - Registering base.eth subdomains on Base natively
