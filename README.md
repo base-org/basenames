@@ -2,7 +2,7 @@
 # BASENAMES
 
 
-This repository contians code for minting and managing [ENS](https://docs.ens.domains/) subdomains on the Base network as `base.eth` subdomains. 
+This repository contains code for minting and managing [ENS](https://docs.ens.domains/) subdomains on the Base network as `base.eth` subdomains. 
 
 It supports:
 - Registering base.eth subdomains on Base natively
@@ -27,9 +27,9 @@ Basenames are a core onchain building block that enables anyone to establish the
 | -------- | ------- | 
 | Registry | [0xb94704422c2a1e396835a571837aa5ae53285a95](https://basescan.org/address/0xb94704422c2a1e396835a571837aa5ae53285a95) | 
 | BaseRegistrar | [0x03c4738ee98ae44591e1a4a4f3cab6641d95dd9a](https://basescan.org/address/0x03c4738ee98ae44591e1a4a4f3cab6641d95dd9a) | 
-| RegistrarController | NOT YET DEPLOYED |
-| Launch Price Oracle | NOT YET DEPLOYED |
-| Price Oracle | NOT YET DEPLOYED | 
+| RegistrarController | [0x4cCb0BB02FCABA27e82a56646E81d8c5bC4119a5](https://basescan.org/address/0x4cCb0BB02FCABA27e82a56646E81d8c5bC4119a5) |
+| Launch Price Oracle | [0xd53b558e1f07289acedf028d226974abba258312](https://basescan.org/address/0xd53b558e1f07289acedf028d226974abba258312) |
+| Price Oracle | [0x508CFE43aa84b8048cB6d39037cE0dc96d8aDc75](https://basescan.org/address/0x508CFE43aa84b8048cB6d39037cE0dc96d8aDc75) | 
 | ReverseRegistrar | [0x79ea96012eea67a83431f1701b3dff7e37f9e282](https://basescan.org/address/0x79ea96012eea67a83431f1701b3dff7e37f9e282) | 
 | L2Resolver | [0xC6d566A56A1aFf6508b41f6c90ff131615583BCD](https://basescan.org/address/0xC6d566A56A1aFf6508b41f6c90ff131615583BCD) | 
 
