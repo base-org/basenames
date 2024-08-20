@@ -6,7 +6,7 @@ wrapper = "0xBD9bab0A97b2Cc6Aa28b9C902d7C656B121D5F9F"
 def main():
 
     owners = []
-    with open("cache/BNS-DATA.json", "r") as f:
+    with open("cache/Update-BNS-Users.json", "r") as f:
         data = json.load(f)
         for r in data:
             if(len(r["owners"]) > 1): 
