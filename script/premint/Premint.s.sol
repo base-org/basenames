@@ -2,6 +2,7 @@
 pragma solidity ^0.8.23;
 
 import {BaseRegistrar} from "src/L2/BaseRegistrar.sol";
+import {RegistrarController} from "src/L2/RegistrarController.sol";
 import {LibString} from "solady/utils/LibString.sol";
 
 import "forge-std/Script.sol";
@@ -13,6 +14,7 @@ contract Premint is Script {
     uint256 premintPrivateKey = vm.envUint("PREMINT_PRIVATE_KEY");
     address BASE_REGISTRAR = vm.envAddress("BASE_REGISTRAR_ADDR");
     address BASE_ECOSYSTEM_MULTISIG = vm.envAddress("BASE_ECOSYSTEM_MULTISIG");
+    address REGISTRAR_CONTROLLER = vm.envAddress("REGISTRAR_CONTROLLER_ADDR");
 
     function run(string memory name, uint256 duration) external {
         console.log("-------------------------------");
@@ -43,5 +45,19 @@ contract Premint is Script {
         input[1] = "py/writer.py";
         input[2] = data;
         vm.ffi(input);
+    }
+
+    function verify(uint256 lines, string calldata file) public view {
+        for (uint256 i; i < lines; i++) {
+            string memory name = vm.readLine(file);
+            bytes32 label = keccak256(bytes(name));
+            uint256 id = uint256(label);
+            if(BaseRegistrar(BASE_REGISTRAR).nameExpires(id) == 0) {
+                console.log("Not minted: ", name);
+            }
+            else if(BaseRegistrar(BASE_REGISTRAR).ownerOf(id) != BASE_ECOSYSTEM_MULTISIG) {
+                console.log("Not owned by ecosystem multisig", name);
+            }
+        }
     }
 }
