@@ -52,10 +52,9 @@ contract Premint is Script {
             string memory name = vm.readLine(file);
             bytes32 label = keccak256(bytes(name));
             uint256 id = uint256(label);
-            if(BaseRegistrar(BASE_REGISTRAR).nameExpires(id) == 0) {
+            if (BaseRegistrar(BASE_REGISTRAR).nameExpires(id) == 0) {
                 console.log("Not minted: ", name);
-            }
-            else if(BaseRegistrar(BASE_REGISTRAR).ownerOf(id) != BASE_ECOSYSTEM_MULTISIG) {
+            } else if (BaseRegistrar(BASE_REGISTRAR).ownerOf(id) != BASE_ECOSYSTEM_MULTISIG) {
                 console.log("Not owned by ecosystem multisig", name);
             }
         }
