@@ -109,10 +109,3 @@ execute-premint-9:
 		forge script script/premint/Premint.s.sol --ffi --sig "run(string,uint256)" "$$name" 31536000 \
 		--rpc-url $(BASE_RPC_URL) --fork-retries 5 --broadcast; \
 	done
-
-write-ids:
-	@for name in $$(cat script/premint/premint1); \
-	do \
-		echo "$$name"; \
-		forge script script/Scratch.s.sol --ffi --sig "run(string)" "$$name"; \
-	done

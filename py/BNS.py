@@ -1,8 +1,6 @@
 import json
 
 
-wrapper = "0xBD9bab0A97b2Cc6Aa28b9C902d7C656B121D5F9F"
-
 def main():
 
     owners = []
