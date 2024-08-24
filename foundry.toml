@@ -3,6 +3,7 @@ src = "src"
 out = "out"
 libs = ["lib"]
 remappings = ["@ensdomains/buffer/=lib/buffer"]
+fs_permissions = [{access = "read", path = "./script/premint/"}]
 
 [rpc_endpoints]
 sepolia="${SEPOLIA_RPC_URL}"
@@ -11,3 +12,4 @@ base-sepolia="${BASE_SEPOLIA_RPC_URL}"
 [etherscan]
 sepolia={url = "https://api-sepolia.etherscan.io/api", key = "${ETHERSCAN_API_KEY}"}
 base-sepolia={url = "https://api-sepolia.basescan.org/api", key = "${BASE_ETHERSCAN_API_KEY}"}
+
