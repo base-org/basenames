@@ -10,9 +10,11 @@ import {StringUtils} from "ens-contracts/ethregistrar/StringUtils.sol";
 import {BASE_ETH_NODE, GRACE_PERIOD} from "src/util/Constants.sol";
 import {BaseRegistrar} from "./BaseRegistrar.sol";
 import {IDiscountValidator} from "./interface/IDiscountValidator.sol";
+import {IL2ReverseResolver} from "./interface/IL2ReverseResolver.sol";
 import {IPriceOracle} from "./interface/IPriceOracle.sol";
 import {L2Resolver} from "./L2Resolver.sol";
 import {IReverseRegistrar} from "./interface/IReverseRegistrar.sol";
+import {RegistrarController} from "./RegistrarController.sol";
 
 /// @title Registrar Controller
 ///
@@ -44,6 +46,10 @@ contract UpgradeableRegistrarController is OwnableUpgradeable {
         bytes[] data;
         /// @dev Bool to decide whether to set this name as the "primary" name for the `owner`.
         bool reverseRecord;
+        /// @dev Signature expiry
+        uint256 signatureExpiry;
+        /// @dev Signature payload
+        bytes signature;
     }
 
     /// @notice The details of a discount tier.
@@ -57,10 +63,6 @@ contract UpgradeableRegistrarController is OwnableUpgradeable {
         /// @dev The discount value denominated in wei.
         uint256 discount;
     }
-
-    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
-    /*                          STORAGE                           */
-    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
     struct URCStorage {
         /// @notice The implementation of the `BaseRegistrar`.
@@ -81,6 +83,8 @@ contract UpgradeableRegistrarController is OwnableUpgradeable {
         uint256 launchTime;
         /// @notice The address of the legacy registrar controller
         address legacyRegistrarController;
+        /// @notice The address of the L2 Reverse Resolver
+        address reverseResolver;
         /// @notice Each discount is stored against a unique 32-byte identifier, i.e. keccak256("test.discount.validator").
         mapping(bytes32 key => DiscountDetails details) discounts;
         /// @notice Storage for which addresses have already registered with a discount.
@@ -97,9 +101,9 @@ contract UpgradeableRegistrarController is OwnableUpgradeable {
     /// @notice The minimum name length.
     uint256 public constant MIN_NAME_LENGTH = 3;
 
-    /// @notice The storage location
-    bytes32 private constant UPGRADEABLE_REGISTRAR_CONTROLLER_STORAGE_LOCATION = keccak256(abi.encode(uint256(keccak256("upgradeable.registrar.controller.storage")) - 1)) & ~bytes32(uint256(0xff));
-
+    /// @notice The EIP-7201 storage location, determined by:
+    ///     keccak256(abi.encode(uint256(keccak256("upgradeable.registrar.controller.storage")) - 1)) & ~bytes32(uint256(0xff));
+    bytes32 private constant UPGRADEABLE_REGISTRAR_CONTROLLER_STORAGE_LOCATION = 0xf52df153eda7a96204b686efee7d70251f4cef9d04988d95cc73d1a93f655200; 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                          ERRORS                            */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
@@ -358,7 +362,7 @@ contract UpgradeableRegistrarController is OwnableUpgradeable {
     function hasRegisteredWithDiscount(address[] memory addresses) external view returns (bool) {
         URCStorage storage $ = _getURCStorage();
         for (uint256 i; i < addresses.length; i++) {
-            if ($.discountedRegistrants[addresses[i]]) {
+            if ($.discountedRegistrants[addresses[i]] || RegistrarController($.legacyRegistrarController).hasRegisteredWithDiscount(addresses)) {
                 return true;
             }
         }
@@ -559,7 +563,7 @@ contract UpgradeableRegistrarController is OwnableUpgradeable {
         }
 
         if (request.reverseRecord) {
-            _setReverseRecord(request.name, request.resolver, msg.sender);
+            _setReverseRecord(request.name, request.resolver, msg.sender, request.signatureExpiry, request.signature);
         }
 
         emit NameRegistered(request.name, keccak256(bytes(request.name)), request.owner, expires);
@@ -597,9 +601,12 @@ contract UpgradeableRegistrarController is OwnableUpgradeable {
     /// @param name The specified name.
     /// @param resolver The resolver to set the reverse record on.
     /// @param owner  The owner of the reverse record.
-    function _setReverseRecord(string memory name, address resolver, address owner) internal {
+    function _setReverseRecord(string memory name, address resolver, address owner, uint256 expiry, bytes memory signature) internal {
         URCStorage storage $ = _getURCStorage();
+        // vesitigial reverse resolution
         $.reverseRegistrar.setNameForAddr(msg.sender, owner, resolver, string.concat(name, $.rootName));
+        // new reverse resolver 
+        IL2ReverseResolver($.reverseResolver).setNameForAddrWithSignature(msg.sender, name, expiry, signature);
     }
 
     /// @notice Helper method for updating the `activeDiscounts` enumerable set.
