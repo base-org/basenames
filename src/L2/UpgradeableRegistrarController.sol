@@ -103,7 +103,8 @@ contract UpgradeableRegistrarController is OwnableUpgradeable {
 
     /// @notice The EIP-7201 storage location, determined by:
     ///     keccak256(abi.encode(uint256(keccak256("upgradeable.registrar.controller.storage")) - 1)) & ~bytes32(uint256(0xff));
-    bytes32 private constant UPGRADEABLE_REGISTRAR_CONTROLLER_STORAGE_LOCATION = 0xf52df153eda7a96204b686efee7d70251f4cef9d04988d95cc73d1a93f655200; 
+    bytes32 private constant UPGRADEABLE_REGISTRAR_CONTROLLER_STORAGE_LOCATION =
+        0xf52df153eda7a96204b686efee7d70251f4cef9d04988d95cc73d1a93f655200;
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                          ERRORS                            */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
@@ -364,7 +365,10 @@ contract UpgradeableRegistrarController is OwnableUpgradeable {
     function hasRegisteredWithDiscount(address[] memory addresses) external view returns (bool) {
         URCStorage storage $ = _getURCStorage();
         for (uint256 i; i < addresses.length; i++) {
-            if ($.discountedRegistrants[addresses[i]] || RegistrarController($.legacyRegistrarController).hasRegisteredWithDiscount(addresses)) {
+            if (
+                $.discountedRegistrants[addresses[i]]
+                    || RegistrarController($.legacyRegistrarController).hasRegisteredWithDiscount(addresses)
+            ) {
                 return true;
             }
         }
@@ -603,11 +607,17 @@ contract UpgradeableRegistrarController is OwnableUpgradeable {
     /// @param name The specified name.
     /// @param resolver The resolver to set the reverse record on.
     /// @param owner  The owner of the reverse record.
-    function _setReverseRecord(string memory name, address resolver, address owner, uint256 expiry, bytes memory signature) internal {
+    function _setReverseRecord(
+        string memory name,
+        address resolver,
+        address owner,
+        uint256 expiry,
+        bytes memory signature
+    ) internal {
         URCStorage storage $ = _getURCStorage();
         // vesitigial reverse resolution
         $.reverseRegistrar.setNameForAddr(msg.sender, owner, resolver, string.concat(name, $.rootName));
-        // new reverse resolver 
+        // new reverse resolver
         IL2ReverseResolver($.reverseResolver).setNameForAddrWithSignature(msg.sender, name, expiry, signature);
     }
 
