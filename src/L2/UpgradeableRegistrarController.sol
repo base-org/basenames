@@ -284,7 +284,8 @@ contract UpgradeableRegistrarController is OwnableUpgradeable {
         bytes32 rootNode_,
         string memory rootName_,
         address paymentReceiver_,
-        address legacyRegistrarController_
+        address legacyRegistrarController_,
+        address reverseResolver_
     ) public onlyInitializing {
         __Ownable_init();
         transferOwnership(owner_);
@@ -297,6 +298,7 @@ contract UpgradeableRegistrarController is OwnableUpgradeable {
         $.rootName = rootName_;
         $.paymentReceiver = paymentReceiver_;
         $.legacyRegistrarController = legacyRegistrarController_;
+        $.reverseResolver = reverseResolver_;
     }
 
     /// @notice Allows the `owner` to set discount details for a specified `key`.
