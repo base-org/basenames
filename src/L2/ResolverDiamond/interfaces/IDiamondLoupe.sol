@@ -1,15 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-/**
- * \
- * Author: Nick Mudge <nick@perfectabstractions.com> (https://twitter.com/mudgen)
- * EIP-2535 Diamonds: https://eips.ethereum.org/EIPS/eip-2535
- * /*****************************************************************************
- */
-
-// A loupe is a small magnifying glass used to look at diamonds.
-// These functions look at diamonds
 interface IDiamondLoupe {
     /// These functions are expected to be called frequently
     /// by tools.

@@ -48,7 +48,6 @@ library LibDiamond {
     // 32 bytes keccak hash of a string to use as a diamond storage location.
     bytes32 constant DIAMOND_STORAGE_POSITION = keccak256("diamond.standard.diamond.storage");
 
-
     function diamondStorage() internal pure returns (DiamondStorage storage ds) {
         bytes32 position = DIAMOND_STORAGE_POSITION;
         // assigns struct storage slot to the storage position

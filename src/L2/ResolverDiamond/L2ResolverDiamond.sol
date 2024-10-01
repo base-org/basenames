@@ -3,20 +3,28 @@ pragma solidity ^0.8.0;
 
 import {LibDiamond} from "./lib/LibDiamond.sol";
 import {DiamondCutFacet} from "./facets/DiamondCutFacet.sol";
-contract L2ResolverDiamond {
-    constructor(address _contractOwner, address _diamondCutFacet) payable {
-        LibDiamond.setContractOwner(_contractOwner);
 
-        // Add the diamondCut external function from the diamondCutFacet
-        LibDiamond.FacetCut[] memory cut = new LibDiamond.FacetCut[](1);
+contract L2ResolverDiamond {
+    constructor(
+        address _contractOwner,
+        address _diamondCutFacet,
+        LibDiamond.FacetCut[] memory facets,
+        address initializer,
+        bytes memory data
+    ) {
+        LibDiamond.setContractOwner(_contractOwner);
+        LibDiamond.FacetCut[] memory cuts = new LibDiamond.FacetCut[](facets.length + 1);
         bytes4[] memory functionSelectors = new bytes4[](1);
-        functionSelectors[0] = LibDiamond.diamondCut.selector;
-        cut[0] = LibDiamond.FacetCut({
+        functionSelectors[0] = DiamondCutFacet.diamondCut.selector;
+        cuts[0] = LibDiamond.FacetCut({
             facetAddress: _diamondCutFacet,
             action: LibDiamond.FacetCutAction.Add,
             functionSelectors: functionSelectors
         });
-        LibDiamond.diamondCut(cut, address(0), "");
+        for(uint256 i; i < facets.length; i++) {
+            cuts[i+1] = facets[i];
+        }
+        LibDiamond.diamondCut(cuts, initializer, data);
     }
 
     // Find facet for function that is called and execute the
