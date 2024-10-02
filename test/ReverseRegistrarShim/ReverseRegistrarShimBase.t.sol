@@ -8,7 +8,6 @@ import {MockReverseResolver} from "test/mocks/MockReverseResolver.sol";
 import {MockPublicResolver} from "test/mocks/MockPublicResolver.sol";
 
 contract ReverseRegistrarShimBase is Test {
-
     MockReverseResolver revRes;
     MockReverseRegistrar revReg;
     MockPublicResolver resolver;
@@ -31,6 +30,5 @@ contract ReverseRegistrarShimBase is Test {
 
         userA = makeAddr("userA");
         userB = makeAddr("userB");
-
     }
 }

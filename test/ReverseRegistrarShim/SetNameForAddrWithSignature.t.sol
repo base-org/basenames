@@ -9,14 +9,8 @@ contract SetNameForAddrWithSignature is ReverseRegistrarShimBase {
     function test_setsNameForAddr_onReverseRegistrar() public {
         vm.prank(userA);
         vm.expectCall(
-            address(revReg), 
-            abi.encodeWithSelector(
-                MockReverseRegistrar.setNameForAddr.selector, 
-                userA, 
-                userA, 
-                address(resolver), 
-                nameA
-            )
+            address(revReg),
+            abi.encodeWithSelector(MockReverseRegistrar.setNameForAddr.selector, userA, userA, address(resolver), nameA)
         );
         shim.setNameForAddrWithSignature(userA, nameA, signatureExpiry, signature);
     }
@@ -24,13 +18,9 @@ contract SetNameForAddrWithSignature is ReverseRegistrarShimBase {
     function test_setsNameForAddr_onReverseResolver() public {
         vm.prank(userA);
         vm.expectCall(
-            address(revRes), 
+            address(revRes),
             abi.encodeWithSelector(
-                MockReverseResolver.setNameForAddrWithSignature.selector, 
-                userA,
-                nameA,
-                signatureExpiry,
-                signature
+                MockReverseResolver.setNameForAddrWithSignature.selector, userA, nameA, signatureExpiry, signature
             )
         );
         shim.setNameForAddrWithSignature(userA, nameA, signatureExpiry, signature);
