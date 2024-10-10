@@ -287,7 +287,7 @@ contract UpgradeableRegistrarController is OwnableUpgradeable {
         address paymentReceiver_,
         address legacyRegistrarController_,
         address reverseResolver_
-    ) public onlyInitializing {
+    ) public initializer onlyInitializing {
         __Ownable_init();
         transferOwnership(owner_);
 
@@ -300,6 +300,7 @@ contract UpgradeableRegistrarController is OwnableUpgradeable {
         $.paymentReceiver = paymentReceiver_;
         $.legacyRegistrarController = legacyRegistrarController_;
         $.reverseResolver = reverseResolver_;
+        $.launchTime = RegistrarController(legacyRegistrarController_).launchTime();
     }
 
     /// @notice Allows the `owner` to set discount details for a specified `key`.
@@ -337,13 +338,6 @@ contract UpgradeableRegistrarController is OwnableUpgradeable {
     function setReverseRegistrar(IReverseRegistrar reverse_) external onlyOwner {
         _getURCStorage().reverseRegistrar = reverse_;
         emit ReverseRegistrarUpdated(address(reverse_));
-    }
-
-    /// @notice Allows the `owner` to set the stored `launchTime`.
-    ///
-    /// @param launchTime_ The new launch time timestamp.
-    function setLaunchTime(uint256 launchTime_) external onlyOwner {
-        _getURCStorage().launchTime = launchTime_;
     }
 
     /// @notice Allows the `owner` to set the reverse registrar contract.
@@ -391,8 +385,37 @@ contract UpgradeableRegistrarController is OwnableUpgradeable {
     /// @return `true` if the name is `valid` and available on the `base` registrar, else `false`.
     function available(string memory name) public view returns (bool) {
         bytes32 label = keccak256(bytes(name));
-        URCStorage storage $ = _getURCStorage();
-        return valid(name) && $.base.isAvailable(uint256(label));
+        return valid(name) && _getURCStorage().base.isAvailable(uint256(label));
+    }
+
+    /// @notice Fetches a specific discount from storage.
+    ///
+    /// @param discountKey The uuid of the discount to fetch.
+    ///
+    /// @return DiscountDetails associated with the provided `discountKey`. 
+    function discounts(bytes32 discountKey) external view returns (DiscountDetails memory) {
+        return _getURCStorage().discounts[discountKey];
+    }
+
+    /// @notice Fetches the payment receiver from storage.abi
+    ///
+    /// @return The address of the payment receiver.
+    function paymentReceiver() external view returns (address) {
+        return _getURCStorage().paymentReceiver;
+    }
+
+    /// @notice Fetches the price oracle from storage.
+    /// 
+    /// @return The stored prices oracle.
+    function prices() external view returns (IPriceOracle) {
+        return _getURCStorage().prices;
+    }
+
+    /// @notice Fetches the Reverse Registrar from storage.
+    /// 
+    /// @return The stored Reverse Registrar.
+    function reverseRegistrar() external view returns (IReverseRegistrar) {
+        return _getURCStorage().reverseRegistrar;
     }
 
     /// @notice Checks the rent price for a provided `name` and `duration`.
@@ -559,8 +582,7 @@ contract UpgradeableRegistrarController is OwnableUpgradeable {
     ///
     /// @param request The `RegisterRequest` struct containing the details for the registration.
     function _register(RegisterRequest calldata request) internal {
-        URCStorage storage $ = _getURCStorage();
-        uint256 expires = $.base.registerWithRecord(
+        uint256 expires = _getURCStorage().base.registerWithRecord(
             uint256(keccak256(bytes(request.name))), request.owner, request.duration, request.resolver, 0
         );
 
@@ -596,8 +618,7 @@ contract UpgradeableRegistrarController is OwnableUpgradeable {
     /// @param label The keccak256 namehash for the specified name.
     /// @param data  The abi encoded calldata records that will be used in the multicallable resolver.
     function _setRecords(address resolverAddress, bytes32 label, bytes[] calldata data) internal {
-        URCStorage storage $ = _getURCStorage();
-        bytes32 nodehash = keccak256(abi.encodePacked($.rootNode, label));
+        bytes32 nodehash = keccak256(abi.encodePacked(_getURCStorage().rootNode, label));
         L2Resolver resolver = L2Resolver(resolverAddress);
         resolver.multicallWithNodeCheck(nodehash, data);
     }
@@ -634,8 +655,7 @@ contract UpgradeableRegistrarController is OwnableUpgradeable {
 
     /// @notice Allows anyone to withdraw the eth accumulated on this contract back to the `paymentReceiver`.
     function withdrawETH() public {
-        URCStorage storage $ = _getURCStorage();
-        (bool sent,) = payable($.paymentReceiver).call{value: (address(this).balance)}("");
+        (bool sent,) = payable(_getURCStorage().paymentReceiver).call{value: (address(this).balance)}("");
         if (!sent) revert TransferFailed();
     }
 
