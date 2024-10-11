@@ -45,8 +45,7 @@ contract CouponDiscountValidator is Ownable, IDiscountValidator {
     ///
     /// @return `true` if the validation data provided is determined to be valid for the specified claimer, else `false`.
     function isValidDiscountRegistration(address claimer, bytes calldata validationData) external view returns (bool) {
-        (uint64 expiry, bytes32 uuid, bytes memory sig) =
-            abi.decode(validationData, (uint64, bytes32, bytes));
+        (uint64 expiry, bytes32 uuid, bytes memory sig) = abi.decode(validationData, (uint64, bytes32, bytes));
         if (expiry < block.timestamp) revert SignatureExpired();
 
         address returnedSigner = ECDSA.recover(_makeSignatureHash(claimer, uuid, expiry), sig);
