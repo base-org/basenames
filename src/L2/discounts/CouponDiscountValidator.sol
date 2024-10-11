@@ -44,12 +44,12 @@ contract CouponDiscountValidator is Ownable, IDiscountValidator {
     /// @param validationData opaque bytes for performing the validation.
     ///
     /// @return `true` if the validation data provided is determined to be valid for the specified claimer, else `false`.
-    function isValidDiscountRegistration(address, bytes calldata validationData) external view returns (bool) {
-        (uint64 expiry, bytes32 uuid, uint256 salt, bytes memory sig) =
-            abi.decode(validationData, (uint64, bytes32, uint256, bytes));
+    function isValidDiscountRegistration(address claimer, bytes calldata validationData) external view returns (bool) {
+        (uint64 expiry, bytes32 uuid, bytes memory sig) =
+            abi.decode(validationData, (uint64, bytes32, bytes));
         if (expiry < block.timestamp) revert SignatureExpired();
 
-        address returnedSigner = ECDSA.recover(_makeSignatureHash(uuid, expiry, salt), sig);
+        address returnedSigner = ECDSA.recover(_makeSignatureHash(claimer, uuid, expiry), sig);
         return returnedSigner == signer;
     }
 
@@ -58,12 +58,12 @@ contract CouponDiscountValidator is Ownable, IDiscountValidator {
     /// @dev The message hash should be dervied by: `keccak256(abi.encode(0x1900, trustedSignerAddress, discountClaimerAddress, couponUui, claimsPerUuid, expiry, salt))`.
     ///     Compliant with EIP-191 for `Data for intended validator`: https://eips.ethereum.org/EIPS/eip-191#version-0x00 .
     ///
+    /// @param claimer Address of the coupon claimer.
     /// @param couponUuid The Uuid of the coupon.
     /// @param expires The date of the signature expiry.
-    /// @param salt Unique salt for this signature.
     ///
     /// @return The EIP-191 compliant signature hash.
-    function _makeSignatureHash(bytes32 couponUuid, uint64 expires, uint256 salt) internal view returns (bytes32) {
-        return keccak256(abi.encodePacked(hex"1900", address(this), signer, couponUuid, expires, salt));
+    function _makeSignatureHash(address claimer, bytes32 couponUuid, uint64 expires) internal view returns (bytes32) {
+        return keccak256(abi.encodePacked(hex"1900", address(this), signer, claimer, couponUuid, expires));
     }
 }
