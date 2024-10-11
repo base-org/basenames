@@ -21,9 +21,6 @@ contract CouponDiscountValidator is Ownable, IDiscountValidator {
     /// @notice Thrown when the signature expiry date >= block.timestamp.
     error SignatureExpired();
 
-    /// @dev Tracking the number of claims on a per-coupon uuid basis.
-    mapping(bytes32 couponUuid => uint256 count) public claimsPerCouponUuid;
-
     /// @notice Attestation Validator constructor
     ///
     /// @param owner_ The permissioned `owner` in the `Ownable` context.
