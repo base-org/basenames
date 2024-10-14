@@ -26,7 +26,6 @@ contract CouponDiscountValidator is Ownable, IDiscountValidator {
     /// @param owner_ The permissioned `owner` in the `Ownable` context.
     /// @param signer_ The off-chain signer of the Coinbase sybil resistance service.
     constructor(address owner_, address signer_) {
-        if (owner_ == address(0)) revert NoZeroAddress();
         if (signer_ == address(0)) revert NoZeroAddress();
         _initializeOwner(owner_);
         signer = signer_;
