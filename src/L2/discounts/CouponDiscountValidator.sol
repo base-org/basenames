@@ -12,6 +12,9 @@ import {IDiscountValidator} from "src/L2/interface/IDiscountValidator.sol";
 ///
 /// @author Coinbase (https://github.com/base-org/usernames)
 contract CouponDiscountValidator is Ownable, IDiscountValidator {
+    /// @notice Thrown when setting a critical address to the zero-address.
+    error NoZeroAddress();
+
     /// @dev The coupon service signer.
     address signer;
 
@@ -23,6 +26,8 @@ contract CouponDiscountValidator is Ownable, IDiscountValidator {
     /// @param owner_ The permissioned `owner` in the `Ownable` context.
     /// @param signer_ The off-chain signer of the Coinbase sybil resistance service.
     constructor(address owner_, address signer_) {
+        if (owner_ == address(0)) revert NoZeroAddress();
+        if (signer_ == address(0)) revert NoZeroAddress();
         _initializeOwner(owner_);
         signer = signer_;
     }
@@ -31,6 +36,7 @@ contract CouponDiscountValidator is Ownable, IDiscountValidator {
     ///
     /// @param signer_ The address of the new signer.
     function setSigner(address signer_) external onlyOwner {
+        if (signer_ == address(0)) revert NoZeroAddress();
         signer = signer_;
     }
 
