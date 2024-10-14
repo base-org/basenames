@@ -8,13 +8,16 @@ import {IDiscountValidator} from "src/L2/interface/IDiscountValidator.sol";
 
 /// @title Discount Validator for: Talent Protocol Builder Score
 ///
-/// @notice Enables discounts for holders of Talent Protocol Builder Score tokens. Discounts are granted
-///         Based on the claimer having some score higher than this contract's `threshold`.
+/// @notice Enables discounts for users who have minted their Talent Protocol Builder Score .
+///         Discounts are granted vbsed on the claimer having some score higher than this contract's `threshold`.
 ///
 /// @author Coinbase (https://github.com/base-org/usernames)
 contract TalentProtocolDiscountValidator is IDiscountValidator, Ownable {
     /// @notice Thrown when setting a critical address to the zero-address.
     error NoZeroAddress();
+
+    /// @notice Emitted when the threshold is updated by the `owner`.
+    event ThresholdUpdated(uint256 newThreshold);
 
     /// @notice Interface with the Talent Protocol `PassportBuilderScore` contract.
     TalentProtocol immutable talentProtocol;
@@ -23,6 +26,10 @@ contract TalentProtocolDiscountValidator is IDiscountValidator, Ownable {
     uint256 public threshold;
 
     /// @notice constructor
+    ///
+    /// @param owner_ The `Ownable` contract `owner`.
+    /// @param talentProtocol_ The address of the Talent Protocol PassportBuilderScore contract.
+    /// @param threshold_ The score required to qualify for a discount.
     constructor(address owner_, address talentProtocol_, uint256 threshold_) {
         if (owner_ == address(0)) revert NoZeroAddress();
         if (talentProtocol_ == address(0)) revert NoZeroAddress();
@@ -36,6 +43,7 @@ contract TalentProtocolDiscountValidator is IDiscountValidator, Ownable {
     /// @param threshold_ The new discount-qualifying threshold.
     function setThreshold(uint256 threshold_) external onlyOwner {
         threshold = threshold_;
+        emit ThresholdUpdated(threshold_);
     }
 
     /// @notice Required implementation for compatibility with IDiscountValidator.
