@@ -6,19 +6,16 @@ import {Ownable} from "solady/auth/Ownable.sol";
 
 import {IDiscountValidator} from "src/L2/interface/IDiscountValidator.sol";
 
-/// @title Discount Validator for: Coinbase Attestation Validator
+/// @title Discount Validator for: Coupons
 ///
-/// @notice Implements a two step validation schema for verifying coinbase attestations
-///         1. Verify that the wallet has an active Coinbase Verification for the stored `schemaID`.
-///         2. Signature verification to valiate signatures from the Coinbase sybil resistance service.
-///         https://github.com/coinbase/verifications
+/// @notice Implements a signature-based discount validation on unique coupon codes.
 ///
 /// @author Coinbase (https://github.com/base-org/usernames)
 contract CouponDiscountValidator is Ownable, IDiscountValidator {
-    /// @dev The attestation service signer.
+    /// @dev The coupon service signer.
     address signer;
 
-    /// @notice Thrown when the signature expiry date >= block.timestamp.
+    /// @notice Thrown when the signature expiry date < block.timestamp.
     error SignatureExpired();
 
     /// @notice Attestation Validator constructor
