@@ -13,6 +13,9 @@ import {IDiscountValidator} from "src/L2/interface/IDiscountValidator.sol";
 ///
 /// @author Coinbase (https://github.com/base-org/usernames)
 contract TalentProtocolDiscountValidator is IDiscountValidator, Ownable {
+    /// @notice Thrown when setting a critical address to the zero-address.
+    error NoZeroAddress();
+
     /// @notice Interface with the Talent Protocol `PassportBuilderScore` contract.
     TalentProtocol immutable talentProtocol;
 
@@ -21,6 +24,8 @@ contract TalentProtocolDiscountValidator is IDiscountValidator, Ownable {
 
     /// @notice constructor
     constructor(address owner_, address talentProtocol_, uint256 threshold_) {
+        if (owner_ == address(0)) revert NoZeroAddress();
+        if (talentProtocol_ == address(0)) revert NoZeroAddress();
         talentProtocol = TalentProtocol(talentProtocol_);
         threshold = threshold_;
         _initializeOwner(owner_);
