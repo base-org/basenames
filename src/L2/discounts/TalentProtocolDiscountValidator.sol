@@ -9,7 +9,7 @@ import {IDiscountValidator} from "src/L2/interface/IDiscountValidator.sol";
 /// @title Discount Validator for: Talent Protocol Builder Score
 ///
 /// @notice Enables discounts for users who have minted their Talent Protocol Builder Score .
-///         Discounts are granted vbsed on the claimer having some score higher than this contract's `threshold`.
+///         Discounts are granted based on the claimer having some score higher than this contract's `threshold`.
 ///
 /// @author Coinbase (https://github.com/base-org/usernames)
 contract TalentProtocolDiscountValidator is IDiscountValidator, Ownable {
