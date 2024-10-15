@@ -49,6 +49,7 @@ contract TalentProtocolDiscountValidator is IDiscountValidator, Ownable {
     /// @notice Required implementation for compatibility with IDiscountValidator.
     ///
     /// @dev No additional data is required for validating this discount.
+    ///     NOTE: The call to `getScoreByAddress` can revert. This case should be handled gracefully by integrators.
     ///
     /// @param claimer the discount claimer's address.
     ///
