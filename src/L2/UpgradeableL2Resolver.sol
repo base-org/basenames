@@ -8,14 +8,14 @@ import {Initializable} from "lib/openzeppelin-contracts/contracts/proxy/utils/In
 import {Multicallable} from "ens-contracts/resolvers/Multicallable.sol";
 import {Ownable} from "solady/auth/Ownable.sol";
 
-import {ABIResolver} from "./ABIResolver.sol";
-import {AddrResolver} from "./AddrResolver.sol";
-import {ContentHashResolver} from "./ContentHashResolver.sol";
-import {DNSResolver} from "./DNSResolver.sol";
-import {InterfaceResolver} from "./InterfaceResolver.sol";
-import {NameResolver} from "./NameResolver.sol";
-import {PubkeyResolver} from "./PubkeyResolver.sol";
-import {TextResolver} from "./TextResolver.sol";
+import {ABIResolver} from "./resolver/ABIResolver.sol";
+import {AddrResolver} from "./resolver/AddrResolver.sol";
+import {ContentHashResolver} from "./resolver/ContentHashResolver.sol";
+import {DNSResolver} from "./resolver/DNSResolver.sol";
+import {InterfaceResolver} from "./resolver/InterfaceResolver.sol";
+import {NameResolver} from "./resolver/NameResolver.sol";
+import {PubkeyResolver} from "./resolver/PubkeyResolver.sol";
+import {TextResolver} from "./resolver/TextResolver.sol";
 import {IReverseRegistrar} from "src/L2/interface/IReverseRegistrar.sol";
 
 /// @title Upgradeable L2 Resolver
