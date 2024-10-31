@@ -42,7 +42,7 @@ contract UpgradeableRegistrarController is OwnableUpgradeable {
         uint256 duration;
         /// @dev The address of the resolver to set for this name.
         address resolver;
-        /// @dev Multicallable data bytes for setting records in the associated resolver upon reigstration.
+        /// @dev Multicallable data bytes for setting records in the associated resolver upon registration.
         bytes[] data;
         /// @dev Bool to decide whether to set this name as the "primary" name for the `owner`.
         bool reverseRecord;
@@ -448,7 +448,7 @@ contract UpgradeableRegistrarController is OwnableUpgradeable {
     /// @param duration The time that the name would be registered.
     /// @param discountKey The uuid of the discount to apply.
     ///
-    /// @return price The all-ing price for the discounted name registration, denominated in wei. Returns 0
+    /// @return price The all-in price for the discounted name registration, denominated in wei. Returns 0
     ///         if the price of the discount exceeds the nominal registration fee.
     function discountedRegisterPrice(string memory name, uint256 duration, bytes32 discountKey)
         public
@@ -574,7 +574,7 @@ contract UpgradeableRegistrarController is OwnableUpgradeable {
         return expires + GRACE_PERIOD;
     }
 
-    /// @notice Shared registartion logic for both `register()` and `discountedRegister()`.
+    /// @notice Shared registration logic for both `register()` and `discountedRegister()`.
     ///
     /// @dev Will set records in the specified resolver if the resolver address is non zero and there is `data` in the `request`.
     ///     Will set the reverse record's owner as msg.sender if `reverseRecord` is `true`.
@@ -636,7 +636,7 @@ contract UpgradeableRegistrarController is OwnableUpgradeable {
         bytes memory signature
     ) internal {
         URCStorage storage $ = _getURCStorage();
-        // vesitigial reverse resolution
+        // vestigial reverse resolution
         $.reverseRegistrar.setNameForAddr(msg.sender, owner, resolver, string.concat(name, $.rootName));
         // new reverse resolver
         IL2ReverseResolver($.reverseResolver).setNameForAddrWithSignature(msg.sender, name, expiry, signature);
