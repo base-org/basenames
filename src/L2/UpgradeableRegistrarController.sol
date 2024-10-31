@@ -392,7 +392,7 @@ contract UpgradeableRegistrarController is OwnableUpgradeable {
     ///
     /// @param discountKey The uuid of the discount to fetch.
     ///
-    /// @return DiscountDetails associated with the provided `discountKey`. 
+    /// @return DiscountDetails associated with the provided `discountKey`.
     function discounts(bytes32 discountKey) external view returns (DiscountDetails memory) {
         return _getURCStorage().discounts[discountKey];
     }
@@ -405,14 +405,14 @@ contract UpgradeableRegistrarController is OwnableUpgradeable {
     }
 
     /// @notice Fetches the price oracle from storage.
-    /// 
+    ///
     /// @return The stored prices oracle.
     function prices() external view returns (IPriceOracle) {
         return _getURCStorage().prices;
     }
 
     /// @notice Fetches the Reverse Registrar from storage.
-    /// 
+    ///
     /// @return The stored Reverse Registrar.
     function reverseRegistrar() external view returns (IReverseRegistrar) {
         return _getURCStorage().reverseRegistrar;

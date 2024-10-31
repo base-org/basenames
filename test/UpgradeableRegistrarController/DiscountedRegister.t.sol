@@ -27,7 +27,9 @@ contract DiscountedRegister is UpgradeableRegistrarControllerBase {
         validator.setReturnValue(false);
         uint256 price = controller.discountedRegisterPrice(name, duration, discountKey);
 
-        vm.expectRevert(abi.encodeWithSelector(UpgradeableRegistrarController.InvalidDiscount.selector, discountKey, ""));
+        vm.expectRevert(
+            abi.encodeWithSelector(UpgradeableRegistrarController.InvalidDiscount.selector, discountKey, "")
+        );
         vm.prank(user);
         controller.discountedRegister{value: price}(_getDefaultRegisterRequest(), discountKey, "");
     }
@@ -136,7 +138,9 @@ contract DiscountedRegister is UpgradeableRegistrarControllerBase {
         vm.prank(user);
         controller.discountedRegister{value: price}(request, discountKey, "");
 
-        vm.expectRevert(abi.encodeWithSelector(UpgradeableRegistrarController.AlreadyRegisteredWithDiscount.selector, user));
+        vm.expectRevert(
+            abi.encodeWithSelector(UpgradeableRegistrarController.AlreadyRegisteredWithDiscount.selector, user)
+        );
         request.name = "newname";
         vm.prank(user);
         controller.discountedRegister{value: price}(request, discountKey, "");

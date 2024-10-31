@@ -16,7 +16,9 @@ contract SetDiscountDetails is UpgradeableRegistrarControllerBase {
     function test_reverts_ifTheDiscountIsZero() public {
         UpgradeableRegistrarController.DiscountDetails memory noDiscount = _getDefaultDiscount();
         noDiscount.discount = 0;
-        vm.expectRevert(abi.encodeWithSelector(UpgradeableRegistrarController.InvalidDiscountAmount.selector, discountKey));
+        vm.expectRevert(
+            abi.encodeWithSelector(UpgradeableRegistrarController.InvalidDiscountAmount.selector, discountKey)
+        );
         vm.prank(owner);
         controller.setDiscountDetails(noDiscount);
     }
@@ -24,7 +26,9 @@ contract SetDiscountDetails is UpgradeableRegistrarControllerBase {
     function test_reverts_ifTheDiscounValidatorIsInvalid() public {
         UpgradeableRegistrarController.DiscountDetails memory noValidator = _getDefaultDiscount();
         noValidator.discountValidator = address(0);
-        vm.expectRevert(abi.encodeWithSelector(UpgradeableRegistrarController.InvalidValidator.selector, discountKey, address(0)));
+        vm.expectRevert(
+            abi.encodeWithSelector(UpgradeableRegistrarController.InvalidValidator.selector, discountKey, address(0))
+        );
         vm.prank(owner);
         controller.setDiscountDetails(noValidator);
     }
@@ -46,7 +50,8 @@ contract SetDiscountDetails is UpgradeableRegistrarControllerBase {
 
         vm.prank(owner);
         controller.setDiscountDetails(discountDetails);
-        UpgradeableRegistrarController.DiscountDetails[] memory activeDiscountsWithActive = controller.getActiveDiscounts();
+        UpgradeableRegistrarController.DiscountDetails[] memory activeDiscountsWithActive =
+            controller.getActiveDiscounts();
         assertEq(activeDiscountsWithActive.length, 1);
         assertTrue(activeDiscountsWithActive[0].active);
         assertEq(activeDiscountsWithActive[0].discountValidator, address(validator));
@@ -56,7 +61,8 @@ contract SetDiscountDetails is UpgradeableRegistrarControllerBase {
         discountDetails.active = false;
         vm.prank(owner);
         controller.setDiscountDetails(discountDetails);
-        UpgradeableRegistrarController.DiscountDetails[] memory activeDiscountsNoneActive = controller.getActiveDiscounts();
+        UpgradeableRegistrarController.DiscountDetails[] memory activeDiscountsNoneActive =
+            controller.getActiveDiscounts();
         assertEq(activeDiscountsNoneActive.length, 0);
     }
 }
