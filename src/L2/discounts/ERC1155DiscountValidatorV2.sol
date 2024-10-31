@@ -7,7 +7,7 @@ import {IDiscountValidator} from "src/L2/interface/IDiscountValidator.sol";
 
 /// @title Discount Validator for: ERC1155 NFTs
 ///
-/// @notice Implements an NFT ownership validator for a stored mapping of `approvedTokenIds` for an ERC1155 
+/// @notice Implements an NFT ownership validator for a stored mapping of `approvedTokenIds` for an ERC1155
 ///         `token` contract.
 ///         IMPORTANT: This discount validator should only be used for "soul-bound" tokens.
 ///
@@ -25,7 +25,7 @@ contract ERC1155DiscountValidatorV2 is IDiscountValidator {
     /// @param tokenIds The approved token ids the token `claimer` must hold.
     constructor(address tokenAddress, uint256[] memory tokenIds) {
         token = IERC1155(tokenAddress);
-        for(uint256 i; i < tokenIds.length; i++) {
+        for (uint256 i; i < tokenIds.length; i++) {
             approvedTokenIds[tokenIds[i]] = true;
         }
     }
@@ -38,11 +38,16 @@ contract ERC1155DiscountValidatorV2 is IDiscountValidator {
     /// @param validationData opaque bytes for performing the validation.
     ///
     /// @return `true` if the validation data provided is determined to be valid for the specified claimer, else `false`.
-    function isValidDiscountRegistration(address claimer, bytes calldata validationData) public view override returns (bool) {
+    function isValidDiscountRegistration(address claimer, bytes calldata validationData)
+        public
+        view
+        override
+        returns (bool)
+    {
         uint256[] memory ids = abi.decode(validationData, (uint256[]));
-        for(uint256 i; i < ids.length; i++) {
+        for (uint256 i; i < ids.length; i++) {
             uint256 id = ids[i];
-            if(approvedTokenIds[id] && token.balanceOf(claimer, id) > 0) {
+            if (approvedTokenIds[id] && token.balanceOf(claimer, id) > 0) {
                 return true;
             }
         }
