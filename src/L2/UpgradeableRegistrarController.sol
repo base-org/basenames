@@ -3,7 +3,7 @@ pragma solidity ^0.8.23;
 
 import {EnumerableSetLib} from "solady/utils/EnumerableSetLib.sol";
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
-import {OwnableUpgradeable} from "openzeppelin/access/OwnableUpgradeable.sol";
+import {OwnableUpgradeable} from "openzeppelin-contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {SafeERC20} from "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 import {StringUtils} from "ens-contracts/ethregistrar/StringUtils.sol";
 
@@ -288,8 +288,7 @@ contract UpgradeableRegistrarController is OwnableUpgradeable {
         address legacyRegistrarController_,
         address reverseResolver_
     ) public initializer onlyInitializing {
-        __Ownable_init();
-        transferOwnership(owner_);
+        __Ownable_init(owner_);
 
         URCStorage storage $ = _getURCStorage();
         $.base = base_;
