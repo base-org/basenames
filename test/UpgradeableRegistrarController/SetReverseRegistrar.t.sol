@@ -5,13 +5,13 @@ import {UpgradeableRegistrarControllerBase} from "./UpgradeableRegistrarControll
 import {UpgradeableRegistrarController} from "src/L2/UpgradeableRegistrarController.sol";
 import {MockReverseRegistrar} from "test/mocks/MockReverseRegistrar.sol";
 import {IReverseRegistrar} from "src/L2/interface/IReverseRegistrar.sol";
-import {Ownable} from "solady/auth/Ownable.sol";
+import {OwnableUpgradeable} from "openzeppelin-contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 contract SetReverseRegistrar is UpgradeableRegistrarControllerBase {
-    function test_reverts_ifCalledByNonOwner(address caller) public {
+    function test_reverts_ifCalledByNonOwner(address caller) public whenNotProxyAdmin(caller, address(controller)) {
         vm.assume(caller != owner);
         MockReverseRegistrar newReverse = new MockReverseRegistrar();
-        vm.expectRevert(Ownable.Unauthorized.selector);
+        vm.expectRevert(abi.encodeWithSelector(OwnableUpgradeable.OwnableUnauthorizedAccount.selector, caller));
         vm.prank(caller);
         controller.setReverseRegistrar(IReverseRegistrar(address(newReverse)));
     }

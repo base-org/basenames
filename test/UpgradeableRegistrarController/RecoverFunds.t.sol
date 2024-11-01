@@ -4,16 +4,19 @@ pragma solidity ^0.8.23;
 import {UpgradeableRegistrarControllerBase} from "./UpgradeableRegistrarControllerBase.t.sol";
 import {UpgradeableRegistrarController} from "src/L2/UpgradeableRegistrarController.sol";
 import {IPriceOracle} from "src/L2/interface/IPriceOracle.sol";
-import {Ownable} from "solady/auth/Ownable.sol";
+import {OwnableUpgradeable} from "openzeppelin-contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {MockUSDC} from "test/mocks/MockUSDC.sol";
 
 contract RecoverFunds is UpgradeableRegistrarControllerBase {
     MockUSDC public usdc;
 
-    function test_reverts_ifCalledByNonOwner(address caller, uint256 amount) public {
-        vm.assume(caller != owner);
+    function test_reverts_ifCalledByNonOwner(address caller, uint256 amount)
+        public
+        whenNotProxyAdmin(caller, address(controller))
+    {
+        vm.assume(caller != owner); // Ownable owner
         vm.assume(amount > 0 && amount < type(uint128).max);
-        vm.expectRevert(Ownable.Unauthorized.selector);
+        vm.expectRevert(abi.encodeWithSelector(OwnableUpgradeable.OwnableUnauthorizedAccount.selector, caller));
         vm.prank(caller);
         controller.recoverFunds(address(usdc), caller, amount);
     }

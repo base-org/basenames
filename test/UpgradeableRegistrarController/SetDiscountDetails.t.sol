@@ -3,12 +3,12 @@ pragma solidity ^0.8.23;
 
 import {UpgradeableRegistrarControllerBase} from "./UpgradeableRegistrarControllerBase.t.sol";
 import {UpgradeableRegistrarController} from "src/L2/UpgradeableRegistrarController.sol";
-import {Ownable} from "solady/auth/Ownable.sol";
+import {OwnableUpgradeable} from "openzeppelin-contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 contract SetDiscountDetails is UpgradeableRegistrarControllerBase {
-    function test_reverts_ifCalledByNonOwner(address caller) public {
+    function test_reverts_ifCalledByNonOwner(address caller) public whenNotProxyAdmin(caller, address(controller)) {
         vm.assume(caller != owner);
-        vm.expectRevert(Ownable.Unauthorized.selector);
+        vm.expectRevert(abi.encodeWithSelector(OwnableUpgradeable.OwnableUnauthorizedAccount.selector, caller));
         vm.prank(caller);
         controller.setDiscountDetails(_getDefaultDiscount());
     }

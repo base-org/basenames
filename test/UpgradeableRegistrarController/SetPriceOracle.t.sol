@@ -5,13 +5,13 @@ import {UpgradeableRegistrarControllerBase} from "./UpgradeableRegistrarControll
 import {UpgradeableRegistrarController} from "src/L2/UpgradeableRegistrarController.sol";
 import {MockPriceOracle} from "test/mocks/MockPriceOracle.sol";
 import {IPriceOracle} from "src/L2/interface/IPriceOracle.sol";
-import {Ownable} from "solady/auth/Ownable.sol";
+import {OwnableUpgradeable} from "openzeppelin-contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 contract SetPriceOracle is UpgradeableRegistrarControllerBase {
-    function test_reverts_ifCalledByNonOwner(address caller) public {
+    function test_reverts_ifCalledByNonOwner(address caller) public whenNotProxyAdmin(caller, address(controller)) {
         vm.assume(caller != owner);
         MockPriceOracle newPrices = new MockPriceOracle();
-        vm.expectRevert(Ownable.Unauthorized.selector);
+        vm.expectRevert(abi.encodeWithSelector(OwnableUpgradeable.OwnableUnauthorizedAccount.selector, caller));
         vm.prank(caller);
         controller.setPriceOracle(IPriceOracle(address(newPrices)));
     }

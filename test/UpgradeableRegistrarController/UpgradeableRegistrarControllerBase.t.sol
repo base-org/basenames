@@ -20,6 +20,7 @@ import {MockReverseRegistrar} from "test/mocks/MockReverseRegistrar.sol";
 import {MockReverseResolver} from "test/mocks/MockReverseResolver.sol";
 import {MockRegistrarController} from "test/mocks/MockRegistrarController.sol";
 import {BASE_ETH_NODE, REVERSE_NODE} from "src/util/Constants.sol";
+import {ERC1967Utils} from "openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Utils.sol";
 
 import "forge-std/console.sol";
 
@@ -120,5 +121,12 @@ contract UpgradeableRegistrarControllerBase is Test {
     function _getDefaultRegisterData() internal view virtual returns (bytes[] memory data) {
         data = new bytes[](1);
         data[0] = bytes(name);
+    }
+
+    modifier whenNotProxyAdmin(address caller, address proxyContract) {
+        // The _admin on the Proxy is not exposed externally, although can be loaded from the ERC1967 admin slot
+        address proxyAdmin = address(uint160(uint256(vm.load(address(proxyContract), ERC1967Utils.ADMIN_SLOT))));
+        vm.assume(caller != proxyAdmin); // proxy admin on transparent upgradeable proxy
+        _;
     }
 }
