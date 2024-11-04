@@ -1,6 +1,7 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {IERC1155} from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 
 import {IDiscountValidator} from "src/L2/interface/IDiscountValidator.sol";
@@ -13,18 +14,20 @@ import {IDiscountValidator} from "src/L2/interface/IDiscountValidator.sol";
 ///
 /// @author Coinbase (https://github.com/base-org/usernames)
 contract ERC1155DiscountValidatorV2 is IDiscountValidator {
+    using Address for address;
+
     /// @notice The ERC1155 token contract to validate against.
-    IERC1155 immutable token;
+    address immutable token;
 
     /// @notice The approved token Ids of the ERC1155 token contract.
     mapping(uint256 tokenId => bool approved) approvedTokenIds;
 
     /// @notice ERC1155 Discount Validator constructor.
     ///
-    /// @param tokenAddress The address of the token contract.
+    /// @param token_ The address of the token contract.
     /// @param tokenIds The approved token ids the token `claimer` must hold.
-    constructor(address tokenAddress, uint256[] memory tokenIds) {
-        token = IERC1155(tokenAddress);
+    constructor(address token_, uint256[] memory tokenIds) {
+        token = token_;
         for (uint256 i; i < tokenIds.length; i++) {
             approvedTokenIds[tokenIds[i]] = true;
         }
@@ -47,10 +50,17 @@ contract ERC1155DiscountValidatorV2 is IDiscountValidator {
         uint256[] memory ids = abi.decode(validationData, (uint256[]));
         for (uint256 i; i < ids.length; i++) {
             uint256 id = ids[i];
-            if (approvedTokenIds[id] && token.balanceOf(claimer, id) > 0) {
+            if (approvedTokenIds[id] && _getBalance(claimer, id) > 0) {
                 return true;
             }
         }
         return false;
+    }
+
+    /// @notice Helper for staticcalling getBalance to avoid reentrancy vector.
+    function _getBalance(address claimer, uint256 id) internal view returns (uint256) {
+        bytes memory data = abi.encodeWithSelector(IERC1155.balanceOf.selector, claimer, id);
+        (bytes memory returnData) = token.functionStaticCall(data);
+        return(abi.decode(returnData, (uint256)));
     }
 }
