@@ -61,6 +61,6 @@ contract ERC1155DiscountValidatorV2 is IDiscountValidator {
     function _getBalance(address claimer, uint256 id) internal view returns (uint256) {
         bytes memory data = abi.encodeWithSelector(IERC1155.balanceOf.selector, claimer, id);
         (bytes memory returnData) = token.functionStaticCall(data);
-        return(abi.decode(returnData, (uint256)));
+        return (abi.decode(returnData, (uint256)));
     }
 }
