@@ -14,11 +14,11 @@ contract TBADiscountValidator is IDiscountValidator {
     /// @notice Thrown when setting a critical address to the zero-address.
     error NoZeroAddress();
 
-    /// @dev The sybil resistance service signer.
-    address immutable signer;
-
     /// @notice Thrown when the signature expiry date < block.timestamp.
     error SignatureExpired();
+
+    /// @dev The sybil resistance service signer.
+    address immutable signer;
 
     /// @notice constructor
     ///
