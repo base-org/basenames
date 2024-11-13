@@ -1,25 +1,25 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import {CouponDiscountValidator} from "src/L2/discounts/CouponDiscountValidator.sol";
-import {CouponDiscountValidatorBase} from "./CouponDiscountValidatorBase.t.sol";
+import {TBADiscountValidator} from "src/L2/discounts/TBADiscountValidator.sol";
+import {TBADiscountValidatorBase} from "./TBADiscountValidatorBase.t.sol";
 
-contract IsValidDiscountRegistration is CouponDiscountValidatorBase {
+contract IsValidDiscountRegistration is TBADiscountValidatorBase {
     function test_reverts_whenTheSignatureIsExpired() public {
         bytes memory validationData = _getDefaultValidationData();
-        (, bytes32 _uuid, bytes memory sig) = abi.decode(validationData, (uint64, bytes32, bytes));
-        bytes memory expiredSignatureData = abi.encode((block.timestamp - 1), _uuid, sig);
+        (, bytes32 _deviceId, bytes memory sig) = abi.decode(validationData, (uint64, bytes32, bytes));
+        bytes memory expiredSignatureData = abi.encode((block.timestamp - 1), _deviceId, sig);
 
-        vm.expectRevert(abi.encodeWithSelector(CouponDiscountValidator.SignatureExpired.selector));
+        vm.expectRevert(abi.encodeWithSelector(TBADiscountValidator.SignatureExpired.selector));
         validator.isValidDiscountRegistration(user, expiredSignatureData);
     }
 
     function test_returnsFalse_whenTheExpectedSignerMismatches(uint256 pk) public view {
         vm.assume(pk != signerPk && pk != 0 && pk < type(uint128).max);
-        bytes32 digest = _makeSignatureHash(user, uuid, expires);
+        bytes32 digest = _makeSignatureHash(user, deviceId, expires);
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(pk, digest);
         bytes memory sig = abi.encodePacked(r, s, v);
-        bytes memory badSignerValidationData = abi.encode(expires, uuid, sig);
+        bytes memory badSignerValidationData = abi.encode(deviceId, expires, sig);
 
         assertFalse(validator.isValidDiscountRegistration(user, badSignerValidationData));
     }

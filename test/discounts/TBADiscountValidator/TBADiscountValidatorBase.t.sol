@@ -23,13 +23,13 @@ contract TBADiscountValidatorBase is Test {
     }
 
     function _getDefaultValidationData() internal virtual returns (bytes memory) {
-        bytes32 digest = _makeSignatureHash(user, uuid, expires);
+        bytes32 digest = _makeSignatureHash(user, deviceId, expires);
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(signerPk, digest);
         bytes memory sig = abi.encodePacked(r, s, v);
-        return abi.encode(expires, uuid, sig);
+        return abi.encode(deviceId, expires, sig);
     }
 
-    function _makeSignatureHash(address claimer, bytes32 couponUuid, uint64 _expires) internal view returns (bytes32) {
-        return keccak256(abi.encodePacked(hex"1900", address(validator), signer, claimer, couponUuid, _expires));
+    function _makeSignatureHash(address claimer, bytes32 deviceId_, uint64 expires_) internal view returns (bytes32) {
+        return keccak256(abi.encodePacked(hex"1900", address(validator), claimer, deviceId_, expires_));
     }
 }
