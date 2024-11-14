@@ -6,10 +6,8 @@ import {TBADiscountValidatorBase} from "./TBADiscountValidatorBase.t.sol";
 
 contract IsValidDiscountRegistration is TBADiscountValidatorBase {
     function test_reverts_whenTheSignatureIsExpired() public {
-        bytes memory validationData = _getDefaultValidationData();
-        (bytes32 _deviceId,, bytes memory sig) = abi.decode(validationData, (bytes32, uint64, bytes));
-        bytes memory expiredSignatureData = abi.encode(_deviceId, (block.timestamp - 1), sig);
-
+        bytes memory expiredSignatureData = _getDefaultValidationData();
+        vm.warp(expires + 1);
         vm.expectRevert(abi.encodeWithSelector(TBADiscountValidator.SignatureExpired.selector));
         validator.isValidDiscountRegistration(user, expiredSignatureData);
     }

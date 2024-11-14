@@ -45,7 +45,7 @@ contract TBADiscountValidator is IDiscountValidator {
 
     /// @notice  Generates a hash for signing/verifying.
     ///
-    /// @dev The message hash should be dervied by: `keccak256(abi.encode(0x1900, validatorAddress, claimerAddress, deviceId, expiry))`.
+    /// @dev The message hash should be derived by: `keccak256(abi.encode(0x1900, validatorAddress, claimerAddress, deviceId, expiry))`.
     ///     Compliant with EIP-191 for `Data for intended validator`: https://eips.ethereum.org/EIPS/eip-191#version-0x00 .
     ///
     /// @param claimer Address of the coupon claimer.
