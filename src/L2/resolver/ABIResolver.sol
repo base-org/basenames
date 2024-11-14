@@ -14,14 +14,14 @@ import {ResolverBase} from "./ResolverBase.sol";
 /// @author Coinbase (https://github.com/base-org/basenames)
 abstract contract ABIResolver is IABIResolver, ResolverBase {
     struct ABIResolverStorage {
-        /// @notice ABI storage (`bytes`) by content type, node, and version.
+        /// @notice ABI record (`bytes`) by content type, node, and version.
         mapping(uint64 version => mapping(bytes32 node => mapping(uint256 contentType => bytes data))) versionable_abis;
     }
 
     /// @notice Thrown when setting an ABI with an invalid content type.
     error InvalidContentType();
 
-    /// @notice EIP-7201 storage location
+    /// @notice EIP-7201 storage location.
     /// keccak256(abi.encode(uint256(keccak256("abi.resolver.storage")) - 1)) & ~bytes32(uint256(0xff));
     bytes32 private constant ABI_RESOLVER_STORAGE = 0x76dc89e1c49d3cda8f11a131d381f3dbd0df1919a4e1a669330a2763d2821400;
 
