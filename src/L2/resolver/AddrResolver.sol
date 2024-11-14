@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.4;
+pragma solidity ^0.8.23;
 
 import {IAddrResolver} from "ens-contracts/resolvers/profiles/IAddrResolver.sol";
 import {IAddressResolver} from "ens-contracts/resolvers/profiles/IAddressResolver.sol";

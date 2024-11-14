@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.4;
+pragma solidity ^0.8.23;
 
 import {IContentHashResolver} from "ens-contracts/resolvers/profiles/IContentHashResolver.sol";
 

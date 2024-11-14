@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.4;
+pragma solidity ^0.8.23;
 
 import {IABIResolver} from "ens-contracts/resolvers/profiles/IABIResolver.sol";
 
