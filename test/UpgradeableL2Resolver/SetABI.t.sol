@@ -2,6 +2,7 @@
 pragma solidity ^0.8.23;
 
 import {UpgradeableL2ResolverBase} from "./UpgradeableL2ResolverBase.t.sol";
+import {ResolverBase} from "src/L2/resolver/ResolverBase.sol";
 import {ABIResolver} from "src/L2/resolver/ABIResolver.sol";
 
 contract SetABI is UpgradeableL2ResolverBase {
@@ -11,6 +12,12 @@ contract SetABI is UpgradeableL2ResolverBase {
     uint256 constant URI_CONTENT = 8;
     uint256 constant INVALID_CONTENT = 3;
     bytes data = "data";
+
+    function test_reverts_forUnauthorizedUser() public {
+        vm.expectRevert(abi.encodeWithSelector(ResolverBase.NotAuthorized.selector, node, notUser));
+        vm.prank(notUser);
+        resolver.setABI(node, JSON_CONTENT, data);
+    }
 
     function test_reverts_withInvalidContentType() public {
         vm.expectRevert(ABIResolver.InvalidContentType.selector);

@@ -9,13 +9,15 @@ abstract contract ResolverBase is ERC165, IVersionableResolver {
         mapping(bytes32 node => uint64 version) recordVersions;
     }
 
+    error NotAuthorized(bytes32 node, address caller);
+
     // keccak256(abi.encode(uint256(keccak256("resolver.base.storage")) - 1)) & ~bytes32(uint256(0xff));
     bytes32 private constant RESOLVER_BASE_LOCATION = 0x421bc1b234e222da5ef3c41832b689b450ae239e8b18cf3c05f5329ae7d99700;
 
     function isAuthorised(bytes32 node) internal view virtual returns (bool);
 
     modifier authorised(bytes32 node) {
-        require(isAuthorised(node));
+        if (!isAuthorised(node)) revert NotAuthorized(node, msg.sender);
         _;
     }
 

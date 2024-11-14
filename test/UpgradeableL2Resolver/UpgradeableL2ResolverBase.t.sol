@@ -21,6 +21,7 @@ contract UpgradeableL2ResolverBase is Test {
     address admin = makeAddr("admin");
     address owner = makeAddr("owner");
     address user = makeAddr("user");
+    address notUser = makeAddr("notUser");
     string name = "test.base.eth";
     bytes32 label = keccak256("test");
     bytes32 node;

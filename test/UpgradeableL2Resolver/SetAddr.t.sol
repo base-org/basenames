@@ -2,12 +2,19 @@
 pragma solidity ^0.8.23;
 
 import {UpgradeableL2ResolverBase} from "./UpgradeableL2ResolverBase.t.sol";
+import {ResolverBase} from "src/L2/resolver/ResolverBase.sol";
 import {AddrResolver} from "src/L2/resolver/AddrResolver.sol";
 
 contract SetAddr is UpgradeableL2ResolverBase {
     uint256 BTC_COINTYPE = 0;
     uint256 ETH_COINTYPE = 60;
     uint256 BASE_COINTYPE = 2147492101;
+
+    function test_reverts_forUnauthorizedUser() public {
+        vm.expectRevert(abi.encodeWithSelector(ResolverBase.NotAuthorized.selector, node, notUser));
+        vm.prank(notUser);
+        resolver.setAddr(node, notUser);
+    }
 
     function test_setsAnETHAddress_byDefault(address a) public {
         vm.prank(user);

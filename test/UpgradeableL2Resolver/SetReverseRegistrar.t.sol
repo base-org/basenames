@@ -7,7 +7,7 @@ import {Ownable} from "solady/auth/Ownable.sol";
 
 contract SetReverseRegistrar is UpgradeableL2ResolverBase {
     function test_reverts_ifCalledByNonOwner(address caller, address newReverse) public {
-        vm.assume(caller != owner);
+        vm.assume(caller != owner && caller != admin);
         vm.expectRevert(Ownable.Unauthorized.selector);
         vm.prank(caller);
         resolver.setReverseRegistrar(newReverse);
