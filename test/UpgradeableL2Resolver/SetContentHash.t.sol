@@ -5,7 +5,7 @@ import {UpgradeableL2ResolverBase} from "./UpgradeableL2ResolverBase.t.sol";
 import {ResolverBase} from "src/L2/resolver/ResolverBase.sol";
 import {ContentHashResolver} from "src/L2/resolver/ContentHashResolver.sol";
 
-contract SetContentHash is UpgradeableL2ResolverBase {
+contract SetContenthash is UpgradeableL2ResolverBase {
     bytes IPFS_Data = hex"e3010170122029f2d17be6139079dc48696d1f582a8530eb9805b561eda517e22a892c7e3f1f";
 
     function test_reverts_forUnauthorizedUser() public {
