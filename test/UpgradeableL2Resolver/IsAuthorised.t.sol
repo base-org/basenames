@@ -4,8 +4,8 @@ pragma solidity ^0.8.23;
 import {UpgradeableL2ResolverBase} from "./UpgradeableL2ResolverBase.t.sol";
 import {BASE_ETH_NODE} from "src/util/Constants.sol";
 
-// Because isAuthorized() is an internal method, we test it indirectly here by using `setAddr()` which
-// checks the authorization status via `isAuthorized()`.
+// Because isAuthorised() is an internal method, we test it indirectly here by using `setAddr()` which
+// checks the authorization status via `isAuthorised()`.
 contract IsAuthorised is UpgradeableL2ResolverBase {
     function test_returnsTrue_ifSenderIsController() public {
         vm.prank(controller);

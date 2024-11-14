@@ -7,7 +7,7 @@ import {TransparentUpgradeableProxy} from
     "openzeppelin-contracts/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 import {Registry} from "src/L2/Registry.sol";
 import {ENS} from "ens-contracts/registry/ENS.sol";
-import {ETH_NODE, REVERSE_NODE} from "src/util/Constants.sol";
+import {ETH_NODE, BASE_ETH_NODE, REVERSE_NODE} from "src/util/Constants.sol";
 import {NameEncoder} from "ens-contracts/utils/NameEncoder.sol";
 import {MockReverseRegistrar} from "test/mocks/MockReverseRegistrar.sol";
 
@@ -39,21 +39,21 @@ contract UpgradeableL2ResolverBase is Test {
         resolver = UpgradeableL2Resolver(address(proxy));
         (, node) = NameEncoder.dnsEncodeName(name);
         _establishNamespace();
-    }
+        }
 
     function _establishNamespace() internal virtual {
         // establish the base.eth namespace
         bytes32 ethLabel = keccak256("eth");
         bytes32 baseLabel = keccak256("base");
-        vm.prank(owner);
+        vm.startPrank(owner);
         registry.setSubnodeOwner(0x0, ethLabel, owner);
-        vm.prank(owner);
         registry.setSubnodeOwner(ETH_NODE, baseLabel, owner);
-
+        // create `name` for user
+        registry.setSubnodeRecord(BASE_ETH_NODE, label, user, address(resolver), 0);
+        
         // establish the 80002105.reverse namespace
-        vm.prank(owner);
         registry.setSubnodeOwner(0x0, keccak256("reverse"), owner);
-        vm.prank(owner);
         registry.setSubnodeOwner(REVERSE_NODE, keccak256("80002105"), address(reverse));
+        vm.stopPrank();
     }
 }
