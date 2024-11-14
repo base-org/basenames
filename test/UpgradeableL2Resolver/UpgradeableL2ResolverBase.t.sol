@@ -39,7 +39,7 @@ contract UpgradeableL2ResolverBase is Test {
         resolver = UpgradeableL2Resolver(address(proxy));
         (, node) = NameEncoder.dnsEncodeName(name);
         _establishNamespace();
-        }
+    }
 
     function _establishNamespace() internal virtual {
         // establish the base.eth namespace
@@ -50,7 +50,7 @@ contract UpgradeableL2ResolverBase is Test {
         registry.setSubnodeOwner(ETH_NODE, baseLabel, owner);
         // create `name` for user
         registry.setSubnodeRecord(BASE_ETH_NODE, label, user, address(resolver), 0);
-        
+
         // establish the 80002105.reverse namespace
         registry.setSubnodeOwner(0x0, keccak256("reverse"), owner);
         registry.setSubnodeOwner(REVERSE_NODE, keccak256("80002105"), address(reverse));

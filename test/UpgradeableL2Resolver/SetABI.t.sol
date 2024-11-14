@@ -12,7 +12,6 @@ contract SetABI is UpgradeableL2ResolverBase {
     uint256 constant INVALID_CONTENT = 3;
     bytes data = "data";
 
-
     function test_reverts_withInvalidContentType() public {
         vm.expectRevert(ABIResolver.InvalidContentType.selector);
         vm.prank(user);
@@ -22,28 +21,28 @@ contract SetABI is UpgradeableL2ResolverBase {
     function test_setsTheABICorrectly_forJSONContent() public {
         vm.prank(user);
         resolver.setABI(node, JSON_CONTENT, data);
-        (uint256 retType ,bytes memory retData) = resolver.ABI(node, JSON_CONTENT);
+        (uint256 retType, bytes memory retData) = resolver.ABI(node, JSON_CONTENT);
         _validateReturnedContent(retType, JSON_CONTENT, retData);
     }
 
     function test_setsTheABICorrectly_forZlibJSONContent() public {
         vm.prank(user);
         resolver.setABI(node, ZLIB_JSON_CONTENT, data);
-        (uint256 retType ,bytes memory retData) = resolver.ABI(node, ZLIB_JSON_CONTENT);
+        (uint256 retType, bytes memory retData) = resolver.ABI(node, ZLIB_JSON_CONTENT);
         _validateReturnedContent(retType, ZLIB_JSON_CONTENT, retData);
     }
 
     function test_setsTheABICorrectly_forCBORContent() public {
         vm.prank(user);
         resolver.setABI(node, CBOR_CONTENT, data);
-        (uint256 retType ,bytes memory retData) = resolver.ABI(node, CBOR_CONTENT);
+        (uint256 retType, bytes memory retData) = resolver.ABI(node, CBOR_CONTENT);
         _validateReturnedContent(retType, CBOR_CONTENT, retData);
     }
 
     function test_setsTheABICorrectly_forURIContent() public {
         vm.prank(user);
         resolver.setABI(node, URI_CONTENT, data);
-        (uint256 retType ,bytes memory retData) = resolver.ABI(node, URI_CONTENT);
+        (uint256 retType, bytes memory retData) = resolver.ABI(node, URI_CONTENT);
         _validateReturnedContent(retType, URI_CONTENT, retData);
     }
 
@@ -51,5 +50,4 @@ contract SetABI is UpgradeableL2ResolverBase {
         assertEq(retType, expectedType);
         assertEq(keccak256(retData), keccak256(data));
     }
-
 }

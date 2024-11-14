@@ -14,7 +14,7 @@ import {ResolverBase} from "./ResolverBase.sol";
 /// @author Coinbase (https://github.com/base-org/basenames)
 abstract contract ABIResolver is IABIResolver, ResolverBase {
     struct ABIResolverStorage {
-        /// @notice ABI storage (`bytes`) by content type, node, and version. 
+        /// @notice ABI storage (`bytes`) by content type, node, and version.
         mapping(uint64 version => mapping(bytes32 node => mapping(uint256 contentType => bytes data))) versionable_abis;
     }
 
@@ -35,7 +35,7 @@ abstract contract ABIResolver is IABIResolver, ResolverBase {
     /// @param data The ABI data.
     function setABI(bytes32 node, uint256 contentType, bytes calldata data) external virtual authorised(node) {
         // Content types must be powers of 2
-        if(((contentType - 1) & contentType) != 0) revert InvalidContentType();
+        if (((contentType - 1) & contentType) != 0) revert InvalidContentType();
 
         _getABIResolverStorage().versionable_abis[_getResolverBaseStorage().recordVersions[node]][node][contentType] =
             data;
