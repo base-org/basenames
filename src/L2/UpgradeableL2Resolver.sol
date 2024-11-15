@@ -25,7 +25,7 @@ import {IReverseRegistrar} from "src/L2/interface/IReverseRegistrar.sol";
 ///         Public Resolver: https://github.com/ensdomains/ens-contracts/blob/staging/contracts/resolvers/PublicResolver.sol
 ///         Extended Resolver: https://github.com/ensdomains/ens-contracts/blob/staging/contracts/resolvers/profiles/ExtendedResolver.sol
 ///
-/// @author Coinbase (https://github.com/base-org/usernames)
+/// @author Coinbase (https://github.com/base-org/basenames)
 contract UpgradeableL2Resolver is
     ABIResolver,
     AddrResolver,
@@ -40,6 +40,7 @@ contract UpgradeableL2Resolver is
     PubkeyResolver,
     TextResolver
 {
+    /// @notice EIP-7201 storage location.
     // keccak256(abi.encode(uint256(keccak256("resolver.storage")) - 1)) & ~bytes32(uint256(0xff));
     bytes32 private constant RESOLVER_STORAGE_LOCATION =
         0xa75da70a48b778f6d7794a48ad897d5e41dff6abea13a6164e9a58efe57a7200;
@@ -167,7 +168,7 @@ contract UpgradeableL2Resolver is
     ///     the ownership of the specified `node`.
     ///
     /// @param node The namehash `node` whose permissions are being updated.
-    /// @param delegate The address of the `delegate`
+    /// @param delegate The address of the `delegate`.
     /// @param approved Whether the `delegate` has approval to modify records for `msg.sender`'s `node`.
     function approve(bytes32 node, address delegate, bool approved) external {
         if (msg.sender == delegate) revert CantSetSelfAsDelegate();
@@ -214,9 +215,9 @@ contract UpgradeableL2Resolver is
     /// @dev Checks interface support for each inherited resolver profile
     ///     https://eips.ethereum.org/EIPS/eip-165#how-interfaces-are-identified[EIP section]
     ///
-    /// @param interfaceID the ERC165 iface id being checked for compliance
+    /// @param interfaceID the ERC165 iface id being checked for compliance.
     ///
-    /// @return bool Whether this contract supports the provided interfaceID
+    /// @return bool Whether this contract supports the provided interfaceID.
     function supportsInterface(bytes4 interfaceID)
         public
         view
@@ -236,6 +237,7 @@ contract UpgradeableL2Resolver is
         return (interfaceID == type(IExtendedResolver).interfaceId || super.supportsInterface(interfaceID));
     }
 
+    /// @notice EIP-7201 storage pointer fetch helper.
     function _getResolverStorage() internal pure returns (ResolverStorage storage $) {
         assembly {
             $.slot := RESOLVER_STORAGE_LOCATION
