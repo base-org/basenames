@@ -14,7 +14,7 @@ import {ResolverBase} from "./ResolverBase.sol";
 /// @author Coinbase (https://github.com/base-org/basenames)
 abstract contract TextResolver is ITextResolver, ResolverBase {
     struct TextResolverStorage {
-        /// @notice Text value by text key, node, and version. 
+        /// @notice Text value by text key, node, and version.
         mapping(uint64 version => mapping(bytes32 node => mapping(string text_key => string text_value)))
             versionable_texts;
     }
