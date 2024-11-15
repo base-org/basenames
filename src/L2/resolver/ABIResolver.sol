@@ -5,7 +5,7 @@ import {IABIResolver} from "ens-contracts/resolvers/profiles/IABIResolver.sol";
 
 import {ResolverBase} from "./ResolverBase.sol";
 
-/// @title ABIResolver
+/// @title ABI Resolver
 ///
 /// @notice ENSIP-4 compliant ABI Resolver. Adaptation of the ENS ABIResolver.sol profile contract, with
 ///         EIP-7201 storage compliance.
