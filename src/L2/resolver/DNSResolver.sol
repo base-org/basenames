@@ -157,17 +157,18 @@ abstract contract DNSResolver is IDNSRecordResolver, IDNSZoneResolver, ResolverB
     ) private {
         bytes32 nameHash = keccak256(name);
         bytes memory rrData = data.substring(offset, size);
+        DNSResolverStorage storage $ = _getDNSResolverStorage();
         if (deleteRecord) {
-            if (_getDNSResolverStorage().versionable_records[version][node][nameHash][resource].length != 0) {
-                _getDNSResolverStorage().versionable_nameEntriesCount[version][node][nameHash]--;
+            if ($.versionable_records[version][node][nameHash][resource].length != 0) {
+                $.versionable_nameEntriesCount[version][node][nameHash]--;
             }
-            delete (_getDNSResolverStorage().versionable_records[version][node][nameHash][resource]);
+            delete ($.versionable_records[version][node][nameHash][resource]);
             emit DNSRecordDeleted(node, name, resource);
         } else {
-            if (_getDNSResolverStorage().versionable_records[version][node][nameHash][resource].length == 0) {
-                _getDNSResolverStorage().versionable_nameEntriesCount[version][node][nameHash]++;
+            if ($.versionable_records[version][node][nameHash][resource].length == 0) {
+                $.versionable_nameEntriesCount[version][node][nameHash]++;
             }
-            _getDNSResolverStorage().versionable_records[version][node][nameHash][resource] = rrData;
+            $.versionable_records[version][node][nameHash][resource] = rrData;
             emit DNSRecordChanged(node, name, resource, rrData);
         }
     }
