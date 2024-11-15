@@ -6,7 +6,7 @@ import {IAddressResolver} from "ens-contracts/resolvers/profiles/IAddressResolve
 
 import {ResolverBase} from "./ResolverBase.sol";
 
-/// @title AddrResolver
+/// @title Address Resolver
 ///
 /// @notice ENSIP-11 compliant Address Resolver. Adaptation of the ENS AddrResolver.sol profile contract, with
 ///         EIP-7201 storage compliance.

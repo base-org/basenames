@@ -26,7 +26,7 @@ contract UpgradeableL2ResolverBase is Test {
     bytes32 label = keccak256("test");
     bytes32 node;
 
-    function setUp() public {
+    function setUp() public virtual {
         registry = new Registry(owner);
         reverse = address(new MockReverseRegistrar());
         resolverImpl = new UpgradeableL2Resolver();
