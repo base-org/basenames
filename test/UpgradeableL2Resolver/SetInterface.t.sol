@@ -34,16 +34,18 @@ contract SetInterface is UpgradeableL2ResolverBase {
 }
 
 interface ICounter {
-    function set(uint x) external;
+    function set(uint256 x) external;
 }
 
 contract Counter is ICounter, ERC165 {
-    uint public x;
-    function set(uint x_) external {
+    uint256 public x;
+
+    function set(uint256 x_) external {
         x = x_;
     }
     /// @notice ERC-165 compliance.
+
     function supportsInterface(bytes4 interfaceID) public view virtual override returns (bool) {
         return interfaceID == type(ICounter).interfaceId || super.supportsInterface(interfaceID);
-    }    
+    }
 }
