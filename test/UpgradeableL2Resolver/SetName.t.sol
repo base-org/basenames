@@ -11,7 +11,7 @@ contract SetName is UpgradeableL2ResolverBase {
         vm.prank(notUser);
         resolver.setName(node, name);
     }
-    
+
     function test_setsTheName() public {
         vm.prank(user);
         resolver.setName(node, name);
