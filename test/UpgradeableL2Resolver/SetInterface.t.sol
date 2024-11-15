@@ -43,8 +43,8 @@ contract Counter is ICounter, ERC165 {
     function set(uint256 x_) external {
         x = x_;
     }
-    /// @notice ERC-165 compliance.
 
+    /// @notice ERC-165 compliance.
     function supportsInterface(bytes4 interfaceID) public view virtual override returns (bool) {
         return interfaceID == type(ICounter).interfaceId || super.supportsInterface(interfaceID);
     }
