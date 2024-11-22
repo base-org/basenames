@@ -1,10 +1,9 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ~0.8.17;
 
-import {ERC1155Fuse} from "./ERC1155Fuse.sol";
-import {Controllable} from "./Controllable.sol";
+import {ENS} from "ens-contracts/registry/ENS.sol";
+import {ERC1155Fuse} from "ens-contracts/wrapper/ERC1155Fuse.sol";
 import {
-    INameWrapper,
     CANNOT_UNWRAP,
     CANNOT_BURN_FUSES,
     CANNOT_TRANSFER,
@@ -18,18 +17,14 @@ import {
     CAN_EXTEND_EXPIRY,
     PARENT_CONTROLLED_FUSES,
     USER_SETTABLE_FUSES
-} from "./INameWrapper.sol";
+} from "../util/Constants.sol";
 import {INameWrapperUpgrade} from "./INameWrapperUpgrade.sol";
-import {IMetadataService} from "./IMetadataService.sol";
-import {ENS} from "../registry/ENS.sol";
 import {IReverseRegistrar} from "../reverseRegistrar/IReverseRegistrar.sol";
-import {ReverseClaimer} from "../reverseRegistrar/ReverseClaimer.sol";
-import {IBaseRegistrar} from "../ethregistrar/IBaseRegistrar.sol";
+import {ReverseClaimer} from "/reverseRegistrar/ReverseClaimer.sol";
+import {IBaseRegistrar} from "./interface/IBaseRegistrar.sol";
 import {IERC721Receiver} from "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
-import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {BytesUtils} from "./BytesUtils.sol";
-import {ERC20Recoverable} from "../utils/ERC20Recoverable.sol";
+import {Ownable} from "solady/auth/Ownable.sol";
+import {BytesUtils} from "ens-contracts/wrapper/BytesUtils.sol";
 
 error Unauthorised(bytes32 node, address addr);
 error IncompatibleParent();
@@ -43,13 +38,17 @@ error OperationProhibited(bytes32 node);
 error NameIsNotWrapped();
 error NameIsStillExpired();
 
+/// TODO: 
+// 1. Metadata handling, removed `IMetadataService` inheritance, need alternaative
+// 2. Explore the necessity for the WrapperUpgrade complexity
+// 3. Make proxy? EIP-7201 storage 
+// 
+
 contract NameWrapper is
     Ownable,
     ERC1155Fuse,
     INameWrapper,
-    Controllable,
     IERC721Receiver,
-    ERC20Recoverable,
     ReverseClaimer
 {
     using BytesUtils for bytes;
@@ -60,10 +59,59 @@ contract NameWrapper is
     mapping(bytes32 => bytes) public names;
     string public constant name = "NameWrapper";
 
-    uint64 private constant GRACE_PERIOD = 90 days;
-    bytes32 private constant ETH_NODE = 0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae;
     bytes32 private constant ETH_LABELHASH = 0x4f5b812789fc606be1b3b16908db13fc7a9adf7ca72641f84d75b47069d3d7f0;
-    bytes32 private constant ROOT_NODE = 0x0000000000000000000000000000000000000000000000000000000000000000;
+
+    /// @notice Prevents unwrapping of the name
+    /// @dev When burned, the name cannot be unwrapped and must remain in the wrapper.
+    uint32 constant CANNOT_UNWRAP = 1;
+
+    /// @notice Prevents burning of additional fuses
+    /// @dev When burned, no additional fuses can be burned for this name.
+    uint32 constant CANNOT_BURN_FUSES = 2;
+
+    /// @notice Prevents transferring of the wrapped name
+    /// @dev When burned, the wrapped token cannot be transferred to another address.
+    uint32 constant CANNOT_TRANSFER = 4;
+
+    /// @notice Prevents changing the resolver
+    /// @dev When burned, the resolver for this name cannot be changed.
+    uint32 constant CANNOT_SET_RESOLVER = 8;
+
+    /// @notice Prevents changing the TTL
+    /// @dev When burned, the TTL for this name cannot be modified.
+    uint32 constant CANNOT_SET_TTL = 16;
+
+    /// @notice Prevents creation of subdomains
+    /// @dev When burned, new subdomains cannot be created under this name.
+    uint32 constant CANNOT_CREATE_SUBDOMAIN = 32;
+
+    /// @notice Prevents approving other addresses
+    /// @dev When burned, approval cannot be given to other addresses to manage this name.
+    uint32 constant CANNOT_APPROVE = 64;
+
+    /// @notice Prevents parent domain from controlling this name
+    /// @dev When burned, the parent domain loses control over this subdomain.
+    uint32 constant PARENT_CANNOT_CONTROL = 1 << 16;
+
+    /// @notice Marks the name as a .eth second-level name
+    /// @dev Used to identify .eth names for special handling.
+    uint32 constant IS_DOT_ETH = 1 << 17;
+
+    /// @notice Allows expiry extension by approved addresses
+    /// @dev When set, approved operators can extend the expiry of the name.
+    uint32 constant CAN_EXTEND_EXPIRY = 1 << 18;
+
+    /// @notice Represents no restrictions on the name
+    /// @dev Default state where all operations are permitted.
+    uint32 constant CAN_DO_EVERYTHING = 0;
+
+    /// @notice Mask for all parent-controlled fuses
+    /// @dev Fuses that can only be burned by the parent name's owner.
+    uint32 constant PARENT_CONTROLLED_FUSES = 0xFFFF0000;
+
+    /// @notice Mask for all user-settable fuses
+    /// @dev Fuses that can be burned by the name owner, excluding CANNOT_UNWRAP.
+    uint32 constant USER_SETTABLE_FUSES = 0xFFFDFFFF;
 
     INameWrapperUpgrade public upgradeContract;
     uint64 private constant MAX_EXPIRY = type(uint64).max;
@@ -81,6 +129,23 @@ contract NameWrapper is
         _setData(uint256(ROOT_NODE), address(0), uint32(PARENT_CANNOT_CONTROL | CANNOT_UNWRAP), MAX_EXPIRY);
         names[ROOT_NODE] = "\x00";
         names[ETH_NODE] = "\x03eth\x00";
+    }
+
+    mapping(address => bool) public controllers;
+
+    event ControllerChanged(address indexed controller, bool active);
+
+    function setController(address controller, bool active) public onlyOwner {
+        controllers[controller] = active;
+        emit ControllerChanged(controller, active);
+    }
+
+    modifier onlyController() {
+        require(
+            controllers[msg.sender],
+            "Controllable: Caller is not a controller"
+        );
+        _;
     }
 
     function supportsInterface(bytes4 interfaceId)
