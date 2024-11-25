@@ -3,6 +3,7 @@ pragma solidity ^0.8.23;
 
 import {UpgradeableL2ResolverBase} from "./UpgradeableL2ResolverBase.t.sol";
 import {BASE_ETH_NODE} from "src/util/Constants.sol";
+import {ResolverBase} from "src/L2/resolver/ResolverBase.sol";
 
 // Because isAuthorised() is an internal method, we test it indirectly here by using `setAddr()` which
 // checks the authorization status via `isAuthorised()`.
@@ -19,6 +20,14 @@ contract IsAuthorised is UpgradeableL2ResolverBase {
         assertEq(resolver.addr(node), user);
     }
 
+    function test_returnsFalse_ifSenderIsNotAuthorised(address operator) public notProxyAdmin(operator) {
+        vm.assume(operator != controller && operator != reverse && operator != user);
+
+        vm.prank(operator);
+        vm.expectRevert(abi.encodeWithSelector(ResolverBase.NotAuthorized.selector, node, operator));
+        resolver.setAddr(node, user);
+    }
+
     function test_returnsTrue_ifSenderIOwnerOfNode() public {
         vm.prank(owner);
         registry.setSubnodeOwner(BASE_ETH_NODE, label, user);
@@ -27,8 +36,8 @@ contract IsAuthorised is UpgradeableL2ResolverBase {
         assertEq(resolver.addr(node), user);
     }
 
-    function test_returnsTrue_ifSenderIOperatorOfNode(address operator) public {
-        vm.assume(operator != owner && operator != user && operator != address(0));
+    function test_returnsTrue_ifSenderIOperatorOfNode(address operator) public notProxyAdmin(operator) {
+        vm.assume(operator != user);
         vm.prank(owner);
         registry.setSubnodeOwner(BASE_ETH_NODE, label, user);
         vm.prank(user);
@@ -38,8 +47,8 @@ contract IsAuthorised is UpgradeableL2ResolverBase {
         assertEq(resolver.addr(node), user);
     }
 
-    function test_returnsTrue_ifSenderIDelegateOfNode(address operator) public {
-        vm.assume(operator != owner && operator != user && operator != address(0));
+    function test_returnsTrue_ifSenderIDelegateOfNode(address operator) public notProxyAdmin(operator) {
+        vm.assume(operator != user);
         vm.prank(owner);
         registry.setSubnodeOwner(BASE_ETH_NODE, label, user);
         vm.prank(user);
