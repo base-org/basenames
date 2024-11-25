@@ -237,6 +237,16 @@ contract UpgradeableL2Resolver is
         return (interfaceID == type(IExtendedResolver).interfaceId || super.supportsInterface(interfaceID));
     }
 
+    /// @notice Returns the address of the trusted registrar controller contract.
+    function registrarController() external view returns (address) {
+        return _getResolverStorage().registrarController;
+    }
+
+    /// @notice Returns the address of the reverse registrar contract.
+    function reverseRegistrar() external view returns (address) {
+        return _getResolverStorage().reverseRegistrar;
+    }
+
     /// @notice EIP-7201 storage pointer fetch helper.
     function _getResolverStorage() internal pure returns (ResolverStorage storage $) {
         assembly {
