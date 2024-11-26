@@ -4,11 +4,12 @@ pragma solidity ^0.8.23;
 import {UpgradeableL2ResolverBase} from "./UpgradeableL2ResolverBase.t.sol";
 import {ResolverBase} from "src/L2/resolver/ResolverBase.sol";
 import {DNSResolver} from "src/L2/resolver/DNSResolver.sol";
+
 import {NameEncoder} from "ens-contracts/utils/NameEncoder.sol";
 
 contract SetDNSRecords is UpgradeableL2ResolverBase {
     // Test data encoding taken from ENS text fixture:
-    // https://github.com/ensdomains/ens-contracts/blob/staging/test/resolvers/TestPublicResolver.ts:fixtureWithDnsRecords()
+    // https://github.com/ensdomains/ens-contracts/blob/5421b5689e695531dc9739f0ad861839bdd231cb/test/resolvers/TestPublicResolver.ts#L69
     // Wire-encoded records:
     //      a.eth. 3600 IN A 1.2.3.4
     bytes arec = hex"016103657468000001000100000e10000401020304";

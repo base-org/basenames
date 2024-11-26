@@ -53,8 +53,25 @@ contract SetABI is UpgradeableL2ResolverBase {
         _validateReturnedContent(retType, URI_CONTENT, retData);
     }
 
+    function test_doesNotRevertIfNotSet() public view {
+        (uint256 retType, bytes memory retData) = resolver.ABI(node, JSON_CONTENT);
+        _validateDefaultReturn(retType, retData);
+    }
+
+    function test_doesNotRevertIfIncompatible() public {
+        vm.prank(user);
+        resolver.setABI(node, URI_CONTENT, data);
+        (uint256 retType, bytes memory retData) = resolver.ABI(node, JSON_CONTENT);
+        _validateDefaultReturn(retType, retData);
+    }
+
     function _validateReturnedContent(uint256 retType, uint256 expectedType, bytes memory retData) internal view {
         assertEq(retType, expectedType);
         assertEq(keccak256(retData), keccak256(data));
+    }
+
+    function _validateDefaultReturn(uint256 retType, bytes memory retData) internal pure {
+        assertEq(retType, 0);
+        assertEq(retData, "");
     }
 }

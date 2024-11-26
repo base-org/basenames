@@ -37,7 +37,7 @@ contract SetAddr is UpgradeableL2ResolverBase {
     }
 
     function test_setsABtcAddress() public {
-        bytes memory satoshi = "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa";
+        bytes memory satoshi = hex"76a91462e907b15cbf27d5425399ebf6f0fb50ebb88f1888ac";
         vm.prank(user);
         resolver.setAddr(node, BTC_COINTYPE, satoshi);
         assertEq(keccak256(resolver.addr(node, BTC_COINTYPE)), keccak256(satoshi));

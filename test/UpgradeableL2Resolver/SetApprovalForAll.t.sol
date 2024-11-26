@@ -11,12 +11,12 @@ contract SetApprovalForAll is UpgradeableL2ResolverBase {
         resolver.setApprovalForAll(user, true);
     }
 
-    function test_allowsSenderToSetApproval(address operator) public {
+    function test_allowsSenderToSetApproval(address operator, bool approve) public {
         vm.assume(operator != user);
         vm.expectEmit(address(resolver));
-        emit L2Resolver.ApprovalForAll(user, operator, true);
+        emit L2Resolver.ApprovalForAll(user, operator, approve);
         vm.prank(user);
-        resolver.setApprovalForAll(operator, true);
-        assertTrue(resolver.isApprovedForAll(user, operator));
+        resolver.setApprovalForAll(operator, approve);
+        assertEq(resolver.isApprovedForAll(user, operator), approve);
     }
 }

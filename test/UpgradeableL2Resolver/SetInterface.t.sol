@@ -31,10 +31,35 @@ contract SetInterface is UpgradeableL2ResolverBase {
         resolver.setAddr(node, address(counter));
         assertEq(resolver.interfaceImplementer(node, type(ICounter).interfaceId), address(counter));
     }
+
+    function test_returnsZeroAddress_whenNotSet() public view {
+        assertEq(resolver.interfaceImplementer(node, type(ICounter).interfaceId), address(0));
+    }
+
+    function test_returnsZeroAddress_whenAddressIsNotContract(address notContract) public {
+        vm.assume(notContract.code.length == 0);
+        assumeNotPrecompile(notContract);
+
+        vm.prank(user);
+        resolver.setAddr(node, address(notContract));
+        assertEq(resolver.addr(node), notContract);
+
+        assertEq(resolver.interfaceImplementer(node, type(ICounter).interfaceId), address(0));
+    }
+
+    function test_returnsZeroAddr_whenNotImplemented() public {
+        vm.prank(user);
+        resolver.setAddr(node, address(counter));
+        assertEq(resolver.interfaceImplementer(node, type(IGreeter).interfaceId), address(0));
+    }
 }
 
 interface ICounter {
     function set(uint256 x) external;
+}
+
+interface IGreeter {
+    function greet() external returns (string memory);
 }
 
 contract Counter is ICounter, ERC165 {
