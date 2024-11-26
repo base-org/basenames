@@ -43,6 +43,18 @@ contract SetAddr is UpgradeableL2ResolverBase {
         assertEq(keccak256(resolver.addr(node, BTC_COINTYPE)), keccak256(satoshi));
     }
 
+    function test_canClearRecord(address a) public {
+        vm.startPrank(user);
+
+        resolver.setAddr(node, a);
+        assertEq(resolver.addr(node), a);
+
+        resolver.clearRecords(node);
+        assertEq(resolver.addr(node), address(0));
+
+        vm.stopPrank();
+    }
+
     /// @notice Helper to convert bytes into an EVM address object.
     function bytesToAddress(bytes memory b) internal pure returns (address payable a) {
         require(b.length == 20);

@@ -18,4 +18,16 @@ contract SetName is UpgradeableL2ResolverBase {
         string memory retName = resolver.name(node);
         assertEq(keccak256(bytes(name)), keccak256(bytes(retName)));
     }
+
+    function test_canClearRecord() public {
+        vm.startPrank(user);
+
+        resolver.setName(node, name);
+        assertEq(resolver.name(node), name);
+
+        resolver.clearRecords(node);
+        assertEq(resolver.name(node), "");
+
+        vm.stopPrank();
+    }
 }

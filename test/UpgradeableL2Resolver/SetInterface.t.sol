@@ -52,6 +52,18 @@ contract SetInterface is UpgradeableL2ResolverBase {
         resolver.setAddr(node, address(counter));
         assertEq(resolver.interfaceImplementer(node, type(IGreeter).interfaceId), address(0));
     }
+
+    function test_canClearRecord() public {
+        vm.startPrank(user);
+
+        resolver.setInterface(node, type(ICounter).interfaceId, address(counter));
+        assertEq(resolver.interfaceImplementer(node, type(ICounter).interfaceId), address(counter));
+
+        resolver.clearRecords(node);
+        assertEq(resolver.interfaceImplementer(node, type(ICounter).interfaceId), address(0));
+
+        vm.stopPrank();
+    }
 }
 
 interface ICounter {

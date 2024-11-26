@@ -19,4 +19,16 @@ contract SetZonehash is UpgradeableL2ResolverBase {
         resolver.setZonehash(node, zonehash);
         assertEq(keccak256(resolver.zonehash(node)), keccak256(zonehash));
     }
+
+    function test_canClearRecord() public {
+        vm.startPrank(user);
+
+        resolver.setZonehash(node, zonehash);
+        assertEq(resolver.zonehash(node), zonehash);
+
+        resolver.clearRecords(node);
+        assertEq(resolver.zonehash(node), "");
+
+        vm.stopPrank();
+    }
 }

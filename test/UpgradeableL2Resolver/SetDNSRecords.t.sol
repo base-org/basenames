@@ -48,4 +48,17 @@ contract SetDNSRecords is UpgradeableL2ResolverBase {
         bytes memory soarecRet = resolver.dnsRecord(node, keccak256(ethDnsName), SOA_RESOURCE);
         assertEq(keccak256(soarecRet), keccak256(soarec));
     }
+
+    function test_canClearRecord() public {
+        vm.startPrank(user);
+
+        (bytes memory aDnsName,) = NameEncoder.dnsEncodeName("a.eth");
+        resolver.setDNSRecords(node, dnsRecord);
+        assertEq(resolver.dnsRecord(node, keccak256(aDnsName), A_RESOURCE), arec);
+
+        resolver.clearRecords(node);
+        assertEq(resolver.dnsRecord(node, keccak256(aDnsName), A_RESOURCE), "");
+
+        vm.stopPrank();
+    }
 }

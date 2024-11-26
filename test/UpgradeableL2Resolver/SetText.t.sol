@@ -21,4 +21,16 @@ contract SetText is UpgradeableL2ResolverBase {
         string memory retValue = resolver.text(node, key);
         assertEq(keccak256(bytes(retValue)), keccak256(bytes(value)));
     }
+
+    function test_canClearRecord() public {
+        vm.startPrank(user);
+
+        resolver.setText(node, key, value);
+        assertEq(resolver.text(node, key), value);
+
+        resolver.clearRecords(node);
+        assertEq(resolver.text(node, key), "");
+
+        vm.stopPrank();
+    }
 }

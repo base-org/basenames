@@ -19,4 +19,16 @@ contract SetContenthash is UpgradeableL2ResolverBase {
         resolver.setContenthash(node, IPFS_Data);
         assertEq(keccak256(resolver.contenthash(node)), keccak256(IPFS_Data));
     }
+
+    function test_canClearRecord() public {
+        vm.startPrank(user);
+
+        resolver.setContenthash(node, IPFS_Data);
+        assertEq(resolver.contenthash(node), IPFS_Data);
+
+        resolver.clearRecords(node);
+        assertEq(resolver.contenthash(node), "");
+
+        vm.stopPrank();
+    }
 }

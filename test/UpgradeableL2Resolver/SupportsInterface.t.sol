@@ -14,6 +14,7 @@ import {INameResolver} from "ens-contracts/resolvers/profiles/INameResolver.sol"
 import {IPubkeyResolver} from "ens-contracts/resolvers/profiles/IPubkeyResolver.sol";
 import {ITextResolver} from "ens-contracts/resolvers/profiles/ITextResolver.sol";
 import {IExtendedResolver} from "ens-contracts/resolvers/profiles/IExtendedResolver.sol";
+import {IVersionableResolver} from "ens-contracts/resolvers/profiles/IVersionableResolver.sol";
 
 contract SupportsInterface is UpgradeableL2ResolverBase {
     function test_supportsABIResolver() public view {
@@ -58,5 +59,9 @@ contract SupportsInterface is UpgradeableL2ResolverBase {
 
     function test_supportsExtendedResolver() public view {
         assertTrue(resolver.supportsInterface(type(IExtendedResolver).interfaceId));
+    }
+
+    function test_supportsVersionableResolver() public view {
+        assertTrue(resolver.supportsInterface(type(IVersionableResolver).interfaceId));
     }
 }

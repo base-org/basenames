@@ -65,6 +65,20 @@ contract SetABI is UpgradeableL2ResolverBase {
         _validateDefaultReturn(retType, retData);
     }
 
+    function test_canClearRecord() public {
+        vm.startPrank(user);
+
+        resolver.setABI(node, JSON_CONTENT, data);
+        (uint256 retType, bytes memory retData) = resolver.ABI(node, JSON_CONTENT);
+        _validateReturnedContent(retType, JSON_CONTENT, retData);
+
+        resolver.clearRecords(node);
+        (retType, retData) = resolver.ABI(node, JSON_CONTENT);
+        _validateDefaultReturn(retType, retData);
+
+        vm.stopPrank();
+    }
+
     function _validateReturnedContent(uint256 retType, uint256 expectedType, bytes memory retData) internal view {
         assertEq(retType, expectedType);
         assertEq(keccak256(retData), keccak256(data));

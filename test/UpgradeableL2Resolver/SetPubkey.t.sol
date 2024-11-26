@@ -22,4 +22,20 @@ contract SetPubkey is UpgradeableL2ResolverBase {
         assertEq(retX, x);
         assertEq(retY, y);
     }
+
+    function test_canClearRecord() public {
+        vm.startPrank(user);
+
+        resolver.setPubkey(node, x, y);
+        (bytes32 retX, bytes32 retY) = resolver.pubkey(node);
+        assertEq(retX, x);
+        assertEq(retY, y);
+
+        resolver.clearRecords(node);
+        (retX, retY) = resolver.pubkey(node);
+        assertEq(retX, 0);
+        assertEq(retY, 0);
+
+        vm.stopPrank();
+    }
 }
