@@ -16,6 +16,12 @@ contract SetAddr is UpgradeableL2ResolverBase {
         resolver.setAddr(node, notUser);
     }
 
+    function test_reverts_for_invalidAddress() public {
+        vm.prank(user);
+        vm.expectRevert();
+        resolver.setAddr(node, 60, "");
+    }
+
     function test_setsAnETHAddress_byDefault(address a) public {
         vm.prank(user);
         resolver.setAddr(node, a);
