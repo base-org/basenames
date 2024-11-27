@@ -49,6 +49,34 @@ contract SetDNSRecords is UpgradeableL2ResolverBase {
         assertEq(keccak256(soarecRet), keccak256(soarec));
     }
 
+    function test_shouldKeepTrackOfEntries() public {
+        vm.startPrank(user);
+        resolver.setDNSRecords(node, dnsRecord);
+
+        // c.eth. 3600 IN A 1.2.3.4
+        bytes memory crec = hex"016303657468000001000100000e10000401020304";
+        resolver.setDNSRecords(node, crec);
+
+        (bytes memory cDnsName,) = NameEncoder.dnsEncodeName("c.eth");
+        (bytes memory dDnsName,) = NameEncoder.dnsEncodeName("d.eth");
+
+        // Initial check
+        assertTrue(resolver.hasDNSRecords(node, keccak256(cDnsName)));
+        assertFalse(resolver.hasDNSRecords(node, keccak256(dDnsName)));
+
+        // Update with no new data makes no difference
+        resolver.setDNSRecords(node, crec);
+        assertTrue(resolver.hasDNSRecords(node, keccak256(cDnsName)));
+
+        // c.eth. 3600 IN A
+        bytes memory crec2 = hex"016303657468000001000100000e100000";
+        resolver.setDNSRecords(node, crec2);
+
+        assertFalse(resolver.hasDNSRecords(node, keccak256("c.eth")));
+
+        vm.stopPrank();
+    }
+
     function test_canClearRecord() public {
         vm.startPrank(user);
 
