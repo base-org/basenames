@@ -68,7 +68,7 @@ contract UpgradeableL2Resolver is
     /*                          ERRORS                            */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
-    /// @notice Thown when msg.sender tries to set itself as an operator.
+    /// @notice Thrown when msg.sender tries to set itself as an operator.
     error CantSetSelfAsOperator();
 
     /// @notice Thrown when msg.sender tries to set itself as a delegate for one of its names.
