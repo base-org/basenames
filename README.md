@@ -75,7 +75,7 @@ The core functionality of Base Usernames should look familiar to anyone that's l
 | Stable Price Oracle | The source of pricing based on name length and duration of registration | [StablePriceOracle.sol](https://github.com/ensdomains/ens-contracts/blob/staging/contracts/ethregistrar/StablePriceOracle.sol) | [StablePriceOracle.sol](https://github.com/base-org/usernames/blob/master/contracts/src/L2/StablePriceOracle.sol) |
 | Exponential Premium Oracle | A Dutch auction pricing mechanism for fairly pricing names after expiry | [ExponentialPremiumPricingOracle.sol](https://github.com/ensdomains/ens-contracts/blob/staging/contracts/ethregistrar/ExponentialPremiumPriceOracle.sol) | [ExponentialPremiumPricingOracle.sol](https://github.com/base-org/usernames/blob/master/contracts/src/L2/ExponentialPremiumPriceOracle.sol) | 
 
-In addition to replicating the base behavior of the ENS protocol, we are offering a series of promotional discounts associcated with various Coinbase product integrations. As such, the Base Usernames Registrar Controller allows users to perform discounted registrations while passing along integration-specific `validationData`. Each discount leverages a common interface: 
+In addition to replicating the base behavior of the ENS protocol, we are offering a series of promotional discounts associated with various Coinbase product integrations. As such, the Base Usernames Registrar Controller allows users to perform discounted registrations while passing along integration-specific `validationData`. Each discount leverages a common interface: 
 ```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
@@ -89,7 +89,7 @@ interface IDiscountValidator {
     /// @notice Required implementation for compatibility with IDiscountValidator.
     ///
     /// @dev Each implementation will have unique requirements for the data necessary to perform
-    ///     a meaningul validation. Implementations must describe here how to pack relevant `validationData`.
+    ///     a meaningful validation. Implementations must describe here how to pack relevant `validationData`.
     ///     Ex: `bytes validationData = abi.encode(bytes32 key, bytes32[] proof)`
     ///
     /// @param claimer the discount claimer's address.
