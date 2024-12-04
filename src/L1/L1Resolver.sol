@@ -187,7 +187,7 @@ contract L1Resolver is IExtendedResolver, ERC165, Ownable {
     /// @param response The response bytes that the client received from the gateway.
     /// @param extraData The additional bytes of information from the `OffchainLookup` `extraData` arg.
     ///
-    /// @return The bytes of the reponse from the CCIP read.
+    /// @return The bytes of the response from the CCIP read.
     function resolveWithProof(bytes calldata response, bytes calldata extraData) external view returns (bytes memory) {
         (address signer, bytes memory result) = SignatureVerifier.verify(extraData, response);
         if (!signers[signer]) revert InvalidSigner();
