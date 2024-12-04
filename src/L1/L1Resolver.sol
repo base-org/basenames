@@ -180,14 +180,14 @@ contract L1Resolver is IExtendedResolver, ERC165, Ownable {
     ///         `result` is the resolver response to the resolution request.
     ///         `expires` is the signature expiry.
     ///         `sig` is the signature data used for validating that the gateway signed the response.
-    ///     Per ENSIP-10, the `extraData` arg must match exectly the `extraData` field from the `OffchainLookup` which initiated
+    ///     Per ENSIP-10, the `extraData` arg must match exactly the `extraData` field from the `OffchainLookup` which initiated
     ///     the CCIP read.
     ///     Reverts with `InvalidSigner` if the recovered address is not in the `singers` mapping.
     ///
     /// @param response The response bytes that the client received from the gateway.
     /// @param extraData The additional bytes of information from the `OffchainLookup` `extraData` arg.
     ///
-    /// @return The bytes of the reponse from the CCIP read.
+    /// @return The bytes of the response from the CCIP read.
     function resolveWithProof(bytes calldata response, bytes calldata extraData) external view returns (bytes memory) {
         (address signer, bytes memory result) = SignatureVerifier.verify(extraData, response);
         if (!signers[signer]) revert InvalidSigner();
