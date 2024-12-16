@@ -13,7 +13,7 @@ contract RecordExists is RegistryBase {
         assertTrue(registry.recordExists(BASE_ETH_NODE));
     }
 
-    function text_correctlyConfirmsARecordDoesNotExist(bytes32 node) public view {
+    function test_correctlyConfirmsARecordDoesNotExist(bytes32 node) public view {
         vm.assume(node != BASE_ETH_NODE && node != ETH_NODE && node != bytes32(0));
         assertFalse(registry.recordExists(node));
     }
