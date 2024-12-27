@@ -53,7 +53,7 @@ contract ReverseRegistrar is Ownable {
 
     /// @notice Emitted upon successfully establishing a base-specific reverse record.
     ///
-    /// @param addr The address for which the the record was set.
+    /// @param addr The address for which the record was set.
     /// @param node  The namehashed node that was set as the base reverse record.
     event BaseReverseClaimed(address indexed addr, bytes32 indexed node);
 
@@ -140,7 +140,7 @@ contract ReverseRegistrar is Ownable {
     /// @notice Transfers ownership of the base-specific reverse ENS record for `addr` to the provided `owner`.
     ///
     /// @dev Restricted to only `authorized` owners/operators of `addr`.
-    ///     Emits `BaseReverseClaimed` after successfully transfering ownership of the reverse record.
+    ///     Emits `BaseReverseClaimed` after successfully transferring ownership of the reverse record.
     ///
     /// @param addr The reverse record to set.
     /// @param owner The new owner of the reverse record in ENS.
@@ -182,7 +182,7 @@ contract ReverseRegistrar is Ownable {
 
     /// @notice Sets the `name()` record for the reverse ENS records associated with the `addr` provided.
     ///
-    /// @dev Updates the resolver to a designated resolver. Only callable by `addr`'s `authroized` addresses.
+    /// @dev Updates the resolver to a designated resolver. Only callable by `addr`'s `authorized` addresses.
     ///
     /// @param addr The reverse record to set.
     /// @param owner The owner of the reverse node.
