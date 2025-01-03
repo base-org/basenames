@@ -296,7 +296,7 @@ contract BaseRegistrar is ERC721, Ownable {
         return nameExpires[id] + GRACE_PERIOD < block.timestamp;
     }
 
-    /// @notice Allows holders of names to renew their ownerhsip and extend their expiry.
+    /// @notice Allows holders of names to renew their ownership and extend their expiry.
     ///
     /// @dev Renewal can be called while owning a subdomain or while the name is in the
     ///     grace period. Can only be called by a controller.
