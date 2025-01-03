@@ -217,7 +217,7 @@ contract Registry is ENS {
 
     /// @notice Set the resolver and ttl in storage.
     ///
-    /// @param node The spcified node.
+    /// @param node The specified node.
     /// @param resolver_ The address of the resolver.
     /// @param ttl_ The TTL in seconds.
     function _setResolverAndTTL(bytes32 node, address resolver_, uint64 ttl_) internal {
