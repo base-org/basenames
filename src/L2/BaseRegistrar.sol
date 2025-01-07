@@ -296,7 +296,7 @@ contract BaseRegistrar is ERC721, Ownable {
         return nameExpires[id] + GRACE_PERIOD < block.timestamp;
     }
 
-    /// @notice Allows holders of names to renew their ownerhsip and extend their expiry.
+    /// @notice Allows holders of names to renew their ownership and extend their expiry.
     ///
     /// @dev Renewal can be called while owning a subdomain or while the name is in the
     ///     grace period. Can only be called by a controller.
@@ -376,7 +376,7 @@ contract BaseRegistrar is ERC721, Ownable {
         return _collectionURI;
     }
 
-    /// @dev Allows the owner to set the the base Uniform Resource Identifier (URI)`.
+    /// @dev Allows the owner to set the base Uniform Resource Identifier (URI)`.
     ///     Emits the `BatchMetadataUpdate` event for the full range of valid `tokenIds`.
     function setBaseTokenURI(string memory baseURI_) public onlyOwner {
         _baseURI = baseURI_;
@@ -386,7 +386,7 @@ contract BaseRegistrar is ERC721, Ownable {
         emit BatchMetadataUpdate(minTokenId, maxTokenId);
     }
 
-    /// @dev Allows the owner to set the the contract Uniform Resource Identifier (URI)`.
+    /// @dev Allows the owner to set the contract Uniform Resource Identifier (URI)`.
     ///     Emits the `ContractURIUpdated` event.
     function setContractURI(string memory collectionURI_) public onlyOwner {
         _collectionURI = collectionURI_;
