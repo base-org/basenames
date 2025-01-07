@@ -9,7 +9,7 @@ library EDAPrice {
     /// @dev reverts if perPeriodDecayPercentWad >= 1e18
     /// @dev reverts if uint256 secondsInPeriod = 0
     /// @dev reverts if startPrice * multiplier overflows
-    /// @dev reverts if lnWad(percentWadRemainingPerPeriod) * ratio) overflows
+    /// @dev reverts if lnWad(percentWadRemainingPerPeriod) * ratio overflows
 
     /// @param startPrice the starting price of the auction
     /// @param secondsElapsed the seconds elapsed since auction start
