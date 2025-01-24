@@ -16,7 +16,7 @@ contract Register is RegistrarControllerBase {
         controller.register{value: price}(noResolverRequest);
     }
 
-    function test_reverts_whenNameNotAvailble() public {
+    function test_reverts_whenNameNotAvailable() public {
         vm.deal(user, 1 ether);
         uint256 price = controller.registerPrice(name, duration);
         base.setAvailable(uint256(nameLabel), false);
