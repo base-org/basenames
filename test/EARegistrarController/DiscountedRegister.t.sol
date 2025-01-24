@@ -32,7 +32,7 @@ contract DiscountedRegister is EARegistrarControllerBase {
         controller.discountedRegister{value: price}(_getDefaultRegisterRequest(), discountKey, "");
     }
 
-    function test_reverts_whenNameNotAvailble() public {
+    function test_reverts_whenNameNotAvailable() public {
         vm.deal(user, 1 ether);
         vm.prank(owner);
         controller.setDiscountDetails(_getDefaultDiscount());
