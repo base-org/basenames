@@ -296,7 +296,7 @@ contract BaseRegistrar is ERC721, Ownable {
         return nameExpires[id] + GRACE_PERIOD < block.timestamp;
     }
 
-    /// @notice Allows holders of names to renew their ownerhsip and extend their expiry.
+    /// @notice Allows holders of names to renew their ownership and extend their expiry.
     ///
     /// @dev Renewal can be called while owning a subdomain or while the name is in the
     ///     grace period. Can only be called by a controller.
@@ -319,7 +319,7 @@ contract BaseRegistrar is ERC721, Ownable {
     /// @notice Reclaim ownership of a name in ENS, if you own it in the registrar.
     ///
     /// @dev Token transfers are ambiguous for determining name ownership transfers. This method exists so that
-    ///     if a name token is transfered to a new owner, they have the right to claim ownership over their
+    ///     if a name token is transferred to a new owner, they have the right to claim ownership over their
     ///     name in the Registry.
     ///
     /// @param id The id of the name to reclaim.
