@@ -202,7 +202,7 @@ contract Registry is ENS {
     /// @param owner_ The address that owns the records.
     /// @param operator The address that acts on behalf of the owner.
     ///
-    /// @return `true` if `operator` is an approved operator for `owner`, else `fase`.
+    /// @return `true` if `operator` is an approved operator for `owner`, else `false`.
     function isApprovedForAll(address owner_, address operator) external view virtual override returns (bool) {
         return _operators[owner_][operator];
     }
